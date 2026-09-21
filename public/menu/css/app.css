@@ -1,0 +1,3626 @@
+@charset "UTF-8";
+
+/* =========================================================================
+   Bistrô Nicolini — cardápio e reservas (protótipo)
+
+   Ideia visual: a marca vive numa "chapa" escura (barra, capa, rodapé) e o
+   cardápio vive em papel creme. Isso não é só estética — o único arquivo de
+   logo disponível é branco, e apoiá-lo sempre em fundo escuro preserva a marca
+   sem recolorir nem redesenhar nada.
+
+   Ordem: tokens · base · utilidades · chrome · capa · cardápio · prato
+   · busca · reserva · visita · desktop.
+   ========================================================================= */
+
+/* --- Tokens --------------------------------------------------------------- */
+
+:root {
+  --ink: #17120e;
+  --ink-2: #221b15;
+  --ink-3: #2f261e;
+
+  --paper: #f7f3ea;
+  --paper-2: #fffcf5;
+  --soft: #efe7da;
+
+  --line: #e3dacb;
+  --line-2: #d0c4af;
+  --line-dark: #3a3128;
+
+  --marca: #5e432f;
+  --marca-2: #7a5b41;
+  --ouro: #a8814e;
+  --ouro-claro: #e9c489;
+
+  --texto: #241d16;
+  --muted: #665a4c;
+  --muted-dark: #c6b8a5;
+  --muted-dark-2: #9c8e7c;
+
+  /*
+   * A serifada é uma old-style de texto, não uma didone de display. Duas
+   * razões, e a segunda é a que decide:
+   *
+   * 1. O prato é lido a 19px e a descrição a 14,5px num celular. Playfair é
+   *    desenhada para tamanho grande: nessas medidas as hairlines somem e o
+   *    nome do prato fica frágil ao lado de uma foto de 96px.
+   * 2. A MARCA já é uma didone — capital de contraste alto e serifa fina. Uma
+   *    didone de texto ao lado dela é um quase-igual, e quase-igual lê como
+   *    par mal resolvido. Com uma old-style, o logo volta a ser a única voz
+   *    daquele tipo na tela.
+   *
+   * `--serif-sc` é a MESMA fonte em versalete de verdade (glifos desenhados,
+   * não capitais espremidas pelo navegador). É o que permite o nome da
+   * categoria ter a voz do conteúdo sem brigar com o nome do prato: mesma
+   * família, caixa diferente.
+   */
+  --serif: 'Spectral', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --serif-sc: 'Spectral SC', var(--serif);
+  /* A sans não saiu do app — mudou de emprego. Agora é só interface: botões,
+   * campos, pastilhas, horários, chrome. Nenhum conteúdo de cardápio. */
+  --sans: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, sans-serif;
+
+  --barra: 54px;
+  --wrap: min(100% - 40px, 640px);
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur: 220ms;
+
+  --sombra-sheet: 0 -18px 48px rgba(23, 18, 14, 0.26);
+  --sombra-card: 0 1px 2px rgba(35, 27, 20, 0.05),
+    0 10px 26px -18px rgba(35, 27, 20, 0.4);
+}
+
+/*
+ * Segunda serifada, para comparar no mesmo celular: `?fonte=garamond`. O
+ * arquivo é carregado só quando o parâmetro existe (ver `lerParametros` em
+ * app.js) — a versão padrão não paga por uma fonte que não usa.
+ *
+ * EB Garamond é mais "casa italiana" e mais delicada; Spectral é desenhada
+ * para tela e aguenta melhor os 14,5px da descrição. O versalete aqui é
+ * sintetizado pelo navegador (`font-variant-caps`), não desenhado — é uma
+ * comparação de desenho de letra, não de qualidade de versalete.
+ */
+:root[data-fonte='garamond'] {
+  --serif: 'EB Garamond', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --serif-sc: var(--serif);
+}
+
+:root[data-fonte='garamond'] .categoria__titulo {
+  font-variant-caps: small-caps;
+  font-weight: 600;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* --- Base ----------------------------------------------------------------- */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--texto);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* Trava contra rolagem horizontal acidental em qualquer tela. */
+  overflow-x: hidden;
+}
+
+/* Trava de rolagem enquanto uma sobreposição está aberta. O `top` negativo é
+ * escrito pelo JS para a página não pular de volta ao topo. */
+body.travado {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+p,
+figure,
+ul,
+ol {
+  margin: 0;
+}
+
+/* `fieldset` nasce com `min-inline-size: min-content`: sem isto, o trilho de
+ * datas (larguíssimo por dentro, com rolagem própria) esticava o fieldset e,
+ * com ele, a página inteira — rolagem horizontal acidental. */
+fieldset {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  padding: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+}
+
+/* Todo SVG da página é um ícone de traço desenhado em `ico` (a marca é um
+ * <img>). Definir o traço uma vez evita ícone sem dimensão virar mancha. */
+svg {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+:focus-visible {
+  outline: 2px solid var(--marca);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.chapa :focus-visible,
+.sheet__fechar:focus-visible {
+  outline-color: var(--ouro-claro);
+}
+
+::selection {
+  background: var(--marca);
+  color: var(--paper-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- Utilidades ----------------------------------------------------------- */
+
+.oculto-visual {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pular {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  background: var(--ink);
+  color: var(--paper-2);
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  text-decoration: none;
+  transition: top var(--dur) var(--ease);
+}
+
+.pular:focus {
+  top: 12px;
+}
+
+.wrap {
+  width: var(--wrap);
+  margin-inline: auto;
+}
+
+.estado-engine {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 96px 0 48px;
+  background: var(--papel);
+}
+
+.estado-engine .wrap {
+  max-width: 620px;
+  text-align: center;
+}
+
+.estado-engine h1 {
+  margin: 12px 0;
+  font-family: var(--serif);
+  font-size: clamp(30px, 7vw, 48px);
+  font-weight: 500;
+}
+
+/* Marca. Nunca esticada: a proporção vem do próprio viewBox. */
+.marca {
+  display: block;
+  height: 34px;
+  width: auto;
+}
+
+/* A versão reduzida é uma tira larga e baixa (13,5:1); a altura aqui é a do
+ * nome, não a do bloco inteiro. */
+.marca--nome {
+  height: 12px;
+}
+
+/* --- Botões --------------------------------------------------------------- */
+
+.btn {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: var(--marca);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+
+.btn:hover {
+  background: var(--marca-2);
+}
+
+.btn--vazado {
+  background: transparent;
+  border-color: var(--line-2);
+  color: var(--texto);
+}
+
+.btn--vazado:hover {
+  background: var(--soft);
+  border-color: var(--marca);
+}
+
+.btn--claro {
+  background: rgba(255, 252, 245, 0.94);
+  color: var(--ink);
+}
+
+.btn--claro:hover {
+  background: #fff;
+}
+
+.btn--linha-clara {
+  background: transparent;
+  border-color: rgba(233, 196, 137, 0.5);
+  color: var(--paper-2);
+}
+
+.btn--linha-clara:hover {
+  background: rgba(233, 196, 137, 0.14);
+  border-color: var(--ouro-claro);
+}
+
+.btn--bloco {
+  width: 100%;
+}
+
+.btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* --- Chrome escuro (barra superior) --------------------------------------- */
+
+.chapa {
+  background: var(--ink);
+  color: var(--paper-2);
+}
+
+.barra {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--barra);
+  padding: 0 14px;
+  padding-top: env(safe-area-inset-top);
+  border-bottom: 1px solid var(--line-dark);
+}
+
+/* O alvo é a barra inteira à esquerda, não só o desenho da marca: um logo de
+ * 26px de altura seria um alvo desconfortável no polegar. */
+.barra__marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: auto;
+  min-width: 0;
+  min-height: 44px;
+  padding-right: 8px;
+  text-decoration: none;
+}
+
+/* No cabeçalho vai a marca reduzida: o bloco completo, nesta altura, deixaria
+ * "ALTA GASTRONOMIA" com cerca de um pixel — leria como sujeira, não como
+ * marca. `min-width: 0` deixa a tira encolher numa tela de 360px em vez de
+ * empurrar os controles para fora. */
+.barra .marca--nome {
+  height: 12px;
+  min-width: 0;
+}
+
+.barra__mesa {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ouro-claro);
+  border-left: 1px solid var(--line-dark);
+  padding-left: 10px;
+  white-space: nowrap;
+}
+
+.barra__acoes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* --- A barra do cardápio: transparente em cima, chapa ao rolar -------------
+ *
+ * Fixa, com dois estados:
+ *
+ *   no alto   — transparente sobre a foto, como na capa: marca e foto viram um
+ *               objeto só, em vez de dois registros empilhados.
+ *   rolando   — a chapa escura entra, para o conteúdo em creme passar por trás
+ *               dela sem sumir com a marca.
+ *
+ * O que ela NÃO faz mais: dizer que seção está sendo lida (isso é o próprio
+ * título da seção, encostado logo abaixo — ver `.categoria__cabeca`) e carregar
+ * o índice. Sobrou a marca, sozinha. Uma barra que acompanha a rolagem inteira
+ * é o lugar mais caro da tela; o que fica nela precisa valer as duas telas de
+ * carta em que ninguém vai tocá-la.
+ */
+.barra--carta {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  color: var(--paper-2);
+  background: transparent;
+  border-bottom-color: transparent;
+  transition: background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.barra--carta.is-rolada {
+  background: var(--ink);
+  border-bottom-color: var(--line-dark);
+}
+
+/* Sobre a foto, a legibilidade vem de sombra própria — não de uma caixa em
+ * volta de cada controle. O véu da imagem já fez metade do trabalho. */
+.barra--carta:not(.is-rolada) .barra__marca {
+  text-shadow: 0 1px 10px rgba(23, 18, 14, 0.6);
+}
+
+.barra--carta:not(.is-rolada) .icone-btn svg,
+.barra--carta:not(.is-rolada) .marca {
+  filter: drop-shadow(0 1px 6px rgba(23, 18, 14, 0.55));
+}
+
+.icone-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease);
+}
+
+.icone-btn:hover {
+  background: rgba(255, 252, 245, 0.1);
+}
+
+.icone-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* --- Abas de carta -------------------------------------------------------- */
+
+/*
+ * Três cartas, três links lado a lado, no fluxo da página. Não são fixos de
+ * propósito: trocar de carta é uma decisão que se toma uma vez, no começo.
+ * Quem orienta durante a leitura é o cabeçalho pegajoso da categoria — assim
+ * sobra uma faixa fixa inteira de tela para o cardápio.
+ */
+/*
+ * Duas pastilhas, uma pergunta: qual refeição? Vinhos saiu daqui — é outra
+ * carta, não uma terceira refeição, e vive no índice do cabeçalho pegajoso.
+ */
+/*
+ * O que sobrou no papel: o controle. O horário subiu para a portada — ele
+ * responde "o que é isto e quando", que é a pergunta da foto, e não "o que eu
+ * faço", que é a pergunta daqui.
+ */
+.carta-topo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 18px 0 2px;
+}
+
+/*
+ * As pastilhas deixaram de ocupar a largura toda. De borda a borda elas eram o
+ * objeto mais forte da tela — maiores e mais contrastadas que qualquer nome de
+ * prato — para responder a uma pergunta que se responde uma vez. Agora têm a
+ * largura do próprio texto: continuam evidentes, sem mandar na página.
+ */
+.cartas {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper-2);
+}
+
+/*
+ * Pastilha baixa: 32px de desenho, 38px de faixa. Ela responde a uma pergunta
+ * que se responde uma vez, e com 46px de altura pesava mais que o nome do
+ * primeiro prato, logo abaixo.
+ *
+ * O ALVO DE TOQUE não encolheu junto. O `::before` estende a área clicável 5px
+ * para cima e 5px para baixo, fora do desenho: 42px de dedo para 32px de
+ * pastilha. Encolher o alvo junto com o traço seria trocar elegância por erro
+ * de toque.
+ */
+.aba {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 20px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.aba::before {
+  content: '';
+  position: absolute;
+  inset: -5px 0;
+}
+
+.aba:hover {
+  color: var(--texto);
+}
+
+/* Estado selecionado evidente: fundo cheio, não só cor de texto. */
+.aba[aria-current='page'] {
+  background: var(--ink);
+  color: var(--paper-2);
+  font-weight: 600;
+}
+
+/*
+ * Dentro da carta de vinhos a faixa deixa de ser seletor e vira endereço: diz
+ * em que carta a pessoa está e por onde se volta. Sem isto, trocar de carta
+ * pelo índice era um salto sem retorno visível.
+ */
+.carta-atual {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  align-self: stretch;
+  padding: 6px 14px 6px 6px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper-2);
+}
+
+.carta-atual__voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 40px;
+  padding: 0 12px 0 8px;
+  border-radius: 999px;
+  color: var(--marca);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--dur) var(--ease);
+}
+
+.carta-atual__voltar:hover {
+  background: var(--soft);
+}
+
+.carta-atual__voltar svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.8;
+}
+
+.carta-atual__nome {
+  margin-left: auto;
+  font-family: var(--serif-sc);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--texto);
+}
+
+/* --- Capa (acesso antes da visita) ---------------------------------------- */
+
+.capa {
+  position: relative;
+  /* Não a tela inteira: sobra uma faixa do creme embaixo, que diz sem
+   * palavras que a página continua. */
+  min-height: 88svh;
+  display: flex;
+  flex-direction: column;
+  color: var(--paper-2);
+  background: var(--ink);
+  isolation: isolate;
+}
+
+.capa__foto {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+
+/*
+ * A foto do salão é retrato. Num celular ela preenche quase sem corte; num
+ * monitor vira uma faixa larga, e aí o recorte precisa descer — senão sobra
+ * teto e somem as mesas. Por isso o enquadramento é regra de CSS, não um
+ * valor fixo no dado.
+ */
+/*
+ * O recorte agora vem do arquivo (`capa-salao.jpg`), não do `object-position`:
+ * num celular a foto é mais alta que larga que o buraco, o `cover` ajusta pela
+ * altura e o eixo vertical simplesmente não tem efeito. Cortar a viga do teto
+ * no arquivo é o único jeito de o salão aparecer nos dois formatos.
+ */
+.capa__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  /* A foto é escura na origem; um pouco de brilho devolve o salão sem
+   * clarear a atmosfera. */
+  filter: brightness(1.18) saturate(1.05);
+}
+
+/*
+ * Um gradiente só, de cima para baixo: o terço superior fica quase limpo, para
+ * a foto do salão aparecer, e o pé fecha o suficiente para a marca, o horário e
+ * os botões terem contraste sem precisar de caixa nem de tarja.
+ */
+.capa__veu {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    rgba(23, 18, 14, 0.4) 0%,
+    rgba(23, 18, 14, 0.14) 16%,
+    rgba(23, 18, 14, 0.28) 32%,
+    rgba(23, 18, 14, 0.54) 48%,
+    rgba(23, 18, 14, 0.78) 66%,
+    rgba(23, 18, 14, 0.91) 84%,
+    rgba(23, 18, 14, 0.96) 100%
+  );
+}
+
+/*
+ * DEPOIS da regra base, de propósito: media query não soma especificidade, e
+ * escrita antes ela era simplesmente perdida.
+ *
+ * O véu do celular é forte porque lá a foto ocupa uma tela inteira em retrato,
+ * atrás de todo o texto. Numa tela larga a mesma foto vira uma faixa curta e o
+ * véu do celular apagava o salão. Aqui ele vira um escurecimento localizado:
+ * uma sombra sob a marca e os botões, e as laterais do salão de volta à vista.
+ */
+@media (min-width: 900px) {
+  .capa__foto img {
+    object-position: 50% 64%;
+  }
+
+  .capa__veu {
+    background: linear-gradient(
+        to bottom,
+        rgba(23, 18, 14, 0.5) 0%,
+        rgba(23, 18, 14, 0.14) 24%,
+        rgba(23, 18, 14, 0.24) 56%,
+        rgba(23, 18, 14, 0.74) 100%
+      ),
+      radial-gradient(
+        56% 62% at 50% 52%,
+        rgba(23, 18, 14, 0.68) 0%,
+        rgba(23, 18, 14, 0.34) 56%,
+        rgba(23, 18, 14, 0) 80%
+      );
+  }
+
+  /* A linha em itálico e o horário caem sobre a cortina clara: sombra um pouco
+   * mais fechada aqui, sem mexer no véu, que apagaria o salão. */
+  .capa__linha,
+  .capa__hoje {
+    text-shadow: 0 1px 3px rgba(12, 9, 7, 0.7), 0 1px 16px rgba(12, 9, 7, 0.7);
+  }
+}
+
+/*
+ * Espaçamentos em `svh`, não em pixels: o mesmo bloco tem de caber num iPhone
+ * SE de 667 px e respirar num Pro Max de 932, sem que a composição seja
+ * afinada para uma captura só.
+ */
+.capa__corpo {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: clamp(14px, 2.8svh, 24px);
+  width: var(--wrap);
+  margin-inline: auto;
+  padding: calc(44px + env(safe-area-inset-top)) 0
+    calc(clamp(20px, 3.4svh, 32px) + env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+.capa__marca {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 2.2svh, 18px);
+}
+
+/* Dimensionada pela largura, não pela altura: é a largura do nome que fixa a
+ * presença da marca na tela, e com a legenda de volta uma altura fixa deixaria
+ * o nome menor a cada linha que o bloco ganhasse. */
+/* Sombra em duas camadas: uma curta, que dá contorno aos traços finos da
+ * legenda, e uma larga, que abre um halo escuro sob o bloco inteiro. É o que
+ * permite manter a foto do salão visível atrás da marca. */
+.capa .marca {
+  width: min(252px, 64vw);
+  height: auto;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.55))
+    drop-shadow(0 6px 30px rgba(0, 0, 0, 0.6));
+}
+
+/* Sombra curta em vez de véu mais pesado: garante o contraste do texto sem
+ * apagar a foto atrás dele. */
+.capa__linha,
+.capa__hoje,
+.capa__abaixo {
+  text-shadow: 0 1px 14px rgba(12, 9, 7, 0.62);
+}
+
+/* A frase é legenda da marca, não manchete: desceu de 24 px para o tamanho de
+ * um texto corrido, e ocupa as mesmas duas linhas sem disputar com o logo. */
+.capa__linha {
+  font-family: var(--serif);
+  font-size: clamp(16px, 4.2vw, 19px);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.4;
+  color: #ece3d6;
+  text-wrap: balance;
+  max-width: 24ch;
+  margin-inline: auto;
+}
+
+/* A informação que decide a visita — "está aberto agora?" — entra na capa,
+ * logo acima dos botões, em vez de esperar a tabela lá embaixo. */
+.capa__hoje {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+  color: rgba(240, 232, 220, 0.82);
+}
+
+.capa__hoje svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: rgba(233, 196, 137, 0.85);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Os botões não vão de borda a borda: uma coluna um pouco mais estreita que o
+ * texto acima deles dá margem lateral de verdade e mantém o formato de
+ * pastilha legível em vez de virar duas faixas. */
+.capa__acoes {
+  display: grid;
+  gap: 10px;
+  width: min(100%, 312px);
+  margin-inline: auto;
+}
+
+.capa__abaixo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(243, 236, 224, 0.72);
+  text-decoration: none;
+}
+
+.capa__abaixo:hover {
+  color: var(--paper-2);
+}
+
+.capa__abaixo svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: respira 2.8s var(--ease) infinite;
+}
+
+@keyframes respira {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translateY(3px);
+    opacity: 1;
+  }
+}
+
+/* Telas baixas (um SE, um celular com a barra do navegador aberta): a marca
+ * encolhe e o convite a rolar sai, em vez de espremer os botões. */
+@media (max-height: 700px) {
+  .capa {
+    min-height: 92svh;
+  }
+
+  .capa .marca {
+    width: min(210px, 56vw);
+  }
+
+  .capa__linha {
+    font-size: 15.5px;
+    max-width: 26ch;
+  }
+
+  .capa__abaixo {
+    display: none;
+  }
+}
+
+/* Prático: fica abaixo da dobra, de propósito. */
+.pratico {
+  background: var(--paper);
+  padding: 44px 0 56px;
+}
+
+.pratico__titulo {
+  font-family: var(--serif);
+  font-size: 25px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin-bottom: 18px;
+}
+
+.horarios {
+  border-top: 1px solid var(--line);
+}
+
+.horarios li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+}
+
+.horarios dt,
+.horarios .horarios__dia {
+  color: var(--texto);
+}
+
+.horarios .horarios__hora {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.horarios li[data-fechado='true'] .horarios__hora {
+  color: var(--marca);
+  font-weight: 600;
+}
+
+.contatos {
+  display: grid;
+  gap: 2px;
+  margin-top: 26px;
+}
+
+.contatos a,
+.contatos p {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 4px 0;
+  font-size: 15px;
+  text-decoration: none;
+  color: var(--texto);
+}
+
+.contatos a:hover {
+  color: var(--marca);
+}
+
+.contatos svg {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--marca);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tira {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 68%;
+  gap: 10px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-inline: max(20px, calc((100vw - var(--wrap)) / 2));
+  margin-top: 34px;
+}
+
+.tira::-webkit-scrollbar {
+  display: none;
+}
+
+.tira figure {
+  scroll-snap-align: start;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--soft);
+}
+
+.tira img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Cardápio ------------------------------------------------------------- */
+
+/*
+ * A capa fotográfica fica — sem ela o cardápio vira uma lista sem casa. O que
+ * mudou foi a dose: altura em `clamp`, para dar atmosfera sem empurrar o
+ * primeiro prato para fora da tela. Pelo QR ela encolhe mais um pouco: quem
+ * está sentado à mesa já viu o salão.
+ */
+/*
+ * A faixa virou a PORTADA da carta: carrega a barra em cima e o título embaixo.
+ * Cresceu de novo (era 138px) porque agora tem três linhas para acomodar — e
+ * mesmo assim o primeiro prato não desceu, porque o horário saiu do papel e a
+ * chapa preta de 54px já não existia como faixa própria.
+ */
+.servico-capa {
+  position: relative;
+  height: calc(clamp(178px, 47vw, 246px) + 26px);
+  overflow: hidden;
+  background: var(--ink);
+}
+
+/* Pelo QR ela encolhe: o horário não é renderizado, e sobra uma linha a menos
+ * para caber. */
+.servico-capa--compacta {
+  /* O mínimo não é estética: 54 da barra + respiro + chapéu + MENU + o pé do
+   * bloco dão 150px, e abaixo disso o chapéu encostaria na barra num 360. */
+  height: clamp(158px, 41vw, 208px);
+}
+
+.servico-capa__titulo {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* A mesma coluna do conteúdo: o título alinha com o nome do primeiro prato,
+   * e não com a borda da tela. */
+  width: var(--wrap);
+  margin: 0 auto;
+  padding-bottom: 16px;
+  color: var(--paper-2);
+}
+
+/* Sobrou para uma coisa: dizer de que mesa a pessoa entrou. Sem QR não existe —
+ * "CARDÁPIO" em cima de "MENU" era a mesma palavra duas vezes. */
+.servico-capa__chapeu {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 252, 245, 0.82);
+  text-shadow: 0 1px 8px rgba(23, 18, 14, 0.7);
+}
+
+/*
+ * Uma palavra só, do tamanho de uma capa. A caixa alta vem daqui e não do texto
+ * (leitor de tela soletra palavra escrita em caixa alta), e a entreletra é o que
+ * caixa alta sempre pede: sem ela, as quatro letras ficam coladas.
+ */
+.servico-capa__nome {
+  margin: 4px 0 0;
+  font-family: var(--serif);
+  font-size: clamp(40px, 13vw, 62px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  color: var(--paper-2);
+  /* Duas camadas, como na capa: uma curta que dá contorno ao traço fino da
+   * serifada, e uma larga que abre um halo sob o bloco inteiro. */
+  text-shadow: 0 1px 3px rgba(23, 18, 14, 0.55),
+    0 2px 22px rgba(23, 18, 14, 0.55);
+}
+
+.servico-capa__quando {
+  margin-top: 7px;
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: rgba(255, 252, 245, 0.86);
+  text-shadow: 0 1px 8px rgba(23, 18, 14, 0.75);
+}
+
+.servico-capa__video,
+.servico-capa img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Um grau abaixo na saturação: a faixa acompanha a paleta em vez de
+   * competir com ela. */
+  filter: saturate(0.8) brightness(0.93);
+}
+
+/* A faixa é atmosfera, não anúncio: um véu escuro no topo e a emenda com o
+ * papel no pé costuram a foto à página em vez de colá-la por cima. */
+/*
+ * O véu escurece as DUAS pontas e clareia no meio, porque as duas pontas viraram
+ * texto: a barra em cima, o título embaixo. A emenda clara com o papel, que
+ * antes fechava a faixa, saiu — não dava para pedir que o pé fosse claro para
+ * costurar e escuro para sustentar um título de 34px. Ficou um corte limpo entre
+ * a portada e o papel, que é o que um cardápio impresso faz na virada da capa.
+ *
+ * A parada de cima (78px) é a altura da barra mais um respiro; a de baixo abre
+ * aos 52%, onde o bloco de título começa.
+ */
+.servico-capa::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(23, 18, 14, 0.56) 0%,
+    rgba(23, 18, 14, 0.26) 78px,
+    rgba(23, 18, 14, 0.18) 52%,
+    rgba(23, 18, 14, 0.74) 100%
+  );
+}
+
+/* Texto de apoio, e não abertura: o protagonista da tela é o prato, logo
+ * abaixo. O horário do serviço subiu para junto das pastilhas — ele responde
+ * à mesma pergunta que elas — e o que sobrou aqui é a nota da carta. */
+.nota-servico {
+  padding: 4px 0 2px;
+}
+
+.nota-servico__preco {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 500;
+  font-variant-numeric: lining-nums;
+  color: var(--texto);
+}
+
+.nota-servico__preco span {
+  font-family: var(--serif);
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* A nota da carta em itálico serifado: é voz da casa, não legenda de
+ * interface. Do jeito anterior — sem serifa, 13,5px, cinza — ela lia como
+ * aviso de rodapé no meio da abertura da carta. */
+.nota-servico__texto {
+  font-family: var(--serif);
+  font-size: 14.5px;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 46ch;
+}
+
+/* O intervalo entre seções virou MARGEM da seção, e não padding do cabeçalho:
+ * o cabeçalho gruda, e uma caixa grudada de 62px com 30 deles vazios em cima do
+ * título pareceria um erro de alinhamento assim que encostasse. */
+.categoria {
+  margin-top: 30px;
+  scroll-margin-top: calc(var(--barra) + env(safe-area-inset-top));
+}
+
+.categoria:first-child {
+  margin-top: 14px;
+}
+
+/*
+ * O nome da seção GRUDA no teto, e é o próprio título que faz isso.
+ *
+ * A versão anterior escrevia o nome da seção dentro da barra escura e o trocava
+ * conforme a rolagem. Funcionava, e era redundante: o mesmo nome existia em
+ * dois elementos, e o que a pessoa via subir na tela não era o que parava no
+ * alto. Aqui não há cópia — o título encosta abaixo da barra enquanto a seção
+ * está na tela, e o da seção seguinte o empurra para fora. Quem explica a
+ * troca é o movimento, não uma animação de texto.
+ *
+ * Volta a ser CSS puro: nenhum ouvinte de rolagem participa disso.
+ *
+ * O registro é o de antes: VERSALETE da mesma serifada do prato. A diferença
+ * com o nome do prato não é de família (que fazia duas vozes concorrerem) e sim
+ * de CAIXA — o prato em caixa alta e baixa, a seção em versalete. Mesma voz,
+ * ritmo diferente, que é como um cardápio impresso resolve isso há uns
+ * quatrocentos anos.
+ */
+.categoria__cabeca {
+  position: sticky;
+  top: calc(var(--barra) + env(safe-area-inset-top));
+  z-index: 20;
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  /* Nada é desenhado nas margens laterais, então a faixa não precisa sangrar
+   * até a borda da tela — e assim não há risco de rolagem horizontal. */
+  padding: 9px 0 10px;
+  background: var(--paper);
+}
+
+/*
+ * Sem fio embaixo. O fio, com o título de um lado e um botão do outro, era o
+ * que fazia a linha ler como cabeçalho de tabela. No lugar dele, o papel se
+ * dissolve por 14px: o prato que passa por baixo desaparece em vez de bater
+ * numa régua.
+ */
+.categoria__cabeca::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 14px;
+  background: linear-gradient(var(--paper), rgba(247, 243, 234, 0));
+  pointer-events: none;
+}
+
+/*
+ * O ÍNDICE, SEM A PALAVRA.
+ *
+ * Ele morava na barra fixa, onde sobrevivia à carta inteira para ser tocado uma
+ * vez ou nenhuma. Aqui ele fica onde a pergunta nasce — "o que mais tem?" se
+ * pergunta olhando para o nome de uma seção — e sobe junto com a faixa quando a
+ * seção seguinte a empurra, em vez de ficar pendurado no alto o tempo todo.
+ *
+ * Sem rótulo: a palavra "Índice" ao lado do nome da seção reconstruía a linha
+ * de duas pontas que já tinha sido desmontada uma vez. Sobra o chevron, que é
+ * o mesmo desenho da folha que ele abre. O nome existe no `aria-label`.
+ *
+ * E ele fica COLADO NO NOME, não na ponta oposta. É a distância que decide o
+ * que o glifo quer dizer: na ponta direita da faixa, um chevron para baixo lê
+ * como "expandir esta seção" (acordeão); encostado no nome, lê como "este nome
+ * é uma lista" — a gramática de um `select`, de um filtro, de qualquer rótulo
+ * que abre opções. É o que ele faz: abre a lista de seções para trocar de
+ * lugar. E a ponta direita fica vazia, que era o ponto de ter desmontado a
+ * linha de duas pontas.
+ *
+ * O desenho tem 28px para não engordar a faixa (que é teto: 48px somados aos 54
+ * da barra). O ALVO DE TOQUE é maior que o desenho — o `::before` estende 7px
+ * em cima e embaixo, 8 dos lados: 42 × 44. Ícone sem rótulo é o pior caso para
+ * o dedo, e não é lugar de economizar pixel.
+ *
+ * E ELE SÓ EXISTE NA FAIXA PRESA no alto (`is-presa`, ver `ligarFaixasPresas`).
+ * Solta, no meio da rolagem, a faixa é um título de seção e nada mais; quatro
+ * chevrons espalhados pela carta seriam enfeite repetido. Presa embaixo da
+ * barra, ela é a navegação da carta, e aí o índice pertence a ela. Entra em
+ * fade, sem deslocamento: a caixa do botão ocupa o mesmo espaço nos dois
+ * estados, então o nome da seção não dá um pulo lateral quando a faixa encosta.
+ *
+ * `opacity` e `pointer-events`, e não `visibility` nem `display`: elemento
+ * escondido por esses dois sai da ordem de tabulação, e aí, no alto da página,
+ * onde nenhuma faixa está presa, o índice ficaria inalcançável pelo teclado. Do
+ * jeito que está, ele continua focável — e `:focus` o traz de volta à vista
+ * junto com o foco.
+ *
+ * `:focus`, e não `:focus-visible`: o segundo depende da heurística de
+ * modalidade do navegador e não casa com foco dado por script (o que a folha do
+ * índice faz ao devolver o foco). Um botão focado e invisível é o pior dos dois
+ * mundos. Aqui não há efeito colateral: com o mouse ele nem é clicável enquanto
+ * está apagado, então não há como recebê-lo sem ser pelo teclado ou por script.
+ */
+.categoria__ir {
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  align-self: center;
+  /* Encosta no nome: o `gap` de 9px da faixa mais o respiro interno do botão
+   * dariam 14px de folga óptica, e a essa distância o glifo já solta do nome. */
+  margin-left: -6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--marca-2);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms var(--ease), color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
+}
+
+/* A PRIMEIRA seção mostra o chevron mesmo solta. É o único lugar onde ele
+ * aparece antes de qualquer rolagem, e é ali que a pessoa descobre que aquele
+ * nome abre uma lista — depois disso ela já sabe procurar na faixa presa. */
+.categoria:first-child .categoria__cabeca .categoria__ir,
+.categoria__cabeca.is-presa .categoria__ir,
+.categoria__ir:focus {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.categoria__ir::before {
+  content: '';
+  position: absolute;
+  inset: -7px -8px;
+}
+
+.categoria__ir svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+}
+
+.categoria__ir:hover {
+  color: var(--texto);
+  background: var(--paper-3);
+}
+
+.categoria__titulo {
+  font-family: var(--serif-sc);
+  font-size: 19.5px;
+  font-weight: 500;
+  letter-spacing: 0.035em;
+  color: var(--texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Numa tela estreita quem cede é o nome, não o chevron: sem isto o botão
+   * seria empurrado para fora da faixa por um "Contornos e sobremesas". */
+  min-width: 0;
+}
+
+/* O numeral dá espinha à carta: diz quantas seções existem e em que ponto da
+ * leitura a pessoa está — e é o que faz o cabeçalho corrente ter conteúdo, e
+ * não só um rótulo repetido. */
+.categoria__num {
+  flex: 0 0 auto;
+  font-family: var(--serif-sc);
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  /* Marrom da marca, e não o dourado: sobre o creme o dourado dá 3,2:1, e
+   * numeral é texto — alguém lê. O marrom claro dá 5,5:1. No fundo escuro da
+   * barra o dourado passa com folga, e lá ele fica. */
+  color: var(--marca-2);
+}
+
+.pratos {
+  display: grid;
+}
+
+/* Item de lista: bloco inteiro clicável via link esticado. */
+.prato {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 0;
+  transition: background var(--dur) var(--ease);
+}
+
+/*
+ * Uma linha só na lista, e recuada até onde o texto começa. As anteriores — o
+ * filete entre nome e preço e o traço ornamentado da categoria — saíram: com
+ * foto em todos os itens, o que separa uma linha da outra já é a foto.
+ */
+.prato::after {
+  content: '';
+  position: absolute;
+  left: 110px;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--line);
+}
+
+.prato:last-child::after {
+  display: none;
+}
+
+.prato__texto {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.prato:hover {
+  background: rgba(239, 231, 218, 0.5);
+}
+
+.prato:has(.prato__link:focus-visible) {
+  background: rgba(239, 231, 218, 0.7);
+}
+
+.prato__link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.prato__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+}
+
+.prato__link:focus-visible {
+  outline: none;
+}
+
+.prato__link:focus-visible::after {
+  outline: 2px solid var(--marca);
+  outline-offset: -2px;
+}
+
+.prato__topo {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+/*
+ * O ITEM INTEIRO É SERIFADO — nome, descrição e preço.
+ *
+ * Antes eram três vozes num cartão de 143px: nome serifado, descrição sem
+ * serifa, preço sem serifa e em negrito. Num cardápio impresso os três são a
+ * mesma família; é a mudança de tamanho, cor e caixa que faz a hierarquia. O
+ * preço em serifada, sozinho, tira da lista boa parte da cara de aplicativo.
+ *
+ * A sans continua no app — só não entra mais no conteúdo do cardápio.
+ */
+.prato__nome {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+
+.prato__preco {
+  flex: 0 0 auto;
+  margin-left: auto;
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 500;
+  /* Algarismos de altura constante e largura fixa: é o que deixa os preços
+   * alinhados de item para item, que é como se lê uma coluna de preços. */
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--texto);
+  white-space: nowrap;
+}
+
+.prato__preco small {
+  font-family: var(--serif);
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.prato__desc {
+  margin-top: 5px;
+  font-family: var(--serif);
+  font-size: 14.5px;
+  line-height: 1.52;
+  color: var(--muted);
+  max-width: 44ch;
+}
+
+/* Dois preços (taça e garrafa) numa linha própria. Ao lado do nome, num
+ * celular, eles espremiam o nome em três linhas. */
+.prato__precos {
+  display: grid;
+  gap: 3px;
+  margin-top: 9px;
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 500;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* Um por linha, com o rótulo numa coluna de largura fixa: os valores ficam
+ * alinhados entre si e entre itens, que é o que permite comparar a carta de
+ * relance. Lado a lado, na largura do celular, eles quebravam o nome do vinho
+ * em três linhas. */
+.prato__precos span {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+/* "taça" e "garrafa" em itálico da mesma serifada: é a forma de uma carta de
+ * vinhos, e não reintroduz a sans dentro do conteúdo. */
+.prato__precos small {
+  min-width: 54px;
+  font-size: 13.5px;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* O suplemento perdeu a pastilha contornada — que era um objeto de interface
+ * dentro do texto do prato — e virou uma linha em itálico, como a observação
+ * de um cardápio impresso. Continua nomeado como suplemento, e continua sendo
+ * o único preço que aparece dentro do menu fechado. */
+.prato__selo {
+  display: block;
+  margin-top: 7px;
+  font-family: var(--serif);
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 400;
+  font-variant-numeric: lining-nums;
+  color: var(--marca);
+}
+
+/*
+ * Foto à esquerda, em todos os itens e sempre do mesmo tamanho. Antes só um
+ * item por categoria tinha foto (grande) e o resto vinha com miniatura à
+ * direita: duas formas de item na mesma lista. Uma forma só torna a lista
+ * comparável e dá ritmo à rolagem.
+ */
+.prato__thumb {
+  flex: 0 0 auto;
+  width: 96px;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--soft);
+}
+
+.prato__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 500ms var(--ease);
+}
+
+.prato:hover .prato__thumb img {
+  transform: scale(1.03);
+}
+
+/*
+ * O CONVITE, FLUTUANDO.
+ *
+ * É o botão da casa — `.btn`, marrom, o mesmo da tela de visita —, e não uma
+ * pastilha própria: já foram três desenhos diferentes para a mesma ação, e o
+ * quarto seria vocabulário novo sem motivo. Só que MAIS FINO que nas telas de
+ * formulário: 40px no lugar de 50. Ele flutua sobre uma lista que se lê, e ali
+ * cada pixel de altura é pixel de prato coberto.
+ *
+ * Fica na direita e não no centro: na margem direita o que passa por baixo é
+ * fim de descrição; no centro seriam nome e preço. Aparece depois da mesma
+ * dobra que acende a barra, e o rodapé reserva espaço para ele nunca cobrir a
+ * última linha da carta.
+ */
+.reservar-flutua {
+  position: fixed;
+  left: 50%;
+  right: auto;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 30;
+  min-height: 40px;
+  padding: 0 20px;
+  font-size: 14px;
+  box-shadow: var(--sombra-card);
+  /* `visibility` junto com a opacidade: enquanto não está na tela, ele também
+   * não está no Tab — um alvo invisível e focável é pior que nenhum. */
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 8px);
+  transition: opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease), visibility var(--dur),
+    background var(--dur) var(--ease);
+}
+
+.reservar-flutua.is-visivel {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+/* Espaço reservado embaixo do conteúdo, para o convite nunca cobrir a última
+ * linha do rodapé. */
+.cardapio--flutua .rodape {
+  padding-bottom: calc(92px + env(safe-area-inset-bottom));
+}
+
+/* Rodapé do cardápio */
+.rodape {
+  margin-top: 46px;
+  padding: 26px 0 calc(38px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.rodape p + p {
+  margin-top: 10px;
+}
+
+/* Link de rodapé com alvo maior que a altura da linha. */
+.rodape a {
+  display: inline-block;
+  padding: 5px 0;
+  color: var(--marca);
+  text-underline-offset: 3px;
+}
+
+.selo-demo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 11px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--marca);
+  background: var(--paper-2);
+  margin-bottom: 14px;
+}
+
+.selo-demo::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ouro);
+}
+
+/* --- Sobreposições (sheet) ------------------------------------------------ */
+
+.veu {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(23, 18, 14, 0.5);
+  backdrop-filter: blur(2px);
+  animation: aparece var(--dur) var(--ease);
+}
+
+@keyframes aparece {
+  from {
+    opacity: 0;
+  }
+}
+
+.sheet {
+  position: fixed;
+  z-index: 61;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: min(88svh, 780px);
+  display: flex;
+  flex-direction: column;
+  background: var(--paper-2);
+  border-radius: 16px 16px 0 0;
+  box-shadow: var(--sombra-sheet);
+  animation: sobe 260ms var(--ease);
+  overflow: hidden;
+}
+
+@keyframes sobe {
+  from {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+}
+
+.sheet__pega {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line-2);
+  margin: 8px auto 0;
+}
+
+.sheet__rolagem {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sheet__fechar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(23, 18, 14, 0.55);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+.sheet__fechar svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.sheet__pe {
+  flex: 0 0 auto;
+  padding: 12px 20px calc(16px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--paper-2);
+}
+
+/* Detalhe do prato — galeria */
+
+/*
+ * Alta o bastante para dar desejo, baixa o bastante para o nome, o preço e a
+ * descrição aparecerem logo abaixo, sem rolagem. Uma foto que ocupa a tela
+ * inteira empurra para baixo exatamente o que a pessoa abriu o painel para ler.
+ */
+.galeria {
+  position: relative;
+  /*
+   * `width: 100%` explícito, e não herdado: com a largura indefinida, o par
+   * `aspect-ratio` + `max-height` faz o navegador encolher a LARGURA para
+   * preservar a proporção quando a altura bate no teto — a foto ficava com uma
+   * faixa de papel à direita dentro do painel. É a mesma armadilha que já
+   * havia mordido a faixa do cardápio no desktop.
+   */
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: min(36svh, 300px);
+  overflow: hidden;
+  background: var(--soft);
+}
+
+/* Trilho com encaixe: o dedo arrasta, as setas andam de um em um. */
+.galeria__trilho {
+  display: flex;
+  height: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.galeria__trilho::-webkit-scrollbar {
+  display: none;
+}
+
+.galeria__trilho:focus-visible {
+  outline: 2px solid var(--ouro-claro);
+  outline-offset: -3px;
+}
+
+.galeria__quadro {
+  flex: 0 0 100%;
+  height: 100%;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+.galeria__quadro img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.galeria__seta,
+.galeria__lupa {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(23, 18, 14, 0.5);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+
+.galeria__seta:hover,
+.galeria__lupa:hover {
+  background: rgba(23, 18, 14, 0.74);
+}
+
+.galeria__seta svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 1.9;
+}
+
+.galeria__lupa svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 1.7;
+}
+
+.galeria__seta {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.galeria__seta--tras {
+  left: 10px;
+}
+
+.galeria__seta--frente {
+  right: 10px;
+}
+
+.galeria__seta--frente svg {
+  transform: scaleX(-1);
+}
+
+/* Chegou à ponta: some, em vez de ficar como um botão que não faz nada. */
+.galeria__seta[disabled] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.galeria__lupa {
+  right: 10px;
+  bottom: 10px;
+}
+
+/* Quantas fotos são, sem barulho: um contador pequeno no canto. */
+.galeria__conta {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 2;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(23, 18, 14, 0.5);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(4px);
+}
+
+/* Ampliação: a foto inteira, sem corte — `contain`, porque ampliar para
+ * cortar não seria ampliar. */
+.zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: calc(58px + env(safe-area-inset-top)) 14px
+    calc(18px + env(safe-area-inset-bottom));
+  background: rgba(12, 9, 7, 0.94);
+  animation: aparece var(--dur) var(--ease);
+}
+
+.zoom__quadro {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  width: 100%;
+}
+
+.zoom__quadro img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 3px;
+}
+
+.zoom__fechar {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top));
+  right: 12px;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 252, 245, 0.14);
+  color: #fff;
+  cursor: pointer;
+}
+
+.zoom__fechar svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 1.8;
+}
+
+.zoom__pe {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.zoom__seta {
+  width: 46px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 252, 245, 0.24);
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+.zoom__seta:hover {
+  background: rgba(255, 252, 245, 0.12);
+}
+
+.zoom__seta svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 1.8;
+}
+
+.zoom__seta--frente svg {
+  transform: scaleX(-1);
+}
+
+.zoom__seta[disabled] {
+  opacity: 0.28;
+  cursor: default;
+}
+
+.zoom__conta {
+  min-width: 76px;
+  text-align: center;
+  color: rgba(255, 252, 245, 0.78);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.zoom :focus-visible {
+  outline-color: var(--ouro-claro);
+}
+
+.detalhe__corpo {
+  padding: 22px 20px 26px;
+}
+
+.detalhe__eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--marca);
+  margin-bottom: 8px;
+}
+
+.detalhe__nome {
+  font-family: var(--serif);
+  font-size: 27px;
+  font-weight: 500;
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.detalhe__preco {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  margin-top: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.detalhe__preco small {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.detalhe__incluso {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--marca);
+}
+
+.detalhe__desc {
+  margin-top: 14px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #3e352b;
+}
+
+.detalhe__nota {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-left: 2px solid var(--ouro);
+  background: var(--soft);
+  border-radius: 0 4px 4px 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.detalhe__rodape {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Folha "Ir para": seções desta carta e, abaixo, as outras cartas. */
+.sheet__grupo {
+  padding: 16px 20px 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lista-op {
+  padding: 0 12px 4px;
+}
+
+.lista-op li + li {
+  border-top: 1px solid var(--line);
+}
+
+.op {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 3px 14px;
+  width: 100%;
+  padding: 14px 8px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.op:hover {
+  background: var(--soft);
+}
+
+.op[aria-current='true'] {
+  background: var(--soft);
+}
+
+.op__nome {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.op__extra {
+  grid-column: 1;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.op__marca {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  width: 22px;
+  height: 22px;
+  color: var(--marca);
+}
+
+/*
+ * Pular para uma seção desta carta e trocar de carta são gestos diferentes, e
+ * a folha mostra isso: as seções levam um visto quando são a atual; as outras
+ * cartas levam uma seta de ida, que diz que a página inteira vai mudar.
+ */
+.op--carta {
+  grid-template-columns: 1fr auto;
+}
+
+.op__ida,
+.op__lupa {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  width: 18px;
+  height: 18px;
+  color: var(--line-2);
+}
+
+/* A lupa não é a seta de ida: não leva o espelhamento que transforma o chevron
+ * de voltar em chevron de avançar. */
+.op__lupa svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.op__ida svg {
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+  stroke-width: 1.8;
+}
+
+.op--carta:hover .op__ida {
+  color: var(--marca);
+}
+
+.op__marca svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sheet__titulo {
+  padding: 14px 20px 8px;
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+/* --- Busca ---------------------------------------------------------------- */
+
+.busca {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  animation: aparece 160ms var(--ease);
+}
+
+.busca__topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  padding-top: calc(10px + env(safe-area-inset-top));
+  background: var(--ink);
+  color: var(--paper-2);
+}
+
+.busca__campo {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--line-dark);
+  border-radius: 999px;
+  background: var(--ink-2);
+  color: var(--paper-2);
+  font-size: 16px;
+}
+
+.busca__campo::placeholder {
+  color: var(--muted-dark-2);
+}
+
+.busca__campo:focus-visible {
+  outline: 2px solid var(--ouro-claro);
+  outline-offset: 1px;
+}
+
+.busca__resultados {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-bottom: calc(28px + env(safe-area-inset-bottom));
+}
+
+.busca__grupo {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--marca);
+  padding: 20px 0 6px;
+}
+
+.busca__vazio {
+  padding: 52px 0;
+  text-align: center;
+}
+
+.busca__vazio h2 {
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.busca__vazio p {
+  font-size: 14.5px;
+  color: var(--muted);
+  max-width: 34ch;
+  margin-inline: auto;
+}
+
+.busca__dica {
+  padding: 26px 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.busca__resultados mark {
+  background: rgba(168, 129, 78, 0.24);
+  color: inherit;
+  border-radius: 2px;
+}
+
+/* --- Reserva -------------------------------------------------------------- */
+
+/*
+ * A reserva tem duas telas antes da confirmação: DISPONIBILIDADE (pessoas, dia
+ * e hora) e DADOS (em nome de quem, com a mesa revista no alto).
+ *
+ * A tela de disponibilidade mostra tudo de uma vez, em vez de perguntar uma
+ * coisa de cada vez. O que mudou de verdade foi a escolha da data: era uma
+ * lista vertical de cinco dias com nome em serifada de 20 px — cinco linhas
+ * altas, sem mês à vista, impossíveis de comparar entre si —, e agora é o
+ * calendário do mês, que diz o mesmo em um terço da altura e ainda mostra
+ * onde estão as segundas fechadas e os sábados cheios.
+ *
+ * Tipografia: sem serifa em tudo que é dado — dias da semana, números,
+ * horários e campos. A serifada ficou no título da tela e no nome do mês.
+ */
+
+.reserva {
+  padding: 18px 0 56px;
+}
+
+/* Só quando existe barra fixa de avanço é que o rodapé precisa de folga. */
+.reserva--pe {
+  padding-bottom: calc(128px + env(safe-area-inset-bottom));
+}
+
+.reserva__cabeca {
+  margin-bottom: 20px;
+}
+
+.reserva__titulo {
+  font-family: var(--serif);
+  font-size: clamp(26px, 7.2vw, 30px);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+/*
+ * O aviso de demonstração encolheu para uma pastilha e uma linha, coladas ao
+ * título. Antes ocupava uma coluna inteira ao lado do fluxo no desktop e um
+ * parágrafo solto embaixo da pergunta no celular — mais espaço para o aviso
+ * do que para a reserva.
+ */
+.reserva__demo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 10px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.selo-demo--fino {
+  margin-bottom: 0;
+  padding: 3px 9px;
+  font-size: 10.5px;
+}
+
+/* --- Pessoas: controle compacto, sempre editável -------------------------- */
+
+.pessoas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.pessoas__rot {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.pessoas__nota {
+  margin-top: 10px;
+  max-width: 46ch;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.pessoas__nota a {
+  color: var(--marca);
+  text-underline-offset: 3px;
+}
+
+.passo {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: var(--paper-2);
+}
+
+.passo__btn {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--marca);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.passo__btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+.passo__btn:hover {
+  background: var(--soft);
+}
+
+.passo__btn[disabled] {
+  color: var(--line-2);
+  background: transparent;
+  cursor: default;
+}
+
+.passo__valor {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 5px;
+  min-width: 94px;
+  font-variant-numeric: tabular-nums;
+}
+
+.passo__num {
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.passo__uni {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* --- Calendário do mês ---------------------------------------------------- */
+
+/* A folga entre o controle de pessoas e o calendário mora aqui, e não na nota
+ * do telefone: assim ela não muda quando a nota está fora da tela. */
+.disp {
+  margin-top: 22px;
+}
+
+.cal {
+  --cel: 44px;
+}
+
+.cal__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* Presença sem competir com o título da tela: serifada, mas dois pontos
+ * abaixo dele. */
+.cal__nome {
+  flex: 1 1 auto;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* Setas com contorno próprio: um chevron solto no creme não parecia botão. */
+.cal__nav {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper-2);
+  color: var(--marca);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.cal__nav:hover {
+  background: var(--soft);
+  border-color: var(--line-2);
+}
+
+.cal__nav svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cal__nav--frente svg {
+  transform: scaleX(-1);
+}
+
+.cal__nav[disabled] {
+  color: var(--line-2);
+  background: transparent;
+  cursor: default;
+}
+
+.cal__semana,
+.cal__grade {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.cal__semana span {
+  padding-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  text-align: center;
+}
+
+/*
+ * Seis linhas sempre, mesmo quando o mês cabe em cinco: trocar de mês não pode
+ * mexer na altura da página e empurrar os horários para cima e para baixo.
+ */
+.cal__grade {
+  grid-auto-rows: var(--cel);
+  .cal__grade {
+  grid-auto-rows: var(--cel);
+  }
+}
+
+.cal__dia {
+  -webkit-appearance: none;
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--cel);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--texto);
+  font-family: var(--sans);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+/* O disco mora num `span` interno: proporção e altura no próprio botão fazem
+ * o navegador encolher a largura dele, e a grade sai torta. */
+.cal__num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.cal__dia:hover .cal__num {
+  background: var(--soft);
+}
+
+.cal__dia:focus-visible {
+  outline: none;
+}
+
+.cal__dia:focus-visible .cal__num {
+  outline: 2px solid var(--marca);
+  outline-offset: 1px;
+}
+
+/*
+ * Os quatro estados não se distinguem só por cor:
+ *   hoje         contorno fino
+ *   escolhido    disco escuro, número claro
+ *   sem mesas    número riscado, e o dia continua clicável
+ *   fechado      apagado e sem toque (igual ao passado, que é a mesma coisa)
+ */
+.cal__dia[data-hoje='true'] .cal__num {
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+  font-weight: 600;
+}
+
+.cal__dia[data-estado='lotado'] .cal__num {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.cal__dia[disabled] {
+  cursor: default;
+}
+
+.cal__dia[disabled] .cal__num {
+  color: var(--muted);
+  opacity: 0.34;
+}
+
+.cal__dia[disabled]:hover .cal__num {
+  background: none;
+}
+
+.cal__dia[aria-pressed='true'] .cal__num {
+  background: var(--ink);
+  color: var(--paper-2);
+  box-shadow: none;
+}
+
+.cal__dia[aria-pressed='true'][data-estado='lotado'] .cal__num {
+  color: var(--muted-dark);
+}
+
+/* Uma marca discreta que ninguém decifra não é discreta, é muda. */
+.cal__legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.cal__leg {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cal__leg::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.cal__leg--hoje::before {
+  box-shadow: inset 0 0 0 1.5px var(--line-2);
+}
+
+.cal__leg--lotado::before {
+  height: 0;
+  border-radius: 0;
+  border-top: 1px solid var(--muted);
+}
+
+.cal__leg--fora::before {
+  background: var(--line-2);
+  opacity: 0.5;
+}
+
+/* --- Horários do dia escolhido -------------------------------------------- */
+
+.disp__horas {
+  margin-top: 30px;
+}
+
+.horas__titulo {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.horas__espera {
+  margin-top: 6px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 40ch;
+}
+
+.turno {
+  margin-top: 18px;
+}
+
+.turno__nome {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pilulas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Pastilha, como o resto dos controles da interface. A escolha é preenchimento
+ * escuro mais um visto — antes era um fio embaixo do número, que num celular
+ * se confundia com o sublinhado de um link. */
+.pilula {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 15px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: var(--paper-2);
+  color: var(--texto);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.pilula:hover {
+  border-color: var(--marca);
+  color: var(--marca);
+}
+
+.hora[aria-pressed='true'],
+.hora[aria-pressed='true']:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper-2);
+  font-weight: 600;
+}
+
+.hora__ok {
+  display: inline-flex;
+  width: 13px;
+  height: 13px;
+}
+
+.hora__ok svg {
+  width: 100%;
+  height: 100%;
+  stroke-width: 2.6;
+}
+
+.sem-horario {
+  margin-top: 14px;
+}
+
+.sem-horario p {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 40ch;
+}
+
+.sem-horario__rot {
+  margin-top: 16px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sem-horario__rot a {
+  color: var(--marca);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.pilula--alt {
+  font-weight: 500;
+}
+
+/* --- Campos --------------------------------------------------------------- */
+
+/* A mesa já escolhida vira uma linha só, com "Alterar" ao lado — não um cartão
+ * repetindo em três linhas o que acabou de ser decidido. */
+.mesa-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 26px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper-2);
+}
+
+.mesa-linha__val {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.mesa-linha__acao {
+  flex: 0 0 auto;
+  padding: 4px 0;
+  color: var(--marca);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.campo {
+  margin-bottom: 22px;
+}
+
+.campo > label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 9px;
+}
+
+.campo__ajuda {
+  font-size: 13px;
+  color: var(--muted);
+  margin: -4px 0 10px;
+}
+
+.campo__ajuda a {
+  color: var(--marca);
+  text-underline-offset: 3px;
+}
+
+.rotulo__opcional {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* Campos com fio embaixo, e não caixa: é a mesma língua das linhas do resumo.
+ * A área de toque continua a de sempre — o que sumiu foi o retângulo, não o
+ * alvo. */
+.entrada {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  min-height: 50px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 2px solid var(--line-2);
+  border-radius: 0;
+  background: none;
+  font-family: var(--sans);
+  font-size: 16px;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+textarea.entrada {
+  min-height: 84px;
+  padding: 8px 2px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+select.entrada {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235e432f' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 2px center;
+  background-size: 18px;
+  padding-right: 30px;
+}
+
+/* O fio de baixo troca de cor no foco: mudança grande o bastante para valer
+ * como indicador, sem o anel duplo que um `outline` somaria por cima. */
+.entrada:focus {
+  outline: none;
+  border-bottom-color: var(--marca);
+}
+
+.entrada[aria-invalid='true'] {
+  border-bottom-color: #9d3427;
+}
+
+.erro {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 7px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #9d3427;
+}
+
+.erro::before {
+  content: '!';
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border-radius: 50%;
+  background: #9d3427;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+/* --- Resumo e avanço ------------------------------------------------------ */
+
+/* Resumo das escolhas na confirmação. Sem caixa: fios e espaço bastam. */
+.resumo {
+  border-top: 1px solid var(--line);
+}
+
+.resumo__linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+}
+
+.resumo--nu {
+  border-top: 0;
+}
+
+.resumo--nu .resumo__linha:last-child {
+  border-bottom: 0;
+}
+
+.resumo__rot {
+  color: var(--muted);
+  font-size: 14px;
+  flex: 0 0 auto;
+}
+
+.resumo__val {
+  font-weight: 600;
+  text-align: right;
+}
+
+/*
+ * Barra de avanço. Só existe quando há o que avançar — sem horário escolhido
+ * ela seria um botão morto ocupando o pé da tela —, e a `.reserva--pe` reserva
+ * o espaço embaixo do conteúdo para ela não cobrir nada.
+ */
+.pe-fixo {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  padding: 12px max(20px, calc((100vw - var(--wrap)) / 2))
+    calc(14px + env(safe-area-inset-bottom));
+  background: linear-gradient(
+    to bottom,
+    rgba(247, 243, 234, 0) 0%,
+    var(--paper) 22%
+  );
+}
+
+.pe-fixo__mini {
+  margin-bottom: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto);
+}
+
+.pe-fixo__acoes {
+  display: flex;
+  gap: 10px;
+}
+
+.pe-fixo__acoes .btn {
+  flex: 1 1 auto;
+}
+
+.pe-fixo__acoes .btn--vazado {
+  flex: 0 0 auto;
+  background: var(--paper-2);
+}
+
+/* Confirmação */
+.confirmado {
+  padding: 28px 0 60px;
+  text-align: center;
+}
+
+.confirmado__marca {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  border: 1px solid var(--ouro);
+  display: grid;
+  place-items: center;
+  color: var(--marca);
+}
+
+.confirmado__marca svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.confirmado__titulo {
+  font-family: var(--serif);
+  font-size: 29px;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.confirmado__sub {
+  margin: 10px auto 26px;
+  font-size: 15px;
+  color: var(--muted);
+  max-width: 34ch;
+}
+
+.cartao {
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  background: var(--paper-2);
+  padding: 24px 20px;
+  text-align: left;
+  box-shadow: var(--sombra-card);
+}
+
+.cartao__destaque {
+  text-align: center;
+  padding-bottom: 18px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.cartao__data {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.cartao__hora {
+  font-family: var(--serif);
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin: 4px 0;
+}
+
+.cartao__pessoas {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.confirmado__acoes {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+/* --- Página de visita ----------------------------------------------------- */
+
+.visita {
+  padding: 26px 0 60px;
+}
+
+.visita__titulo {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  margin-bottom: 6px;
+}
+
+.visita__sub {
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 26px;
+}
+
+.bloco + .bloco {
+  margin-top: 34px;
+}
+
+.bloco__nome {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--marca);
+  margin-bottom: 12px;
+}
+
+.visita__texto {
+  margin-bottom: 16px;
+}
+
+.visita__foto {
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--soft);
+  margin-bottom: 26px;
+}
+
+.visita__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Tablet --------------------------------------------------------------- */
+
+@media (min-width: 700px) {
+  :root {
+    --wrap: min(100% - 72px, 720px);
+  }
+
+  .capa__corpo {
+    padding-bottom: calc(46px + env(safe-area-inset-bottom));
+  }
+
+  .capa__acoes {
+    grid-auto-flow: column;
+    justify-content: center;
+  }
+
+  .capa__acoes .btn {
+    min-width: 220px;
+  }
+
+  .tira {
+    grid-auto-columns: 38%;
+  }
+
+  .servico-capa {
+    height: calc(clamp(196px, 30vw, 250px) + 26px);
+  }
+
+  .servico-capa--compacta {
+    height: clamp(160px, 23vw, 200px);
+  }
+
+  .sheet {
+    left: 50%;
+    bottom: auto;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(560px, calc(100% - 64px));
+    max-height: min(86svh, 760px);
+    border-radius: 12px;
+    animation: entra 240ms var(--ease);
+  }
+
+  @keyframes entra {
+    from {
+      transform: translate(-50%, calc(-50% + 10px));
+      opacity: 0;
+    }
+  }
+
+  .sheet__pega {
+    display: none;
+  }
+
+  .galeria {
+    max-height: min(42svh, 340px);
+  }
+
+  .busca {
+    inset: 0;
+    padding: 0;
+  }
+}
+
+/* --- Desktop -------------------------------------------------------------- */
+
+@media (min-width: 1000px) {
+  :root {
+    --wrap: min(100% - 96px, 1080px);
+    --barra: 62px;
+  }
+
+  /* No desktop o bloco de abertura respira mais; as pastilhas já têm a
+   * largura do próprio texto em qualquer tela. */
+  .carta-topo {
+    padding-top: 26px;
+    gap: 11px;
+  }
+
+  .aba {
+    min-height: 34px;
+    padding: 0 26px;
+    font-size: 14.5px;
+  }
+
+  /* A faixa não cresce junto com o monitor: acima de ~1100px ela vira uma
+   * tarja de altura fixa, senão o cardápio começa abaixo da dobra. */
+  /* Altura fixa, sem `aspect-ratio`: combinado com `max-height`, o navegador
+   * encolhia a LARGURA da faixa para preservar a proporção e sobrava papel à
+   * direita da foto acima de ~1040 px. */
+  .servico-capa {
+    height: calc(clamp(210px, 22vw, 280px) + 26px);
+  }
+
+  .servico-capa__nome {
+    font-size: 68px;
+  }
+
+  .servico-capa__titulo {
+    padding-bottom: 22px;
+  }
+
+  .servico-capa--compacta {
+    height: clamp(170px, 17vw, 220px);
+  }
+
+  /* Duas colunas: a nota do serviço acompanha a leitura em vez de empurrar
+   * o cardápio para baixo. */
+  /* `minmax(0, 1fr)` e nao `1fr`: o minimo automatico de um item de grade e o
+   * tamanho min-content do conteudo, e basta um trilho de rolagem horizontal
+   * dentro da coluna para ela estourar a pagina. */
+  .cardapio__corpo {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 56px;
+    align-items: start;
+  }
+
+  .cardapio__lateral {
+    position: sticky;
+    top: calc(var(--barra) + 32px);
+  }
+
+  .nota-servico {
+    padding-top: 30px;
+  }
+
+  .nota-servico__texto {
+    max-width: none;
+  }
+
+  .categoria__cabeca {
+    padding: 34px 0 14px;
+  }
+
+  .categoria__titulo {
+    font-size: 21px;
+  }
+
+  /* Duas colunas de pratos: numa tela larga, coluna única deixaria metade da
+   * página vazia e obrigaria a rolar por uma lista muito longa. */
+  .pratos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 44px;
+  }
+
+  /* Em duas colunas a linha recuada não alinha entre colunas: aqui o traço
+   * volta a atravessar o item inteiro. */
+  .prato::after {
+    left: 0;
+  }
+
+  /*
+   * Em duas colunas, quem fecha a lista é o último item de CADA coluna — e o
+   * penúltimo é sempre um deles, seja a contagem par ou ímpar. A regra antiga
+   * só cobria a contagem par, e uma categoria com três pratos ficava com um
+   * traço solto embaixo do segundo, sem nada abaixo dele.
+   */
+  .prato:nth-last-child(2)::after {
+    display: none;
+  }
+
+  .prato__thumb {
+    width: 104px;
+  }
+
+  .prato__nome {
+    font-size: 19px;
+  }
+
+  /* Numa tela alta e larga a marca sobe para o centro óptico; o convite a
+   * rolar fica ancorado no pé. */
+  .capa__corpo {
+    justify-content: center;
+    gap: 36px;
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+
+  .capa__abaixo {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(30px + env(safe-area-inset-bottom));
+  }
+
+  .capa .marca {
+    width: min(430px, 34vw);
+  }
+
+  .capa__linha {
+    font-size: 22px;
+    max-width: 28ch;
+  }
+
+  .pratico__grade {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 56px;
+    align-items: start;
+  }
+
+  .tira {
+    grid-auto-columns: 24%;
+  }
+
+  /* A reserva não usa os 1080 px do `--wrap`: uma linha de campo com 1000 px
+   * de largura não se lê, se percorre. */
+  #form-reserva {
+    max-width: 880px;
+  }
+
+  /* Calendário e horários lado a lado: escolher o dia deixa de empurrar a
+   * página, porque a resposta já está na altura do olho. */
+  .disp {
+    display: grid;
+    grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+    gap: 52px;
+    align-items: start;
+  }
+
+  .disp__horas {
+    margin-top: 0;
+    padding-top: 2px;
+  }
+
+  .cal {
+    --cel: 46px;
+  }
+
+  .reserva__titulo {
+    font-size: 33px;
+  }
+
+  .campo,
+  .mesa-linha,
+  .reserva__demo,
+  .horas__espera {
+    max-width: 560px;
+  }
+
+  /* Pessoas vale para as duas colunas, mas espalhada em 880 px o rótulo e o
+   * controle deixam de parecer a mesma coisa: fica na largura do calendário,
+   * que é o que ela governa mais de perto. */
+  .pessoas,
+  .pessoas__nota {
+    max-width: 420px;
+  }
+
+  /* No desktop a barra de avanço volta ao fluxo: não há polegar a alcançar. */
+  .pe-fixo {
+    position: static;
+    padding: 0;
+    background: none;
+    margin-top: 32px;
+  }
+
+  .pe-fixo__acoes {
+    justify-content: flex-start;
+  }
+
+  .pe-fixo__acoes .btn {
+    flex: 0 0 auto;
+    min-width: 200px;
+  }
+
+  .reserva,
+  .reserva--pe {
+    padding-bottom: 80px;
+  }
+
+  .visita__grade {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 56px;
+    align-items: start;
+  }
+
+  /* Um 3:2 de mil pixels de largura viraria uma foto de setecentos de altura:
+   * na tela larga a abertura vira faixa. */
+  .visita__foto {
+    aspect-ratio: 21 / 8;
+    max-height: 320px;
+  }
+
+  .confirmado {
+    padding-top: 56px;
+  }
+
+  .cartao {
+    max-width: 460px;
+    margin-inline: auto;
+  }
+
+  .confirmado__acoes {
+    grid-auto-flow: column;
+    justify-content: center;
+  }
+
+  .confirmado__acoes .btn {
+    min-width: 200px;
+  }
+}
+
+
+/* Harmonização do topo — abas nas duas refeições.
+ * Versão anterior navegável em versoes/harmonia-v1/. */
+.barra--carta,
+.cardapio {
+  --barra: 48px;
+}
+
+.barra--carta {
+  padding-inline: calc((100% - var(--wrap)) / 2);
+}
+
+.cardapio .servico-capa__nome {
+  font-size: clamp(36px, 11vw, 54px);
+}
+
+.cardapio .servico-capa__titulo {
+  padding-bottom: 18px;
+}
+
+.cardapio .servico-capa__quando {
+  margin-top: 2px;
+}
+
+.cardapio .carta-topo {
+  padding: 12px 0 0;
+  min-height: 44px;
+  justify-content: center;
+}
+
+.cartas--abas {
+  gap: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.cartas--abas .aba {
+  min-height: 32px;
+  line-height: 22px;
+  padding: 0 2px;
+  border-radius: 0;
+  border-bottom: 1px solid transparent;
+  font-size: 15px;
+}
+
+.cartas--abas .aba::before {
+  /* 44px de toque, mesmo com a aba visual mais fina. */
+  inset: -6px 0;
+}
+
+.cartas--abas .aba[aria-current='page'] {
+  background: transparent;
+  border-bottom-color: var(--marca);
+  color: var(--marca);
+}
+
+.cardapio .nota-servico {
+  padding: 16px 0 8px;
+}
+
+.cardapio .nota-servico__preco {
+  font-size: 24px;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.cardapio .nota-servico__texto {
+  font-style: normal;
+}
+
+.nota-servico__observacao {
+  margin-top: 6px;
+  font-family: var(--serif);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.cardapio .categoria + .categoria {
+  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+@media (min-width: 1000px) {
+  .barra--carta,
+  .cardapio {
+    --barra: 56px;
+  }
+
+  .cardapio .servico-capa__nome {
+    font-size: 58px;
+  }
+
+  .cardapio .servico-capa__titulo {
+    padding-bottom: 22px;
+  }
+
+  .cardapio .carta-topo {
+    padding-top: 18px;
+  }
+
+  .cardapio .nota-servico {
+    padding-top: 30px;
+  }
+}
+
+/* Aproxima o primeiro prato do título, sem acrescentar divisórias. */
+.cardapio .pratos > .prato:first-child {
+  padding-top: 8px;
+}
+
+@media (max-width: 999px) {
+  .cardapio .categoria:first-child {
+    margin-top: 2px;
+  }
+}
+
+@media (min-width: 1000px) {
+  .cardapio .pratos > .prato:nth-child(2) {
+    padding-top: 8px;
+  }
+}
+
+
+/* --- A passagem da portada para a leitura --------------------------------
+ *
+ * Antes, a saída da carta era um degrau só: a foto e o título subiam com a
+ * página, a marca ficava imóvel no alto — como se fosse barra desde sempre — e
+ * a chapa escura aparecia de uma vez quando a foto acabava. Três velocidades
+ * diferentes na mesma passagem, e a do meio era zero.
+ *
+ * Agora há um número contínuo, `--portada-p`, de 0 (portada inteira) a 1
+ * (portada fora), escrito pelo script a cada quadro de rolagem. Tudo aqui é
+ * `calc()` em cima dele, e nada aqui muda a ALTURA de coisa alguma: encolher a
+ * portada durante a rolagem puxaria o primeiro prato para cima e daria o
+ * tranco que se quer evitar. A rolagem conduz a saída; isto anima só posição e
+ * opacidade.
+ *
+ * As camadas, da mais funda para a mais próxima:
+ *
+ *   fotografia  fica para trás da página (translação a favor da rolagem)
+ *   título      sai um pouco à frente e apaga
+ *   marca       sai com a fotografia e apaga
+ *   chapa       entra no fim, curta, e devolve a marca no mesmo x
+ *
+ * A marca nunca se desloca na horizontal — sai e volta na coluna do conteúdo,
+ * onde a barra já a punha —, então a volta não tem salto: é a mesma palavra
+ * reacendendo em cima da chapa.
+ *
+ * As opacidades passam de 1 e de 0 de propósito: a propriedade corta sozinha,
+ * e as rampas com folga fazem o texto ficar cheio no começo do movimento e
+ * chegar apagado ANTES do fim, em vez de desbotar o percurso inteiro.
+ *
+ * Nada disto existe para quem pediu menos movimento: sem a classe
+ * `portada-viva` — que o script só põe quando o movimento é permitido — a
+ * carta volta ao degrau simples, com a chapa entrando pela transição de
+ * `.barra--carta.is-rolada`.
+ */
+.portada-viva {
+  /* Percursos da saída inteira. São pequenos: a passagem tem de ser sentida
+   * como profundidade, não vista como animação. */
+  --portada-foto: 34px;
+  --portada-titulo: 14px;
+  --portada-marca: 22px;
+}
+
+/* A fotografia sobe mais devagar que a página. A translação é PARA BAIXO,
+ * contra a rolagem, e some no corte da portada (`overflow: hidden`) — a moldura
+ * fica parada, a imagem é que desliza dentro dela. O véu e o título não
+ * acompanham: é a foto que fica para trás, e é disso que vem a profundidade. */
+.portada-viva .servico-capa img,
+.portada-viva .servico-capa__video {
+  transform: translate3d(0, calc(var(--portada-p, 0) * var(--portada-foto)), 0);
+  will-change: transform;
+}
+
+/* "MENU" e o horário saem como um objeto só — o bloco inteiro se desloca e
+ * apaga junto. Animar as duas linhas em tempos diferentes desmancharia o par,
+ * que é justamente o que o título tem de mais firme. */
+.portada-viva .servico-capa__titulo {
+  transform: translate3d(0, calc(var(--portada-p, 0) * var(--portada-titulo) * -1), 0);
+  /* Cheio até 45% do percurso e apagado aos 92%: some quando ENTRA na barra,
+   * não antes. Começar o fade com a portada ainda inteira na tela não parece
+   * saída, parece a tela escurecendo. */
+  opacity: calc(1.96 - var(--portada-p, 0) * 2.13);
+  will-change: transform, opacity;
+}
+
+/*
+ * A marca faz o caminho inteiro: sai com a fotografia e volta na chapa.
+ *
+ * Ida e volta são duas rampas somadas, e não uma transição no degrau
+ * `is-rolada`. O motivo é a subida: com a volta presa à classe, quem rolasse de
+ * volta para o alto veria a marca APAGAR de uma vez ao cruzar a dobra, que é o
+ * mesmo salto seco de antes, só que ao contrário. Amarrada à rolagem, ela
+ * desce de volta ao lugar no mesmo gesto que traz a chapa — e nos dois
+ * sentidos.
+ *
+ * As duas rampas são frações do próprio percurso (`--portada-marca`), e não
+ * pixels soltos: assim as duas terminam exatamente no mesmo valor, a soma dá
+ * zero em p = 1, e o repouso da barra é idêntico ao que o CSS de sempre
+ * desenha. Nenhum resto de deslocamento sob a chapa, em nenhuma largura.
+ *
+ *   0,06 → 0,88   sobe e apaga junto com a foto
+ *   0,88 → 0,90   ausente (a chapa está entrando)
+ *   0,90 → 1,00   desce e reacende, na mesma coluna de sempre
+ *
+ * A coluna nunca muda: só há deslocamento vertical, então a volta não tem para
+ * onde saltar na horizontal.
+ */
+.portada-viva .barra--carta .barra__marca {
+  --marca-sai: clamp(
+    0px,
+    calc((var(--portada-p, 0) - 0.06) * 1.23 * var(--portada-marca)),
+    var(--portada-marca)
+  );
+  --marca-volta: clamp(
+    0px,
+    calc((var(--portada-p, 0) - 0.9) * 10 * var(--portada-marca)),
+    var(--portada-marca)
+  );
+  transform: translate3d(0, calc(var(--marca-volta) - var(--marca-sai)), 0);
+  opacity: max(
+    calc(1.51 - var(--portada-p, 0) * 1.71),
+    calc((var(--portada-p, 0) - 0.9) * 10)
+  );
+}
+
+/* A chapa deixa de ser um fundo que troca no degrau e vira uma camada com
+ * opacidade própria, atrás do conteúdo da barra (`z-index: -1` dentro da
+ * própria barra, que já é contexto de empilhamento pelo `z-index: 40`). Assim
+ * ela pode ENTRAR durante o fim da saída, e não depois dela. */
+.portada-viva .barra--carta,
+.portada-viva .barra--carta.is-rolada {
+  background: transparent;
+  border-bottom-color: transparent;
+  transition: none;
+}
+
+.portada-viva .barra--carta::before {
+  content: '';
+  position: absolute;
+  /* 1px a mais embaixo para cobrir a borda transparente da barra, que fica
+   * fora da caixa de recheio. O filete escuro é desta camada. */
+  inset: 0 0 -1px;
+  z-index: -1;
+  background: var(--ink);
+  border-bottom: 1px solid var(--line-dark);
+  /* Nos últimos ~28% do percurso, e completa pouco antes do fim: a chapa está
+   * inteira quando a foto acaba de passar, não um tempo depois. O padrão 1 é
+   * para o caso de a variável faltar — falta escura é discreta; falta clara
+   * seria a marca sumindo no creme. */
+  opacity: calc((var(--portada-p, 1) - 0.72) * 3.8);
+}
+
+@media (min-width: 1000px) {
+  /* Tela maior, portada maior, percurso maior — a mesma proporção de gesto. */
+  .portada-viva {
+    --portada-foto: 46px;
+    --portada-titulo: 18px;
+    --portada-marca: 26px;
+  }
+}

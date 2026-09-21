@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+  <!--
+    Segunda porta de entrada do MESMO aplicativo React.
+
+    O site e uma SPA: um unico `index.html` responde por todas as rotas. Isso
+    basta para o visitante, mas nao para os robos de previa do WhatsApp, do
+    Instagram e dos agregadores de imprensa — eles leem so o HTML servido e
+    nunca executam o JavaScript. Com uma porta so, o link do jantar apareceria
+    no WhatsApp com o cartao do emporio, ou sem cartao nenhum.
+
+    Entao `/rustichella` recebe um HTML proprio, com os metadados do evento,
+    que carrega exatamente o mesmo `main.jsx`. O React le a URL, cai na rota do
+    evento e renderiza a landing normalmente — o visitante nao percebe
+    diferenca, e o robo passa a ler o titulo, a descricao e a imagem certos.
+
+    Ver `vite.config.js` (as duas entradas do build) e `vercel.json` (a
+    reescrita que aponta /rustichella para este arquivo).
+  -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#161514" />
+    <meta
+      name="description"
+      content="Bistrô Nicolini & Rustichella d’Abruzzo: cinco tempos servidos em três noites, 8, 9 e 10 de outubro, em Caxias do Sul."
+    />
+
+    <!-- CONFIRMAR: dominio de producao, igual ao de `index.html`. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Nicolini" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta
+      property="og:title"
+      content="Bistrô Nicolini &amp; Rustichella d’Abruzzo — 8, 9 e 10 de outubro"
+    />
+    <meta
+      property="og:description"
+      content="A casa de Abruzzo desembarca em Caxias do Sul: cinco tempos, três noites, lugares limitados."
+    />
+    <meta property="og:url" content="https://www.queijarianicolini.com.br/rustichella" />
+    <meta
+      property="og:image"
+      content="https://www.queijarianicolini.com.br/media/rustichella/og-rustichella.jpg"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <title>Bistrô Nicolini &amp; Rustichella d’Abruzzo</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

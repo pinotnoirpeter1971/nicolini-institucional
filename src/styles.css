@@ -1,0 +1,2732 @@
+:root {
+  --ink: #161514;
+  --ink-soft: #24211e;
+  --paper: #f8f7f4;
+  --soft: #ebe8e1;
+  --white: #ffffff;
+  --red: #ad3c33;
+  --red-deep: #8d3028;
+  --red-tint: #dc7b70;
+  --red-cream: #f6d7d1;
+  /* Cor de marca em uma camada propria: tudo que e "a cor da casa" aponta para
+   * `--marca`, nunca para `--red` direto. E o que permite uma pagina inteira
+   * trocar de familia sem tocar em componente nenhum — ver `.tema--bistro`. */
+  --marca: var(--red);
+  --marca-deep: var(--red-deep);
+  --marca-tint: var(--red-tint);
+  --marca-cream: var(--red-cream);
+  --line: #ded9d0;
+  --line-dark: #3b3833;
+  --muted: #736d64;
+  --muted-dark: #aaa297;
+  --serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --sans: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  --logo: 'Times New Roman', Times, Georgia, serif;
+  --wrap: min(1240px, calc(100% - 56px));
+  /* Faixa mais larga que a medida de texto, para blocos que sao sobretudo
+   * fotografia — hoje so o trilho dos balcoes.
+   *
+   * O `max()` e o que impede a faixa de encostar na borda: ate ~1440px ela
+   * simplesmente acompanha o wrap padrao, e so abre mais larga a partir dai,
+   * quando existe folga de sobra. Sem ele a margem lateral virava 28px numa
+   * tela de 1440 enquanto o resto da pagina mantinha 100px. */
+  --wrap-wide: max(var(--wrap), min(1560px, calc(100% - 200px)));
+  /* E a mais estreita, para a abertura: margens maiores fazem "A casa" abrir
+   * intima e a faixa dos balcoes abrir larga logo depois. */
+  --wrap-casa: min(1080px, calc(100% - 128px));
+  --gutter: max(28px, calc((100vw - min(1240px, 100vw - 56px)) / 2));
+  --header-h: 92px;
+  --header-h-solid: 72px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --bg: var(--paper);
+  --fg: var(--ink);
+  --tint: var(--marca);
+  --dim: var(--muted);
+  --hair: var(--line);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: clip;
+  color: var(--ink);
+  background: var(--paper);
+  font: 400 16px/1.65 var(--sans);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  color: var(--white);
+  background: var(--marca);
+}
+
+:focus-visible {
+  outline: 2px solid var(--marca);
+  outline-offset: 4px;
+}
+
+.wrap {
+  width: var(--wrap);
+  margin-inline: auto;
+}
+
+section[id] {
+  scroll-margin-top: calc(var(--header-h-solid) + 18px);
+}
+
+.band {
+  color: var(--fg);
+  background: var(--bg);
+}
+
+.band--paper {
+  --bg: var(--paper);
+  --fg: var(--ink);
+  --tint: var(--marca);
+  --dim: var(--muted);
+  --hair: var(--line);
+}
+
+.band--soft {
+  --bg: var(--soft);
+  --fg: var(--ink);
+  --tint: var(--marca);
+  --dim: #706a61;
+  --hair: #d8d2c8;
+}
+
+.band--ink {
+  --bg: var(--ink);
+  --fg: var(--paper);
+  --tint: var(--marca-tint);
+  --dim: var(--muted-dark);
+  --hair: var(--line-dark);
+}
+
+h1,
+h2,
+h3,
+p,
+figure {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--serif);
+  font-weight: 500;
+  letter-spacing: -0.052em;
+  line-height: 0.99;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(3.45rem, 6.65vw, 6.65rem);
+}
+
+h2 {
+  font-size: clamp(2.75rem, 4.75vw, 5.1rem);
+}
+
+h3 {
+  font-size: clamp(1.65rem, 2.25vw, 2.35rem);
+  line-height: 1.06;
+}
+
+em {
+  color: var(--tint);
+  font-style: italic;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  color: var(--tint);
+  font-size: 0.69rem;
+  font-weight: 650;
+  letter-spacing: 0.15em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.prose {
+  display: grid;
+  gap: 1.12rem;
+  max-width: 34rem;
+  color: var(--dim);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.lede {
+  max-width: 37rem;
+  font-family: var(--serif);
+  font-size: clamp(1.25rem, 1.9vw, 1.55rem);
+  letter-spacing: -0.02em;
+  line-height: 1.45;
+}
+
+.link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 4px;
+  font-size: 0.86rem;
+  font-weight: 550;
+}
+
+.link::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: currentColor;
+  content: '';
+  transform-origin: left;
+  transition: transform 320ms var(--ease);
+}
+
+.link:hover::after {
+  transform: scaleX(0);
+  transform-origin: right;
+}
+
+.link svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 280ms var(--ease);
+}
+
+.link:hover svg {
+  transform: translateX(3px);
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+}
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 720ms var(--ease), transform 720ms var(--ease);
+  transition-delay: var(--d, 0ms);
+}
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Header ----------------------------------------------------------------- */
+
+.header {
+  --header-fg: var(--white);
+  --header-tint: rgba(255, 255, 255, 0.86);
+  position: fixed;
+  z-index: 60;
+  inset: 0 0 auto;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  color: var(--header-fg);
+  transition: height 280ms var(--ease), color 280ms var(--ease),
+    box-shadow 280ms var(--ease);
+}
+
+.header::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: var(--white);
+  content: '';
+  opacity: 0;
+  transition: opacity 280ms var(--ease);
+}
+
+.header.is-solid,
+.header.is-menu-open {
+  --header-fg: var(--ink);
+  --header-tint: var(--marca);
+  height: var(--header-h-solid);
+  box-shadow: 0 9px 30px rgba(25, 22, 18, 0.055);
+}
+
+.header.is-menu-open {
+  height: var(--header-h);
+}
+
+.header.is-solid::before,
+.header.is-menu-open::before {
+  opacity: 1;
+}
+
+.header__inner {
+  width: var(--wrap);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  margin-inline: auto;
+}
+
+.logo {
+  margin-right: -0.21em;
+  color: inherit;
+  font-family: var(--logo);
+  font-size: 25px;
+  font-weight: 400;
+  letter-spacing: 0.21em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(22px, 2.7vw, 38px);
+}
+
+.nav a {
+  position: relative;
+  padding: 5px 0;
+  color: inherit;
+  font-size: 0.82rem;
+  font-weight: 550;
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+  transition: color 240ms var(--ease);
+}
+
+.nav a::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: currentColor;
+  content: '';
+  opacity: 0;
+  transform: scaleX(0.55);
+  transform-origin: right;
+  transition: opacity 240ms var(--ease), transform 320ms var(--ease);
+}
+
+.nav a:hover,
+.nav a.is-active {
+  color: var(--header-tint);
+}
+
+.nav a:hover::after,
+.nav a.is-active::after {
+  opacity: 1;
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* O fio separa ancoras da home (esquerda) de paginas proprias (direita): sao
+ * dois tipos de link na mesma linha, e sem a pausa "Bistro" parece mais uma
+ * secao da home. */
+.nav__fio {
+  width: 1px;
+  height: 15px;
+  background: currentColor;
+  opacity: 0.28;
+}
+
+.nav-toggle {
+  display: none;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 1px;
+  margin: 5px auto;
+  background: currentColor;
+  transition: transform 240ms var(--ease);
+}
+
+.header.is-menu-open .nav-toggle span:first-child {
+  transform: translateY(3px) rotate(45deg);
+}
+
+.header.is-menu-open .nav-toggle span:last-child {
+  transform: translateY(-3px) rotate(-45deg);
+}
+
+/* Hero ------------------------------------------------------------------- */
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  color: var(--white);
+  background: var(--ink);
+  isolation: isolate;
+}
+
+.hero__media {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+}
+
+.hero__media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 45%;
+  filter: saturate(0.82) contrast(1.03) brightness(0.86);
+}
+
+.hero__scrim {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(
+      to bottom,
+      rgba(12, 11, 10, 0.58) 0%,
+      rgba(12, 11, 10, 0.16) 27%,
+      rgba(12, 11, 10, 0) 48%
+    ),
+    linear-gradient(
+      to top,
+      rgba(12, 11, 10, 0.88) 0%,
+      rgba(12, 11, 10, 0.54) 28%,
+      rgba(12, 11, 10, 0.08) 58%,
+      rgba(12, 11, 10, 0) 78%
+    );
+}
+
+.hero__inner {
+  width: var(--wrap);
+  margin-inline: auto;
+  padding-bottom: clamp(72px, 9vh, 106px);
+}
+
+.hero h1 {
+  max-width: 20ch;
+  color: var(--white);
+}
+
+.hero h1 em {
+  color: var(--white);
+}
+
+.hero__sub {
+  max-width: 38ch;
+  margin-top: 24px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: clamp(0.98rem, 1.15vw, 1.08rem);
+  line-height: 1.65;
+}
+
+.hero__reveal {
+  animation: hero-in 820ms var(--ease) both;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Shared section rhythm -------------------------------------------------- */
+
+.section {
+  padding: clamp(78px, 9vw, 128px) 0;
+}
+
+.section--casa {
+  padding-bottom: clamp(70px, 8vw, 112px);
+}
+
+.secao__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(260px, 0.58fr);
+  align-items: end;
+  gap: clamp(32px, 7vw, 112px);
+  margin-bottom: clamp(38px, 5vw, 62px);
+}
+
+.secao__head h2 {
+  max-width: 11ch;
+}
+
+.secao__head-nota {
+  max-width: 34ch;
+  color: var(--dim);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+/* A casa ---------------------------------------------------------------- */
+
+.casa {
+  width: var(--wrap-casa);
+  display: grid;
+  /* Colunas iguais: a foto e o texto viram dois quadrados do mesmo tamanho,
+   * alinhados em cima e embaixo. A legenda fica de fora, por baixo. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(44px, 6vw, 96px);
+  margin-inline: auto;
+}
+
+.casa__media {
+  min-width: 0;
+}
+
+/* A caixa invisivel: mesmo quadrado da foto, com o texto centrado dentro.
+ * Como item de grid ela mantem `min-height: auto`, entao se o texto passar do
+ * quadrado a caixa cresce em vez de vazar. */
+.casa__copy {
+  aspect-ratio: 1;
+  display: grid;
+  align-content: center;
+  padding: 0;
+}
+
+.casa__copy h2 {
+  max-width: 10ch;
+  margin-bottom: 28px;
+  font-size: clamp(2.7rem, 4.35vw, 4.65rem);
+}
+
+/* Fotos da casa ---------------------------------------------------------- */
+
+.casa__figure {
+  min-width: 0;
+}
+
+.casa-fotos__quadro {
+  position: relative;
+}
+
+.casa-fotos {
+  display: flex;
+  /* Quadrado: meio termo entre o formato deitado antigo e o 4:5. Os arquivos
+   * da loja sao todos verticais, entao o corte continua sendo so vertical. */
+  aspect-ratio: 1;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.casa-fotos::-webkit-scrollbar {
+  display: none;
+}
+
+.casa-fotos img {
+  flex: 0 0 100%;
+  /* Sem isso o `min-width: auto` do flex usa a proporcao intrinseca da foto
+   * como largura minima, e cada imagem fica de um tamanho conforme carrega. */
+  min-width: 0;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 47%;
+  background: var(--soft);
+  scroll-snap-align: start;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Chevrons: aparecem no hover do quadro e somem na ponta em que nao ha para
+ * onde ir, em vez de ficarem apagados como controle morto. */
+.casa-fotos__seta {
+  position: absolute;
+  top: 50%;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--white);
+  background: rgba(22, 21, 20, 0.42);
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: opacity 240ms var(--ease), background 240ms var(--ease);
+}
+
+.casa-fotos__seta svg {
+  width: 16px;
+  height: 16px;
+}
+
+.casa-fotos__seta--anterior {
+  left: 14px;
+}
+
+.casa-fotos__seta--proxima {
+  right: 14px;
+}
+
+.casa-fotos__quadro:hover .casa-fotos__seta:enabled,
+.casa-fotos__quadro:focus-within .casa-fotos__seta:enabled {
+  opacity: 1;
+}
+
+.casa-fotos__seta:enabled:hover {
+  background: rgba(22, 21, 20, 0.66);
+}
+
+.casa-fotos__seta:disabled {
+  pointer-events: none;
+}
+
+/* Sem hover nao ha como revelar os chevrons, entao no toque eles ficam. */
+@media (hover: none) {
+  .casa-fotos__seta:enabled {
+    opacity: 1;
+  }
+}
+
+.casa-fotos__rodape {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 15px;
+}
+
+.casa-fotos__legenda {
+  color: var(--fg);
+  font-size: 0.83rem;
+  line-height: 1.5;
+}
+
+.casa-fotos__contador {
+  flex: none;
+  color: var(--dim);
+  font-size: 0.72rem;
+  font-weight: 550;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Balcões ---------------------------------------------------------------- */
+
+.section--balcoes {
+  padding-top: clamp(62px, 6.6vw, 96px);
+  padding-bottom: clamp(66px, 7vw, 100px);
+}
+
+/* O head daqui e so eyebrow + titulo, entao nao precisa da grade de duas
+ * colunas do `.secao__head` (que a pagina da Loja ainda usa). Sem a nota, o
+ * titulo tambem pode correr em uma linha so. */
+.section--balcoes .secao__head {
+  display: block;
+  margin-bottom: clamp(30px, 3.4vw, 46px);
+}
+
+.section--balcoes .secao__head h2 {
+  max-width: none;
+}
+
+.rail {
+  width: var(--wrap-wide);
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: clamp(10px, 1.15vw, 17px);
+  margin-inline: auto;
+}
+
+.balcao {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.balcao__foto {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: var(--ink-soft);
+}
+
+.balcao__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.94);
+  transition: transform 800ms var(--ease), filter 400ms var(--ease);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.balcao__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(10, 9, 8, 0.92) 0%,
+    rgba(10, 9, 8, 0.7) 44%,
+    rgba(10, 9, 8, 0.08) 85%
+  );
+  opacity: 0;
+  transition: opacity 380ms var(--ease);
+}
+
+.balcao__destaque {
+  position: absolute;
+  right: 17px;
+  bottom: 18px;
+  left: 17px;
+  color: var(--white);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 360ms var(--ease), transform 420ms var(--ease);
+}
+
+.balcao:hover .balcao__scrim,
+.balcao:focus-visible .balcao__scrim,
+.balcao.is-open .balcao__scrim {
+  opacity: 1;
+}
+
+.balcao:hover .balcao__destaque,
+.balcao:focus-visible .balcao__destaque,
+.balcao.is-open .balcao__destaque {
+  opacity: 1;
+  transform: none;
+}
+
+.balcao:hover .balcao__foto img,
+.balcao.is-open .balcao__foto img {
+  filter: saturate(1.02) brightness(1.04);
+  transform: scale(1.045);
+}
+
+.balcao__nome {
+  display: block;
+  margin-top: 17px;
+  font-family: var(--serif);
+  font-size: clamp(1.25rem, 1.62vw, 1.55rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+  transition: color 260ms var(--ease);
+}
+
+.balcao:hover .balcao__nome,
+.balcao.is-open .balcao__nome {
+  color: var(--tint);
+}
+
+.balcao__texto {
+  display: block;
+  max-width: 25ch;
+  min-height: 2.7em;
+  margin-top: 8px;
+  color: var(--dim);
+  font-size: 0.83rem;
+  line-height: 1.58;
+}
+
+/* Blog ------------------------------------------------------------------- */
+
+.section--blog {
+  padding-bottom: clamp(84px, 9vw, 132px);
+}
+
+/*
+ * Texto de um lado, duas materias simetricas do outro, numa linha so — a
+ * mesma logica do bloco editorial do e-commerce (`.editorial-layout`, la em
+ * apps/ecommerce/src/styles.css), com a proporcao de coluna equivalente
+ * (~0.72fr para o texto) e sem inventar um componente novo: o cartao de
+ * materia continua sendo `.materia`.
+ */
+.blog__layout {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.72fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(28px, 4vw, 56px);
+}
+
+.blog__intro h2 {
+  max-width: 11ch;
+  margin: 16px 0 20px;
+  font-size: clamp(2.15rem, 3vw, 3.1rem);
+}
+
+.blog__intro > p:last-child {
+  max-width: 30ch;
+  color: var(--dim);
+  font-size: 0.93rem;
+  line-height: 1.72;
+}
+
+.materia__figure {
+  aspect-ratio: 1.16 / 1;
+  overflow: hidden;
+  margin-bottom: 19px;
+  background: var(--hair);
+}
+
+.materia__figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 760ms var(--ease);
+}
+
+.materia:hover .materia__figure img {
+  transform: scale(1.03);
+}
+
+.materia .eyebrow {
+  margin-bottom: 9px;
+}
+
+.materia h3 {
+  max-width: 17ch;
+  margin-bottom: 12px;
+  color: var(--fg);
+  font-size: clamp(1.42rem, 1.7vw, 1.78rem);
+  transition: color 260ms var(--ease);
+}
+
+.materia:hover h3 {
+  color: var(--tint);
+}
+
+.materia__resumo {
+  max-width: 38ch;
+  color: var(--dim);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.redes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.redes a {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  border: 1px solid var(--hair);
+  border-radius: 50%;
+  color: currentColor;
+  transition: color 240ms var(--ease), background 240ms var(--ease),
+    border-color 240ms var(--ease);
+}
+
+.redes svg {
+  width: 15px;
+  height: 15px;
+}
+
+.redes a:hover {
+  border-color: var(--tint);
+  color: var(--marca);
+  background: var(--tint);
+}
+
+.redes--rotulo {
+  display: grid;
+  gap: 9px;
+}
+
+.redes--rotulo a {
+  width: auto;
+  height: auto;
+  justify-content: start;
+  grid-template-columns: 18px auto;
+  gap: 8px;
+  border: 0;
+  border-radius: 0;
+  font-size: 0.9rem;
+}
+
+.redes--rotulo a:hover {
+  color: var(--tint);
+  background: transparent;
+}
+
+/* Footer ----------------------------------------------------------------- */
+
+.footer {
+  --tint: var(--marca-tint);
+  --hair: var(--line-dark);
+  padding: clamp(62px, 8vw, 98px) 0 27px;
+  color: var(--paper);
+  background: var(--ink);
+}
+
+.footer__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(210px, 0.76fr) minmax(140px, 0.42fr);
+  gap: clamp(35px, 6vw, 108px);
+}
+
+.footer__mark {
+  margin-right: -0.21em;
+  font-family: var(--logo);
+  font-size: clamp(1.55rem, 2.25vw, 1.9rem);
+  font-weight: 400;
+  letter-spacing: 0.21em;
+  line-height: 1;
+}
+
+.footer__brand > p:last-child {
+  max-width: 27ch;
+  margin-top: 18px;
+  color: var(--muted-dark);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.footer .eyebrow {
+  color: var(--marca-tint);
+}
+
+.footer__address address {
+  color: #dad4cb;
+  font-size: 0.88rem;
+  font-style: normal;
+  line-height: 1.75;
+}
+
+.footer__nav {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+}
+
+.footer__nav .eyebrow {
+  margin-bottom: 6px;
+}
+
+.footer__nav a {
+  width: fit-content;
+  color: #dad4cb;
+  font-size: 0.86rem;
+  transition: color 220ms var(--ease);
+}
+
+.footer__nav a:hover {
+  color: var(--marca-tint);
+}
+
+.footer__legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 9px 24px;
+  margin-top: clamp(45px, 6vw, 70px);
+  padding-top: 22px;
+  border-top: 1px solid var(--hair);
+  color: #817b72;
+  font-size: 0.73rem;
+  line-height: 1.5;
+}
+
+/* Página utilitária da loja --------------------------------------------- */
+
+.page-top {
+  padding: calc(var(--header-h-solid) + clamp(66px, 9vw, 116px)) 0
+    clamp(64px, 8vw, 106px);
+}
+
+.page-top h1 {
+  max-width: 11ch;
+}
+
+.page-top > .wrap > [data-reveal] > p:not(.eyebrow) {
+  max-width: 45ch;
+  margin-top: 25px;
+  color: var(--dim);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.loja__banner {
+  width: 100%;
+  height: min(52vw, 540px);
+  overflow: hidden;
+  background: var(--ink-soft);
+}
+
+.loja__banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+}
+
+.loja__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(34px, 5vw, 76px);
+}
+
+.loja__grid h2 {
+  margin-bottom: 20px;
+  font-size: clamp(1.8rem, 2.6vw, 2.5rem);
+}
+
+.horarios {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.horarios > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hair);
+}
+
+.horarios dt {
+  color: var(--dim);
+  font-size: 0.9rem;
+}
+
+.horarios dd {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1rem;
+}
+
+.horarios .is-fechado dd {
+  color: var(--dim);
+}
+
+.mapa {
+  position: relative;
+  height: clamp(360px, 54vw, 560px);
+  background: var(--soft);
+}
+
+.mapa iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  filter: grayscale(1) contrast(1.04) brightness(1.04);
+}
+
+.mapa__card {
+  position: absolute;
+  bottom: clamp(24px, 4vw, 54px);
+  left: var(--gutter);
+  width: min(330px, calc(100% - 56px));
+  padding: 29px;
+  color: var(--paper);
+  background: var(--ink);
+}
+
+.mapa__card .eyebrow {
+  color: var(--marca-tint);
+}
+
+.mapa__card address {
+  margin-bottom: 20px;
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-style: normal;
+  line-height: 1.4;
+}
+
+/* Responsivo ------------------------------------------------------------- */
+
+@media (max-width: 980px) {
+  .secao__head {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .rail {
+    width: auto;
+    grid-auto-columns: minmax(215px, 48vw);
+    padding-inline: var(--gutter);
+    overflow-x: auto;
+    scroll-padding-inline: var(--gutter);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    cursor: grab;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .rail.is-dragging {
+    cursor: grabbing;
+  }
+
+  .rail.is-dragging .balcao {
+    pointer-events: none;
+  }
+
+  .balcao {
+    scroll-snap-align: start;
+  }
+
+  .footer__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 0.65fr);
+  }
+
+  .footer__brand {
+    grid-column: 1 / -1;
+  }
+
+  .loja__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --wrap: calc(100% - 40px);
+    --gutter: 20px;
+    --header-h: 74px;
+    --header-h-solid: 64px;
+  }
+
+  .header__inner {
+    gap: 18px;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
+
+  .nav-toggle {
+    display: block;
+  }
+
+  .nav {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 20px;
+    left: 20px;
+    display: none;
+    gap: 0;
+    padding: 10px 20px;
+    color: var(--ink);
+    background: var(--white);
+    box-shadow: 0 16px 34px rgba(25, 22, 18, 0.1);
+  }
+
+  .nav.is-open {
+    display: grid;
+  }
+
+  /* No menu empilhado os fios entre itens ja fazem a separacao; o fio vertical
+   * viraria uma sobra de 1px no meio da lista. */
+  .nav__fio {
+    display: none;
+  }
+
+  .nav a {
+    min-height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 0.88rem;
+  }
+
+  .nav a:last-child {
+    border-bottom: 0;
+  }
+
+  .nav a::after {
+    right: auto;
+    width: 18px;
+  }
+
+  .hero__inner {
+    padding-bottom: 71px;
+  }
+
+  .hero h1 {
+    max-width: 15ch;
+  }
+
+  .hero__sub {
+    max-width: 31ch;
+    margin-top: 20px;
+    font-size: 0.95rem;
+  }
+
+  .section {
+    padding: 74px 0;
+  }
+
+  .section--casa {
+    padding-bottom: 74px;
+  }
+
+  /* As margens extras da abertura sao um luxo de tela larga: numa coluna so
+   * elas comeriam a foto. */
+  .casa {
+    grid-template-columns: minmax(0, 1fr);
+    width: var(--wrap);
+    gap: 35px;
+  }
+
+  /* Empilhado nao ha simetria para manter: o texto volta a correr solto. */
+  .casa__copy {
+    aspect-ratio: auto;
+    display: block;
+    order: -1;
+  }
+
+  .casa__copy h2 {
+    margin-bottom: 21px;
+  }
+
+  .secao__head {
+    gap: 20px;
+    margin-bottom: 34px;
+  }
+
+  .rail {
+    grid-auto-columns: minmax(210px, 64vw);
+  }
+
+  .blog__layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 43px;
+  }
+
+  .blog__intro > p:last-child {
+    max-width: 48ch;
+  }
+
+  .footer__grid,
+  .loja__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 35px;
+  }
+
+  .footer__brand {
+    grid-column: auto;
+  }
+
+  .footer__legal {
+    margin-top: 43px;
+  }
+
+  .page-top {
+    padding-top: calc(var(--header-h-solid) + 58px);
+  }
+
+  .loja__banner {
+    height: 58vw;
+  }
+
+  .mapa {
+    height: 450px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  [data-reveal],
+  [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Bistro ------------------------------------------------------------------
+ *
+ * Mesma tipografia, mesma grade, mesmos componentes do emporio: o que muda e
+ * a familia de cor. O vermelho da casa sai e entra um marrom quente, que e a
+ * temperatura das fotos do salao. Como todo componente aponta para `--marca`,
+ * a troca acontece nestas quatro linhas e em mais nada.
+ */
+.tema--bistro {
+  --marca: #6b4f3a;
+  --marca-deep: #533b2a;
+  --marca-tint: #c9a680;
+  --marca-cream: #ece0d2;
+  /* O creme do bistro e um grau mais quente que o `--paper` do emporio: e o
+   * segundo eixo da diferenca, junto com a cor de marca. */
+  --paper: #f7f4ee;
+  --soft: #ece5da;
+  --line: #ddd5c7;
+}
+
+/* O marrom continua estruturando o Bistrô; o vermelho volta apenas quando a
+ * tipografia precisa assinar uma ideia. Assim o destaque conversa com a
+ * identidade Nicolini sem tingir a pagina toda. */
+.tema--bistro main em {
+  color: var(--red);
+}
+
+/* Hero ------------------------------------------------------------------- */
+
+/*
+ * Altura fixa em px, sem `vh` nenhum: o hero do bistro nao acompanha a altura
+ * da tela. Um valor preso a viewport fazia a faixa mudar de proporcao em cada
+ * monitor e quase sempre parava a um triz de completar a tela — e essa sobra
+ * de poucos pixels da secao seguinte era justamente o que ficava estranho.
+ *
+ * Os degraus abaixo mudam por LARGURA, nao por altura: e o retrato do celular
+ * que pede uma faixa menor, nao a altura do monitor.
+ */
+.hero--bistro {
+  min-height: 880px;
+  align-items: center;
+  text-align: center;
+}
+
+/*
+ * A moldura da foto e mais alta que o hero nos dois lados: e essa folga que a
+ * paralaxe consome ao subir, sem nunca descobrir a borda.
+ */
+.hero--bistro .hero__media {
+  top: -14%;
+  bottom: -14%;
+  transform: translate3d(0, var(--paralaxe, 0px), 0);
+  will-change: transform;
+}
+
+.hero--bistro .hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 56%;
+  filter: saturate(0.9) contrast(1.02) brightness(0.64);
+}
+
+/* O scrim do emporio escurece topo e base porque o texto de la fica embaixo.
+ * Aqui a marca fica no meio — que na foto do salao e justamente a faixa mais
+ * clara e mais ocupada —, entao entra um veu radial no centro. */
+.hero--bistro .hero__scrim {
+  background: radial-gradient(
+      ellipse 56% 48% at 50% 45%,
+      rgba(12, 11, 10, 0.56) 0%,
+      rgba(12, 11, 10, 0.32) 52%,
+      rgba(12, 11, 10, 0) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(12, 11, 10, 0.52) 0%,
+      rgba(12, 11, 10, 0.14) 26%,
+      rgba(12, 11, 10, 0) 46%
+    ),
+    linear-gradient(
+      to top,
+      rgba(12, 11, 10, 0.72) 0%,
+      rgba(12, 11, 10, 0.3) 26%,
+      rgba(12, 11, 10, 0) 62%
+    );
+}
+
+.hero--bistro .hero__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 0;
+}
+
+.hero__marca {
+  width: min(384px, 60vw);
+  height: auto;
+  opacity: 0;
+  /* Nasce um respiro maior e assenta: o zoom out e o que da a sensacao de a
+   * marca "surgir" em vez de so acender. */
+  transform: scale(1.085);
+  transition: opacity 1500ms var(--ease) 280ms,
+    transform 1900ms var(--ease) 280ms;
+  /*
+   * "ALTA GASTRONOMIA" e o filete abaixo do nome sao tracos muito finos, e
+   * sobre o brilho das tacas eles sumiam — parecia logo cortado. A sombra
+   * escurece so o entorno do traco, o que resolve sem precisar apagar a foto
+   * inteira por tras.
+   */
+  filter: drop-shadow(0 1px 2px rgba(12, 11, 10, 0.55))
+    drop-shadow(0 6px 28px rgba(12, 11, 10, 0.62));
+}
+
+/*
+ * Dois links, nao dois botoes: sobre a foto do salao um par de caixas solidas
+ * gritava mais que a propria marca. Sao os mesmos `.link` do resto do site —
+ * texto com um fio embaixo que recolhe no hover.
+ */
+.hero__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(26px, 3.6vw, 46px);
+  margin-top: clamp(26px, 3vw, 38px);
+  opacity: 0;
+  /* O atraso e maior que a duracao da marca de proposito: a ordem e foto,
+   * marca, e so entao os links. */
+  transition: opacity 1200ms var(--ease) 1450ms;
+}
+
+/* O logo entra depois da foto — quem libera os dois e o `onLoad` da imagem do
+ * hero, nao um tempo fixo: numa conexao lenta um atraso cego mostraria a marca
+ * sobre um retangulo vazio. */
+.hero--bistro.esta-pronto .hero__marca {
+  opacity: 1;
+  transform: none;
+}
+
+.hero--bistro.esta-pronto .hero__acoes {
+  opacity: 1;
+}
+
+.hero__acoes .link {
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+/* Sobre foto escura o botao solido de marca perde legibilidade; o contorno
+ * claro mantem o hero silencioso e ainda assim clicavel. */
+.button--contorno {
+  border-color: rgba(255, 255, 255, 0.7);
+  color: var(--white);
+  background: transparent;
+}
+
+.button--contorno:hover {
+  border-color: var(--white);
+  color: var(--ink);
+  background: var(--white);
+}
+
+/* Manifesto -------------------------------------------------------------- */
+
+.manifesto {
+  width: var(--wrap-casa);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  gap: clamp(38px, 6vw, 88px);
+  align-items: start;
+}
+
+.manifesto h2 {
+  margin: 0;
+}
+
+/* Galeria ---------------------------------------------------------------- */
+
+.secao--galeria {
+  padding-bottom: clamp(78px, 9vw, 128px);
+}
+
+/*
+ * O trilho dos balcoes cabe inteiro na tela e so rola no celular. Aqui o
+ * gesto lateral e o proprio assunto: a faixa passa da largura em qualquer
+ * tamanho, entao a rolagem e o arrasto valem sempre.
+ */
+.rail--galeria {
+  width: auto;
+  /* Largura fixa, e nao `minmax(0, ...)`: com minimo zero as colunas encolhem
+   * ate caber na tela e o trilho nunca transborda — ou seja, nunca rola. */
+  grid-auto-columns: clamp(230px, 25vw, 350px);
+  padding-inline: var(--gutter);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--gutter);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  cursor: grab;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rail--galeria::-webkit-scrollbar {
+  display: none;
+}
+
+.rail--galeria.is-dragging {
+  cursor: grabbing;
+}
+
+.galeria__item {
+  margin: 0;
+  scroll-snap-align: start;
+}
+
+.galeria__item img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: var(--soft);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Cardapio --------------------------------------------------------------- */
+
+.pratos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(16px, 2vw, 30px);
+  margin-top: clamp(38px, 4vw, 58px);
+}
+
+.prato__figure {
+  margin: 0 0 18px;
+  overflow: hidden;
+}
+
+.prato__figure img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--soft);
+  transition: transform 620ms var(--ease);
+}
+
+.prato:hover .prato__figure img {
+  transform: scale(1.035);
+}
+
+.prato h3 {
+  margin: 0 0 8px;
+  font-size: clamp(1.02rem, 1.25vw, 1.16rem);
+}
+
+.prato p {
+  margin: 0;
+  max-width: 30ch;
+  color: var(--dim);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.cardapio__rodape {
+  margin-top: clamp(34px, 4vw, 52px);
+}
+
+/* Faixa de foto grande --------------------------------------------------- */
+
+.cozinha {
+  position: relative;
+  min-height: min(78vh, 720px);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  color: var(--white);
+  isolation: isolate;
+}
+
+.cozinha img {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cozinha::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(12, 11, 10, 0.86) 0%,
+    rgba(12, 11, 10, 0.42) 34%,
+    rgba(12, 11, 10, 0) 68%
+  );
+}
+
+.cozinha__copy {
+  width: var(--wrap);
+  margin-inline: auto;
+  padding-bottom: clamp(46px, 6vw, 78px);
+}
+
+.cozinha__copy h2 {
+  max-width: 15ch;
+  color: var(--white);
+}
+
+.cozinha__copy h2 em {
+  color: var(--marca-tint);
+}
+
+.tema--bistro .cozinha__copy h2 em {
+  color: var(--red-tint);
+}
+
+.cozinha__copy p {
+  max-width: 44ch;
+  margin-top: 20px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.68;
+}
+
+/*
+ * Variante da faixa de foto para a secao de localizacao do jantar. O arquivo e
+ * vertical (1290x1647) numa faixa larga, entao o corte e todo no eixo Y: a
+ * banda vem mais alta que a do bistro para cortar menos, e o enquadramento sobe
+ * para sobrarem as vigas e as luminarias, e nao so os tampos das mesas.
+ */
+.cozinha--local {
+  min-height: min(88vh, 880px);
+}
+
+.cozinha--local img {
+  object-position: 50% 45%;
+}
+
+/* Elo com o emporio ------------------------------------------------------ */
+
+.emporio {
+  width: var(--wrap-casa);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(34px, 5vw, 76px);
+  align-items: center;
+}
+
+.emporio__figure {
+  margin: 0;
+}
+
+.emporio__figure img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--soft);
+}
+
+/* Reserva ---------------------------------------------------------------- */
+
+.reserva__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(32px, 4vw, 62px);
+}
+
+.reserva__grid h2 {
+  margin: 0 0 20px;
+  font-size: clamp(1.08rem, 1.4vw, 1.24rem);
+}
+
+@media (max-width: 1080px) {
+  .pratos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(20px, 3vw, 34px);
+  }
+
+  .reserva__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+}
+
+@media (max-width: 860px) {
+  .manifesto,
+  .emporio {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
+  }
+
+  .emporio__figure {
+    order: 1;
+  }
+
+  .hero--bistro {
+    min-height: 820px;
+  }
+
+  .hero__marca {
+    width: min(300px, 66vw);
+  }
+
+  .cozinha {
+    min-height: 62vh;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero--bistro {
+    min-height: 780px;
+  }
+
+  .rail--galeria {
+    grid-auto-columns: minmax(210px, 68vw);
+  }
+
+  .pratos {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 34px;
+  }
+}
+
+/* FAB de WhatsApp ------------------------------------------------------- */
+
+/*
+ * Fixo no canto inferior esquerdo, em toda a casa. O fundo aponta para
+ * `--marca` — vermelho no emporio, marrom quente no bistro — e vira o verde do
+ * WhatsApp no hover e no foco. O icone branco e a unica peca dentro.
+ */
+.whatsapp-fab {
+  position: fixed;
+  z-index: 45;
+  bottom: clamp(18px, 3.3vw, 30px);
+  left: clamp(18px, 3.3vw, 30px);
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  color: var(--white);
+  background: var(--marca);
+  box-shadow: 0 12px 30px rgba(25, 22, 18, 0.22);
+  transition: background 200ms var(--ease);
+}
+
+.whatsapp-fab svg {
+  width: 28px;
+  height: 28px;
+}
+
+.whatsapp-fab:hover,
+.whatsapp-fab:focus-visible {
+  background: #25d366;
+}
+
+@media (max-width: 760px) {
+  .whatsapp-fab {
+    width: 52px;
+    height: 52px;
+  }
+
+  .whatsapp-fab svg {
+    width: 26px;
+  }
+}
+
+/* Jantar Rustichella ====================================================== */
+
+/*
+ * Terceira familia de cor da casa, ao lado do emporio (vermelho) e do bistro
+ * (marrom). O verde e o unico dos tres que nao pertence a Nicolini: e o do selo
+ * da Rustichella, e e justamente por isso que ele serve aqui — a pagina se
+ * anuncia como encontro no primeiro golpe de vista, sem precisar dizer.
+ *
+ * O papel tambem muda: um creme de grao, mais amarelo que o do bistro, tirado
+ * do proprio fundo do selo. Assim o logo convidado assenta na pagina em vez de
+ * flutuar num retangulo mais claro que o resto.
+ */
+.tema--rustichella {
+  --marca: #23593a;
+  --marca-deep: #17422a;
+  --marca-tint: #9cbb9e;
+  --marca-cream: #e2ead9;
+  --paper: #f7f3e7;
+  --soft: #eee6d3;
+  --line: #ddd3bb;
+  /*
+   * O vermelho do emporio entra aqui como terceira cor, nao como tema: creme e
+   * verde continuam sendo a pagina, e o vinho aparece nos dois momentos de
+   * decisao — a carta e a reserva. E tambem o que tira a carta do quase-preto,
+   * que era pesado demais no meio de uma pagina de papel claro.
+   */
+  --vinho: #8d3028;
+}
+
+/*
+ * Faixa em vinho. Mesmo contrato das outras bandas: define as variaveis e
+ * `.band` faz o resto. O creme e o mesmo `--paper` do tema, um grau mais claro,
+ * e o rosa de destaque foi escolhido no limite de 4.5:1 sobre o vinho, que e o
+ * que o texto de apoio e o sobrescrito exigem.
+ */
+.band--vinho {
+  --bg: var(--vinho);
+  --fg: #f9f4ec;
+  --tint: #e9b9ae;
+  --dim: rgba(249, 244, 236, 0.72);
+  --hair: rgba(249, 244, 236, 0.22);
+}
+
+/* Hero ------------------------------------------------------------------- */
+
+/*
+ * Altura fixa em px pelo mesmo motivo do hero do bistro: presa a viewport, a
+ * faixa mudaria de proporcao em cada monitor. 820px tambem e o ponto em que a
+ * foto (1920x1080) ainda cobre uma tela de 1440 sem ser ampliada.
+ */
+.hero--evento {
+  min-height: 820px;
+  align-items: center;
+  text-align: center;
+}
+
+/* O letreiro continua centralizado, mas o contraste passa a vir do tratamento
+ * uniforme da foto e dos extremos do hero — nunca de uma sombra no miolo. */
+.hero--evento .hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  /* O letreiro por cima e branco e a foto e de meio-dia: sem derrubar o brilho
+   * nao ha contraste que sustente o texto. A reducao e uniforme para preservar
+   * montanha e ceu sem marcar o centro do campo. */
+  filter: saturate(0.98) contrast(1.02) brightness(0.67);
+}
+
+/* O centro da foto fica limpo. So topo e base recebem contraste, para que o
+ * hero nao ganhe uma mancha circular no meio do campo. */
+.hero--evento .hero__scrim {
+  background: linear-gradient(
+      to bottom,
+      rgba(12, 11, 10, 0.54) 0%,
+      rgba(12, 11, 10, 0.16) 28%,
+      rgba(12, 11, 10, 0) 48%
+    ),
+    linear-gradient(
+      to top,
+      rgba(12, 11, 10, 0.62) 0%,
+      rgba(12, 11, 10, 0.24) 24%,
+      rgba(12, 11, 10, 0) 58%
+    );
+}
+
+.hero--evento .hero__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 0;
+}
+
+/*
+ * As pecas entram na mesma ordem em que se leem, e so depois que a foto pinta:
+ * marcas, titulo, apresentacao, data, links. Sobrescrito e titulo entram quase
+ * juntos — sao uma unidade; o resto vem depois, com folga.
+ */
+.evento__marcas,
+.evento__titulo,
+.evento__resumo,
+.evento__datas,
+.hero--evento .hero__acoes {
+  opacity: 0;
+  transition: opacity 1100ms var(--ease);
+}
+
+.hero--evento.esta-pronto .evento__marcas {
+  opacity: 1;
+  transition-delay: 200ms;
+}
+
+.hero--evento.esta-pronto .evento__titulo {
+  opacity: 1;
+  transition-delay: 400ms;
+}
+
+.hero--evento.esta-pronto .evento__resumo {
+  opacity: 1;
+  transition-delay: 760ms;
+}
+
+.hero--evento.esta-pronto .evento__datas {
+  opacity: 1;
+  transition-delay: 940ms;
+}
+
+.hero--evento.esta-pronto .hero__acoes {
+  opacity: 1;
+  transition-delay: 1120ms;
+}
+
+/*
+ * As marcas sao o sobrescrito do hero — ocupam o lugar da antiga linha em caixa
+ * alta. Pequenas de proposito: creditam as duas casas e devolvem o primeiro
+ * olhar ao titulo.
+ *
+ * Sem conjuncao entre elas: neste tamanho um "&" pesaria mais que os proprios
+ * logos, e sobrescrito nao e frase — e credito.
+ *
+ * Nao ha como iguala-las metricamente e nao se deve tentar: o bistro e um
+ * monograma de traco branco e a Rustichella e um selo cheio, que "pesa" mais no
+ * mesmo tamanho. O equilibrio e optico — o monograma vai mais largo, o selo
+ * mais compacto — e foi calibrado no olho, nao na regua.
+ */
+.hero--evento .evento__marcas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(22px, 3.4vw, 46px);
+  margin: 0 0 clamp(24px, 2.8vw, 38px);
+}
+
+.evento__logo {
+  display: block;
+  height: auto;
+}
+
+/*
+ * O monograma e traco fino e branco: sobre o campo claro ele sumia nas hastes.
+ * A sombra escurece so o entorno do traco, sem precisar apagar a foto por tras.
+ */
+.evento__logo--bistro {
+  width: clamp(112px, 11.4vw, 156px);
+  filter: drop-shadow(0 1px 2px rgba(12, 11, 10, 0.5))
+    drop-shadow(0 6px 22px rgba(12, 11, 10, 0.55));
+}
+
+/*
+ * O selo tem creme por dentro e ja se sustenta sozinho; leva so a sombra de
+ * profundidade, para nao parecer colado por cima da foto.
+ */
+.evento__logo--rustichella {
+  width: clamp(78px, 7.9vw, 108px);
+  filter: drop-shadow(0 6px 20px rgba(12, 11, 10, 0.45));
+}
+
+/*
+ * O titulo e o ponto de entrada, e agora e o encontro das duas casas escrito
+ * por extenso. Cabe em uma linha ate ~1100px e, abaixo disso, quebra depois do
+ * "&" — nunca dentro de um dos dois nomes, que e o que o `nowrap` do `em` e o
+ * `&nbsp;` do markup garantem.
+ *
+ * O corpo desceu de 5.3rem para 4.4rem: sao 32 caracteres numa linha so, e no
+ * tamanho anterior ela estourava a medida em qualquer monitor.
+ *
+ * O seletor precisa dos dois nomes: `.hero h1` (0,1,1) vence `.evento__titulo`
+ * (0,1,0), entao o `max-width: none` daqui nunca chegou a valer — o titulo
+ * ficava preso aos 20ch de `.hero h1` e quebrava em duas linhas mesmo sobrando
+ * 400px de medida. Nao aparecia antes porque o titulo anterior ja vinha com
+ * `<br>` no markup.
+ */
+.hero--evento .evento__titulo {
+  max-width: none;
+  margin: 0;
+  color: var(--white);
+  font-size: clamp(2.4rem, 4.6vw, 4.4rem);
+  line-height: 1.04;
+  text-shadow: 0 2px 6px rgba(12, 11, 10, 0.4), 0 10px 40px rgba(12, 11, 10, 0.5);
+}
+
+/* O `em` herdado puxaria o verde da marca, que sobre a foto escura nao tem
+ * contraste nenhum — aqui o italico sozinho ja marca a virada da frase. O
+ * `nowrap` mantem "Rustichella d'Abruzzo" inteiro: quebrado, o sobrenome da
+ * convidada cairia sozinho na segunda linha. */
+.evento__titulo em {
+  color: inherit;
+  white-space: nowrap;
+}
+
+/*
+ * A apresentacao entrou no lugar do sobrescrito em caixa alta. Medida curta
+ * para quebrar em duas ou tres linhas centradas: passando disso, texto centrado
+ * sobre foto vira bloco e para de se ler.
+ */
+.evento__resumo {
+  max-width: 46ch;
+  margin: clamp(24px, 2.6vw, 34px) auto 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(0.98rem, 1.1vw, 1.06rem);
+  line-height: 1.65;
+  text-shadow: 0 1px 14px rgba(12, 11, 10, 0.68);
+}
+
+.evento__datas {
+  margin: clamp(22px, 2.6vw, 32px) 0 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: var(--serif);
+  font-size: clamp(1.18rem, 2.05vw, 1.85rem);
+  font-style: italic;
+  letter-spacing: -0.015em;
+  text-shadow: 0 1px 14px rgba(12, 11, 10, 0.62);
+}
+
+.hero--evento .hero__acoes {
+  margin-top: clamp(26px, 3vw, 40px);
+}
+
+/* Faixa de fatos --------------------------------------------------------- */
+
+/*
+ * Vem antes de qualquer texto corrido porque responde, de uma vez, as quatro
+ * perguntas que chegam por WhatsApp: quando, que horas, o que se come e se
+ * ainda tem lugar. Os filetes verticais separam sem desenhar caixas.
+ */
+.fatos {
+  padding: clamp(38px, 4.4vw, 62px) 0;
+}
+
+.fatos__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(20px, 2.4vw, 34px);
+}
+
+.fato {
+  padding-left: clamp(18px, 2vw, 30px);
+  border-left: 1px solid var(--hair);
+}
+
+.fato:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+
+.fato .eyebrow {
+  margin-bottom: 10px;
+}
+
+.fato__valor {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(1.3rem, 2vw, 1.85rem);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+.fato__nota {
+  margin: 8px 0 0;
+  color: var(--dim);
+  font-size: 0.83rem;
+  line-height: 1.5;
+}
+
+/* Abertura --------------------------------------------------------------- */
+
+/*
+ * Galeria a esquerda, texto a direita. A coluna da imagem vem menor: uma foto
+ * 4/5 ao lado de quatro paragrafos ja pesa o bastante, e igualar as duas faria
+ * a secao parecer um comparativo, nao uma abertura.
+ */
+.historia {
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1fr);
+  gap: clamp(38px, 5.5vw, 84px);
+  align-items: center;
+}
+
+.historia__copy h2 {
+  margin: 0;
+}
+
+.historia__copy .prose {
+  margin-top: clamp(20px, 2.2vw, 28px);
+}
+
+/*
+ * A moldura da abertura. Foi carrossel automatico, depois foto unica, e voltou
+ * a ser trilho a pedido do cliente — mas o de `CasaFotos`, que so anda quando
+ * alguem manda e mostra em quantas fotos voce esta. O que o carrossel antigo
+ * fazia de errado era o tempo, nao o formato.
+ *
+ * Reaproveita as classes `.casa-fotos*` inteiras; o unico ajuste e a proporcao,
+ * porque a da home e quadrada e os arquivos do pastificio sao verticais.
+ */
+.quadro-evento .casa-fotos {
+  aspect-ratio: 4 / 5;
+}
+
+/*
+ * O selo assina a secao no lugar do sobrescrito "O jantar", que saiu: um rotulo
+ * generico e a marca da convidada diziam a mesma coisa no mesmo ponto, e entre
+ * os dois quem assina melhor e a marca. Por isso ele cresceu.
+ *
+ * O PNG tem ~9,5% de transparencia de cada lado, entao a ponta da faixa do selo
+ * nasce recuada em relacao ao texto abaixo. O `translateX` devolve essa margem
+ * sem mexer no fluxo: alinhamento optico, nao de caixa.
+ */
+.historia__selo {
+  display: block;
+  width: clamp(124px, 12.5vw, 168px);
+  height: auto;
+  margin-bottom: clamp(22px, 2.6vw, 32px);
+  transform: translateX(-9.5%);
+}
+
+/* Credito de fotografia -------------------------------------------------- */
+
+/*
+ * Mesma familia dos sobrescritos, um grau abaixo e sem a cor da marca: e
+ * informacao de rodape, nao rotulo de secao.
+ */
+.credito {
+  margin: 0;
+  color: var(--dim);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* Sangria da delegacao --------------------------------------------------- */
+
+/*
+ * A virada entre "o jantar" e "quem vem cozinhar", no lugar onde havia uma
+ * faixa que esticava um arquivo de 905px de ponta a ponta da tela. Aqui a foto
+ * e da propria delegacao e o corte foi pensado para sangrar.
+ */
+.sangria {
+  position: relative;
+  /* Mais alta que antes de proposito: a foto e 4:3 e a faixa e larga, entao
+   * cada pixel de altura aqui e um pixel a menos de corte vertical la. */
+  min-height: min(92vh, 880px);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  color: var(--white);
+  isolation: isolate;
+}
+
+.sangria img {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /*
+   * Horizontal: a acao esta no centro e a direita do quadro, entao o
+   * enquadramento puxa para la e mantem os dois em cena.
+   *
+   * Vertical: quase no topo. A 42% a faixa cortava a cabeca do chef, que e o
+   * ponto mais alto da composicao — e quanto mais larga a tela, mais fundo o
+   * corte descia. A 10% sobra folga acima dele ate em 1920px. O que se perde e
+   * o rodape da bancada, que e vidro e tabua.
+   */
+  object-position: 62% 10%;
+}
+
+/*
+ * Scrim horizontal, ao contrario do de `.cozinha`, que sobe de baixo. Sao duas
+ * sangrias na mesma pagina: escurecidas pelo mesmo lado, a segunda leria como
+ * repeticao da primeira. A esquerda do quadro e armario e potes — escurecer ali
+ * nao cobre ninguem.
+ */
+.sangria::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(10, 9, 8, 0.9) 0%,
+    rgba(10, 9, 8, 0.72) 30%,
+    rgba(10, 9, 8, 0.26) 58%,
+    rgba(10, 9, 8, 0.06) 100%
+  );
+}
+
+.sangria__copy {
+  width: var(--wrap);
+  margin-inline: auto;
+  padding-bottom: clamp(52px, 6vw, 88px);
+}
+
+
+/*
+ * E `p`, nao `h2`, de proposito: esta faixa e uma fotografia com legenda, nao
+ * uma secao. Com titulo ela roubaria o lugar de "A casa em pessoa", que vem
+ * logo abaixo e e quem apresenta os dois de verdade.
+ */
+.sangria__linha {
+  max-width: 16ch;
+  margin: 0;
+  color: var(--white);
+  font-family: var(--serif);
+  font-size: clamp(2.05rem, 3.6vw, 3.4rem);
+  font-weight: 500;
+  letter-spacing: -0.048em;
+  line-height: 1.04;
+  text-shadow: 0 2px 10px rgba(10, 9, 8, 0.45);
+  text-wrap: balance;
+}
+
+.sangria__legenda {
+  max-width: 40ch;
+  margin: clamp(20px, 2.4vw, 30px) 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.sangria .credito {
+  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.46);
+}
+
+/* A tira ----------------------------------------------------------------- */
+
+/*
+ * Cinco fotos com legenda, entre a delegacao e o menu. Todas na mesma
+ * proporcao vertical de `.prato__figure`: uma razao so para foto vertical na
+ * casa inteira, e nao tres.
+ *
+ * Na medida larga, e nao na do texto: `--wrap-wide` existe para blocos que sao
+ * sobretudo fotografia, e este e um deles. A cabeca da secao continua na
+ * medida de leitura — e o mesmo desencontro proposital do trilho dos balcoes
+ * na home.
+ *
+ * O contraste nao vem da grade: vem de uma foto em preto e branco entre quatro
+ * coloridas. Nao precisa de item destacado.
+ *
+ * O credito unico ("Fotografia Giovanni Galati") saiu do pe da tira: das cinco
+ * fotos de hoje, tres nao sao dele. Ver o comentario de `creditoFotos` em
+ * `data/rustichella.js`.
+ */
+.tira {
+  width: var(--wrap-wide);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(14px, 1.6vw, 26px);
+}
+
+.tira__item {
+  margin: 0;
+}
+
+.tira__item img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--soft);
+  transition: transform 620ms var(--ease);
+}
+
+.tira__item:hover img {
+  transform: scale(1.035);
+}
+
+.tira__item figcaption {
+  margin-top: 16px;
+}
+
+.tira__item h3 {
+  margin: 0 0 8px;
+  font-size: clamp(1rem, 1.2vw, 1.14rem);
+}
+
+.tira__item p {
+  margin: 0;
+  color: var(--dim);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.tira__paginacao {
+  display: none;
+}
+
+
+/* Espiga ----------------------------------------------------------------- */
+
+/*
+ * O desenho vem de um PNG que carrega SO o canal alfa; a cor sai de
+ * `currentColor`. E o que permite a mesma peca aparecer verde sobre o creme e
+ * clara sobre a faixa escura sem manter duas versoes do arquivo — e mudar de
+ * cor sozinha se a paleta do tema mudar.
+ */
+.espiga {
+  display: block;
+  aspect-ratio: 512 / 866;
+  background: currentColor;
+  -webkit-mask: url('/media/rustichella/espiga.png') no-repeat center / contain;
+  mask: url('/media/rustichella/espiga.png') no-repeat center / contain;
+}
+
+/* Marca d'agua da abertura: grande, quase apagada e fora do fluxo, atras da
+ * coluna de texto. E o unico ornamento da pagina em escala de cartaz. */
+.espiga--historia {
+  position: absolute;
+  z-index: 0;
+  top: clamp(-40px, -2vw, 0px);
+  right: calc(var(--gutter) - clamp(20px, 4vw, 70px));
+  width: clamp(150px, 20vw, 300px);
+  color: var(--marca);
+  opacity: 0.09;
+  pointer-events: none;
+}
+
+/* Na carta ela e assinatura, nao ornamento de fundo: pequena, centralizada e
+ * no verde claro que a faixa escura pede. */
+.espiga--carta {
+  /* Abaixo de ~50px o desenho gravado perde as barbas e vira um borrao
+   * vertical; e o menor tamanho em que ainda se le "espiga". */
+  width: 54px;
+  margin: 0 auto clamp(22px, 2.6vw, 32px);
+  color: var(--tint);
+  opacity: 0.85;
+}
+
+/* Menu ------------------------------------------------------------------- */
+
+/*
+ * Carta centralizada, na medida de um menu impresso. Sem foto nenhuma: os cinco
+ * pratos ainda nao foram executados aqui, e fotos genericas de massa mentiriam
+ * sobre o prato agora e seriam trocadas na primeira semana depois do evento.
+ * O que sustenta a secao e a composicao — eixo central, espiga na cabeca,
+ * numeral em italico na frente de cada nome.
+ *
+ * Encolheu quase pela metade. Cada tempo carregava uma linha de etapa em caixa
+ * alta ("TERCEIRO PRATO"), um filete de 1px com 48px de margem de cada lado e
+ * um nome a 2.15rem: eram cinco blocos de ~250px para dizer cinco pratos, e a
+ * secao virava uma rolagem inteira. O numeral ja da a ordem que a etapa dava.
+ */
+.carta {
+  max-width: 42rem;
+  text-align: center;
+}
+
+.carta__head {
+  margin-bottom: clamp(30px, 3.6vw, 48px);
+}
+
+.carta__head h2 {
+  max-width: none;
+}
+
+.tempos {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(22px, 2.5vw, 34px);
+  list-style: none;
+}
+
+/* O numeral entra na propria linha do nome, e nao numa coluna a esquerda: numa
+ * carta centralizada, uma coluna lateral quebraria o eixo. Em `em` para
+ * acompanhar o corpo do titulo quando a medida muda. */
+.tempo__ordem {
+  margin-right: 0.6em;
+  color: var(--tint);
+  font-size: 0.8em;
+  font-style: italic;
+  letter-spacing: 0;
+}
+
+.tempo h3 {
+  max-width: 28ch;
+  margin: 0 auto;
+  font-size: clamp(1.18rem, 1.75vw, 1.6rem);
+  line-height: 1.2;
+}
+
+.tempo__descricao {
+  max-width: 44ch;
+  margin: 9px auto 0;
+  color: var(--dim);
+  font-size: 0.9rem;
+  line-height: 1.62;
+}
+
+/* A sobremesa ainda nao existe. Em italico e no tom do texto de apoio ela se
+ * anuncia como espaco reservado, sem fingir que ja e um prato. */
+.tempo--aberto h3 {
+  color: var(--dim);
+  font-style: italic;
+}
+
+/* Delegacao -------------------------------------------------------------- */
+
+/* Duas colunas na medida de um retrato editorial, nao de uma capa. */
+.delegacao {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(24px, 3vw, 40px);
+  max-width: 780px;
+  margin: clamp(42px, 4vw, 58px) auto 0;
+  text-align: center;
+}
+
+/* O titulo abre a apresentacao; o texto curto preenche o contexto sem disputar
+ * com os retratos, que continuam sendo o assunto da secao. */
+.convidados__head {
+  max-width: 46rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.convidados__head h2 {
+  font-size: clamp(2.8rem, 4.1vw, 4.4rem);
+}
+
+.convidados__head p {
+  max-width: 48ch;
+  margin: 20px auto 0;
+  color: var(--dim);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+.convidados {
+  padding-block: clamp(90px, 8vw, 118px);
+}
+
+.convidados .wrap {
+  width: min(940px, var(--wrap));
+}
+
+.pessoa__figure {
+  margin: 0 0 20px;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  background: var(--soft);
+}
+
+.pessoa__figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /*
+   * Os dois retratos vieram de ensaios diferentes: um de estudio, sobre fundo
+   * cinza, e um de externa, com folhagem de outono atras. O dessaturado leve
+   * aproxima os dois e segura os dois pontos altos de cor — o blazer rosa de um
+   * e o laranja das arvores do outro — dentro de uma pagina de creme e verde.
+   *
+   * AFERIR NA TELA: 0.88 foi calibrado para os retratos anteriores. Se o rosa
+   * ainda puxar a pagina, descer para 0.80 resolve sem lavar os dois.
+   */
+  filter: saturate(0.88);
+}
+
+/*
+ * O lugar de quem ainda nao tem retrato ja fica reservado, na mesma proporcao
+ * dos outros: quando a foto chegar, a pagina nao muda de forma — so troca o
+ * conteudo da moldura. O tracejado diz "falta isto" sem parecer erro.
+ */
+.pessoa__figure.esta-vazia {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--hair);
+  background: transparent;
+}
+
+.pessoa__vazio {
+  color: var(--dim);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.pessoa h3 {
+  margin: 0 0 8px;
+  font-size: clamp(1.12rem, 1.5vw, 1.34rem);
+}
+
+.pessoa__papel {
+  margin: 0;
+  color: var(--tint);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+
+/* Palco da marca d'agua, que e absoluta. */
+.secao--historia {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Acima da marca d'agua, que fica em `z-index: 0`. */
+.secao--historia > .wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* Reserva ---------------------------------------------------------------- */
+
+/*
+ * Uma tarja, nao uma secao. A grade de tres colunas que havia aqui repetia, no
+ * mesmo rolar de tela, as datas da faixa de fatos logo acima e o endereco do
+ * mapa logo abaixo — tres vezes a mesma informacao em pouco mais de uma tela.
+ * Sobrou o que nao esta em nenhum outro lugar: o numero para onde escrever.
+ *
+ * Em vinho como a carta: sao os dois momentos em que a pagina pede uma decisao.
+ */
+.reserva-faixa {
+  padding: clamp(30px, 3.6vw, 48px) 0;
+}
+
+.reserva-faixa__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: clamp(14px, 2.4vw, 36px);
+}
+
+.reserva-faixa__texto {
+  max-width: 42ch;
+  font-family: var(--serif);
+  font-size: clamp(1.15rem, 1.9vw, 1.6rem);
+  letter-spacing: -0.025em;
+  line-height: 1.32;
+}
+
+@media (max-width: 1080px) {
+  /* Empilhado, o texto abre a secao e a galeria o acompanha logo abaixo. */
+  .historia {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(30px, 5vw, 46px);
+  }
+
+  .historia__copy {
+    order: -1;
+  }
+
+  /* Empilhada, a moldura 4/5 ficaria mais alta que a tela e empurraria o
+     titulo para fora. */
+  .quadro-evento .casa-fotos {
+    aspect-ratio: 3 / 2;
+  }
+}
+
+@media (max-width: 1100px) {
+  /*
+   * Abaixo desta largura, cinco colunas dao tiles de menos de 200px — legenda
+   * de duas linhas nao cabe neles. A tira vira trilho horizontal com encaixe,
+   * o mesmo gesto da galeria da home e do bistro. Rolagem nativa, sem script:
+   * nas larguras em que isto vale, o dedo ja faz o trabalho.
+   */
+  .tira {
+    width: auto;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: clamp(206px, 46vw, 268px);
+    padding-inline: var(--gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+    scroll-padding-inline: var(--gutter);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .tira::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tira__item {
+    scroll-snap-align: start;
+  }
+
+  .tira__paginacao {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: clamp(24px, 4vw, 32px) auto 0;
+  }
+
+  .tira__paginacao button {
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--marca) 28%, transparent);
+    transition: transform 240ms var(--ease), background 240ms var(--ease);
+  }
+
+  .tira__paginacao button.esta-ativa {
+    background: var(--marca);
+    transform: scale(1.35);
+  }
+}
+
+@media (max-width: 860px) {
+  /*
+   * Na largura do celular nao ha "esquerda" para escurecer: o texto ocupa a
+   * faixa inteira. O scrim volta a subir de baixo, como o da cozinha, e o
+   * enquadramento recentra para os dois caberem no corte vertical.
+   */
+  .sangria {
+    min-height: min(80vh, 620px);
+    align-items: flex-end;
+  }
+
+  .sangria img {
+    object-position: 50% 38%;
+  }
+
+  .sangria::after {
+    background: linear-gradient(
+      to top,
+      rgba(10, 9, 8, 0.92) 0%,
+      rgba(10, 9, 8, 0.62) 38%,
+      rgba(10, 9, 8, 0.1) 76%
+    );
+  }
+
+  .sangria__copy {
+    padding-bottom: clamp(38px, 7vw, 56px);
+  }
+
+  .sangria__linha {
+    max-width: 20ch;
+  }
+}
+
+@media (max-width: 860px) {
+  .fatos__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(22px, 4vw, 32px);
+  }
+
+  /* Em duas colunas o filete precisa cair no primeiro item de cada linha, e
+   * nao so no primeiro do grid. */
+  .fato:nth-child(odd) {
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .fato:nth-child(even) {
+    padding-left: clamp(18px, 3vw, 26px);
+    border-left: 1px solid var(--hair);
+  }
+}
+
+@media (max-width: 860px) {
+  /*
+   * O sobrescrito continua lado a lado no celular: as duas marcas somam ~52vw e
+   * cabem folgadas. Empilhadas, virariam duas linhas de credito antes do
+   * titulo — atraso demais para quem chegou pelo link da bio.
+   */
+  .hero--evento .evento__marcas {
+    gap: clamp(18px, 5vw, 30px);
+  }
+
+  .evento__logo--bistro {
+    width: min(132px, 31vw);
+  }
+
+  .evento__logo--rustichella {
+    width: min(92px, 21vw);
+  }
+}
+
+@media (max-width: 640px) {
+  .hero--evento {
+    min-height: 700px;
+  }
+
+  /*
+   * Ate uns 540px o titulo ainda cabe numa linha so, que e o que o cliente
+   * pediu. Abaixo disso ele quebra depois do "&" — e ai o que manda e a segunda
+   * linha, "Rustichella d'Abruzzo", que nao pode quebrar. Este corpo e o maior
+   * que ainda deixa essa linha inteira num 360px.
+   */
+  .hero--evento .evento__titulo {
+    font-size: clamp(1.75rem, 7vw, 2.6rem);
+  }
+
+  /* Retrato de novo: na largura do celular a moldura 3/2 fica baixa demais e
+     os ninhos de massa viram uma tira sem assunto. */
+  .quadro-evento .casa-fotos {
+    aspect-ratio: 4 / 5;
+  }
+
+  /* A marca d'agua encosta na coluna de texto quando so ha uma; recuada e mais
+   * apagada, ela continua presente sem disputar a leitura. */
+  .espiga--historia {
+    opacity: 0.06;
+  }
+
+  .delegacao {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 380px;
+  }
+}

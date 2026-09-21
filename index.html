@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#161514" />
+    <meta
+      name="description"
+      content="Nicolini — empório em Caxias do Sul. Queijos, embutidos, massas, vinhos e conservas escolhidos um por um."
+    />
+
+    <!--
+      CONFIRMAR: dominio de producao. `og:url` e `og:image` precisam ser
+      absolutos — WhatsApp, Instagram e Facebook nao resolvem caminho relativo
+      e simplesmente nao mostram cartao nenhum. Trocar as quatro ocorrencias
+      aqui e as de `rustichella.html` quando o dominio final estiver definido.
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Nicolini" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content="Nicolini — empório em Caxias do Sul" />
+    <meta
+      property="og:description"
+      content="Queijos, embutidos, massas, vinhos e conservas escolhidos um por um."
+    />
+    <meta property="og:url" content="https://www.queijarianicolini.com.br/" />
+    <meta
+      property="og:image"
+      content="https://www.queijarianicolini.com.br/media/og-nicolini.jpg"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <title>Nicolini — empório em Caxias do Sul</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
