@@ -4,13 +4,14 @@
  * Sem build, sem dependências: script clássico, funciona abrindo o index.html
  * direto do disco ou servido por qualquer servidor estático.
  *
- * Organização: utilidades · ícones · estado · disponibilidade simulada ·
+ * Organização: utilidades · ícones · estado · disponibilidade ·
  * componentes · vistas · sobreposições · rotas.
  */
 (function () {
   'use strict';
 
   var D = window.BISTRO;
+  var RESERVAS = window.BISTRO_RESERVATIONS;
   var raiz = document.getElementById('app');
   var avisos = document.getElementById('avisos');
 
@@ -74,17 +75,6 @@
     return DIAS_CURTOS[d.getDay()] + ', ' + d.getDate() + ' ' + MESES_CURTOS[d.getMonth()];
   }
 
-  /* Hash estável a partir de uma string — o "sorteio" de disponibilidade
-   * precisa dar sempre o mesmo resultado para a mesma data. */
-  function semente(str) {
-    var x = 2166136261;
-    for (var i = 0; i < str.length; i++) {
-      x ^= str.charCodeAt(i);
-      x = (x * 16777619) >>> 0;
-    }
-    return x / 4294967295;
-  }
-
   /* === Ícones ============================================================ */
 
   var ico = {
@@ -144,6 +134,23 @@
       ambiente: 'sem-preferencia',
       observacao: ''
     },
+    reservas: {
+      config: null,
+      configStatus: 'idle',
+      configError: '',
+      availability: {},
+      requestSerial: 0,
+      saving: false,
+      createError: '',
+      idempotencyKey: null,
+      manageToken: null,
+      createPayload: null,
+      record: null,
+      manageStatus: 'idle',
+      manageError: '',
+      manageMode: 'view',
+      confirmCancel: false
+    },
     erros: {}
   };
 
@@ -165,13 +172,6 @@
       document.head.appendChild(link);
     }
   })();
-
-  /* `/menu/` e' a entrada publica do cardapio publicado pelo engine. O
-   * prototipo original, na raiz do app, preserva o estudo de reserva; no
-   * caminho publico, porem, nao ha disponibilidade real para oferecer. */
-  function ehMenuPublico() {
-    return /\/menu\/?$/.test(window.location.pathname);
-  }
 
   /* Numeral da seção. Dez é folgado: a maior carta tem quatro. */
   function romano(n) {
@@ -204,12 +204,7 @@
     return null;
   }
 
-  /* === Disponibilidade simulada ========================================== */
-  /*
-   * Nada aqui consulta nada: é uma simulação determinística para demonstrar os
-   * estados da reserva — inclusive o de "sem horários". As datas partem sempre
-   * de hoje, então a demonstração nunca envelhece.
-   */
+  /* === Reservas reais ==================================================== */
 
   var HOJE = new Date();
   HOJE.setHours(0, 0, 0, 0);
@@ -224,90 +219,33 @@
     return lista;
   }
 
-  /* Uma data lotada de propósito: o primeiro sábado a pelo menos cinco dias.
-   * É o que permite ver o estado de ausência de horários sem procurar. */
-  var DATA_LOTADA = (function () {
-    for (var i = 5; i < 20; i++) {
-      var d = new Date(HOJE.getTime());
-      d.setDate(d.getDate() + i);
-      if (d.getDay() === 6) return chaveData(d);
-    }
-    return null;
-  })();
-
   function fechadoNoDia(chave) {
-    return dataDeChave(chave).getDay() === 1; // segunda
+    var cfg = estado.reservas.config;
+    if (!cfg) return false;
+    var weekday = dataDeChave(chave).getDay();
+    return !cfg.windows.some(function (window) { return window.weekday === weekday; });
   }
 
   function passouNoDia(chave) {
     return chave < chaveData(HOJE);
   }
 
-  /*
-   * Quanto maior a mesa, menos horários cabem — é o que qualquer salão
-   * responderia, e é o que dá sentido a revalidar o horário quando a
-   * quantidade de pessoas muda. O corte só cresce, nunca troca de conjunto:
-   * um horário livre para sete também está livre para dois.
-   */
-  function corteDeOcupacao(pessoas) {
-    var n = pessoas || 2;
-    if (n >= 7) return 0.6;
-    if (n >= 5) return 0.47;
-    return 0.34;
+  function alemDoHorizonte(chave) {
+    var cfg = estado.reservas.config;
+    if (!cfg) return false;
+    var limite = new Date(HOJE.getTime());
+    limite.setDate(limite.getDate() + cfg.bookingHorizonDays);
+    return chave > chaveData(limite);
   }
 
-  function grade(inicio, fim, passoMin) {
-    var horas = [];
-    for (var m = inicio; m <= fim; m += passoMin) {
-      horas.push(
-        String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0')
-      );
-    }
-    return horas;
+  function chaveDisponibilidade(chave, pessoas) {
+    return chave + '|' + pessoas + (estado.reservas.manageMode === 'reschedule' ? '|manage' : '');
   }
 
   function turnosDoDia(chave, pessoas) {
-    if (fechadoNoDia(chave)) return [];
-    if (passouNoDia(chave)) return [];
-    if (chave === DATA_LOTADA) return [];
-
-    var d = dataDeChave(chave);
-    var dia = d.getDay();
-    var turnos = [];
-
-    if (dia === 0) {
-      turnos.push({ id: 'almoco', nome: 'Almoço', horas: grade(12 * 60, 15 * 60, 30) });
-    } else {
-      turnos.push({ id: 'almoco', nome: 'Almoço', horas: grade(12 * 60, 14 * 60 + 30, 30) });
-      turnos.push({
-        id: 'jantar',
-        nome: 'Jantar',
-        horas: grade(19 * 60, dia === 5 || dia === 6 ? 22 * 60 + 30 : 22 * 60, 30)
-      });
-    }
-
-    var agora = new Date();
-    var ehHoje = chave === chaveData(HOJE);
-
-    return turnos
-      .map(function (t) {
-        var horas = t.horas.filter(function (hora) {
-          // Ocupação simulada, estável por data + horário + tamanho da mesa.
-          if (semente(chave + hora) < corteDeOcupacao(pessoas)) return false;
-          if (ehHoje) {
-            var p = hora.split(':');
-            var quando = new Date();
-            quando.setHours(Number(p[0]), Number(p[1]), 0, 0);
-            // Reservas só a partir de uma hora à frente.
-            if (quando.getTime() - agora.getTime() < 60 * 60 * 1000) return false;
-          }
-          return true;
-        });
-        return { id: t.id, nome: t.nome, horas: horas };
-      })
-      .filter(function (t) {
-        return t.horas.length > 0;
-      });
+    var item = estado.reservas.availability[chaveDisponibilidade(chave, pessoas)];
+    if (!item || item.status !== 'ready' || !item.slots.length) return [];
+    return [{ id: 'horarios', nome: 'Horários disponíveis', horas: item.slots }];
   }
 
   function temHorario(chave, pessoas) {
@@ -322,28 +260,92 @@
    */
   function estadoDoDia(chave, pessoas) {
     if (passouNoDia(chave)) return 'passado';
+    if (alemDoHorizonte(chave)) return 'fora';
     if (fechadoNoDia(chave)) return 'fechado';
-    if (!temHorario(chave, pessoas)) return 'lotado';
+    var item = estado.reservas.availability[chaveDisponibilidade(chave, pessoas)];
+    if (item && item.status === 'ready' && !item.slots.length) return 'lotado';
     return 'livre';
   }
 
   /* Alternativas em volta da data pedida — antes e depois —, não só depois:
    * quem procurou o sábado que lotou costuma aceitar a sexta. */
-  function alternativasDeData(chaveRef, pessoas) {
-    var achadas = [];
-    var base = dataDeChave(chaveRef);
-    for (var passo = 1; passo <= 30 && achadas.length < 3; passo++) {
-      [-passo, passo].forEach(function (delta) {
-        if (achadas.length >= 3) return;
-        var d = new Date(base.getTime());
-        d.setDate(d.getDate() + delta);
-        var chave = chaveData(d);
-        if (passouNoDia(chave)) return;
-        if (achadas.indexOf(chave) !== -1) return;
-        if (temHorario(chave, pessoas)) achadas.push(chave);
-      });
+  function carregarConfigReserva() {
+    var rs = estado.reservas;
+    if (rs.configStatus === 'loading' || rs.configStatus === 'ready') return;
+    rs.configStatus = 'loading';
+    rs.configError = '';
+    if (!RESERVAS) {
+      rs.configStatus = 'error';
+      rs.configError = 'As reservas ainda não estão disponíveis.';
+      redesenharSeReserva();
+      return;
     }
-    return achadas.sort();
+    RESERVAS.config().then(function (config) {
+      rs.config = config;
+      rs.configStatus = config.enabled && config.windows.length ? 'ready' : 'disabled';
+      try {
+        var pieces = new Intl.DateTimeFormat('en-US', {
+          timeZone: config.timezone, year: 'numeric', month: '2-digit', day: '2-digit'
+        }).formatToParts(new Date());
+        var parts = {};
+        pieces.forEach(function (piece) { parts[piece.type] = piece.value; });
+        var todayInRestaurant = parts.year + '-' + parts.month + '-' + parts.day;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(todayInRestaurant)) {
+          HOJE = dataDeChave(todayInRestaurant);
+          MES_MIN = chaveMes(HOJE);
+          if (!estado.reserva.data) estado.reserva.mes = MES_MIN;
+        }
+      } catch (_) { /* backend valida o fuso; data local segue como limite visual */ }
+      PESSOAS_MAX = config.maxPartySize;
+      if (estado.reserva.pessoas > PESSOAS_MAX) estado.reserva.pessoas = PESSOAS_MAX;
+      atualizarLimitesCalendario();
+      redesenharSeReserva();
+    }).catch(function (error) {
+      rs.configStatus = 'error';
+      rs.configError = error.message || 'Não foi possível carregar as reservas.';
+      redesenharSeReserva();
+    });
+  }
+
+  function carregarDisponibilidade(chave, pessoas) {
+    var rs = estado.reservas;
+    var managing = rs.manageMode === 'reschedule' && !!rs.manageToken;
+    var cacheKey = chaveDisponibilidade(chave, pessoas);
+    var serial = ++rs.requestSerial;
+    rs.availability[cacheKey] = { status: 'loading', slots: [], serial: serial, error: '' };
+    redesenharSeReserva();
+    var lookup = managing
+      ? RESERVAS.availabilityForManagement(chave, pessoas, rs.manageToken)
+      : RESERVAS.availability(chave, pessoas);
+    lookup.then(function (availability) {
+      var current = rs.availability[cacheKey];
+      if (!current || current.serial !== serial) return;
+      current.status = 'ready';
+      current.slots = availability.slots;
+      if (estado.reserva.data === chave && estado.reserva.pessoas === pessoas) revalidarHorario();
+      redesenharSeReserva();
+    }).catch(function (error) {
+      var current = rs.availability[cacheKey];
+      if (!current || current.serial !== serial) return;
+      current.status = 'error';
+      current.error = error.message || 'Não foi possível consultar os horários.';
+      current.slots = [];
+      redesenharSeReserva();
+    });
+  }
+
+  function redesenharSeReserva() {
+    if (estado.vista && estado.vista.indexOf('reserva:') === 0) {
+      var focused = document.activeElement;
+      var focusDate = focused && focused.dataset ? focused.dataset.data : null;
+      var focusHour = focused && focused.dataset ? focused.dataset.hora : null;
+      redesenharReserva(estado.vista.slice('reserva:'.length));
+      if (focusDate) focarDeVolta('.cal__dia[data-data="' + focusDate + '"]');
+      else if (focusHour) focarDeVolta('.hora[data-hora="' + focusHour + '"]');
+    } else if (estado.vista === 'remarcar') {
+      raiz.innerHTML = vistaRemarcar();
+      ligarRemarcacao();
+    }
   }
 
   /* === Componentes ======================================================= */
@@ -611,9 +613,8 @@
           '<div class="wrap">' +
             '<div class="rodape">' +
               '<p class="selo-demo">Protótipo</p>' +
-              '<p>Mockup de estudo do aplicativo do Bistrô Nicolini. Preços, ' +
-              'horários e disponibilidade são demonstrativos e nenhuma reserva ' +
-              'é enviada.</p>' +
+              '<p>O cardápio desta entrada é um estudo visual. Consulte a disponibilidade ' +
+              'real de reservas no formulário antes de planejar sua visita.</p>' +
             '</div>' +
           '</div>' +
         '</section>' +
@@ -631,6 +632,7 @@
           '<p class="selo-demo">Cardápio indisponível</p>' +
           '<h1>Não foi possível abrir o menu agora.</h1>' +
           '<p>' + h(window.BISTRO_ENGINE_ERROR || 'Tente novamente em instantes.') + '</p>' +
+          '<p><a class="btn" href="#/reserva">Reservar uma mesa</a></p>' +
           '<p><a class="btn" href="' + h(D.casa.telefone.link) + '">Falar com o Bistrô</a></p>' +
         '</div></main>';
     }
@@ -752,13 +754,13 @@
       .join('');
 
     var rodapeReserva = estado.mesa
-      ? '<p>Quer voltar outro dia? <a href="#/reserva">Ver demonstração de reserva</a>.</p>'
+      ? '<p>Quer voltar outro dia? <a href="#/reserva">Reservar uma mesa</a>.</p>'
       : '<p><a href="#/visita">Horários, endereço e contato</a></p>';
 
     return (
       barraHtml({ carta: true }) +
 
-      '<main id="conteudo" class="cardapio' + (estado.mesa || ehMenuPublico() ? '' : ' cardapio--flutua') + '">' +
+      '<main id="conteudo" class="cardapio' + (estado.mesa ? '' : ' cardapio--flutua') + '">' +
         /* A faixa agora carrega a barra: marca e foto viram um objeto só, como
          * na capa, em vez de dois registros empilhados. Pelo QR ela encolhe —
          * quem está sentado já viu o salão — mas nunca some: sem ela o
@@ -796,10 +798,10 @@
             '<div class="cardapio__lista">' +
               categorias +
               '<div class="rodape">' +
-                '<p class="selo-demo">Protótipo</p>' +
-                '<p>Preços e composição dos pratos são demonstrativos. ' +
-                'Fale com o salão sobre restrições alimentares — não listamos ' +
-                'alergênicos nesta versão.</p>' +
+                (D.integracaoEngine
+                  ? '<p>Fale com o salão sobre restrições alimentares; alergênicos não estão listados aqui.</p>'
+                  : '<p class="selo-demo">Protótipo</p><p>Preços e composição dos pratos são demonstrativos. ' +
+                    'Fale com o salão sobre restrições alimentares — não listamos alergênicos nesta versão.</p>') +
                 rodapeReserva +
               '</div>' +
             '</div>' +
@@ -809,9 +811,9 @@
       /* Fora do `main`: é chrome, não conteúdo do cardápio. Aparece só depois
        * da dobra, e nunca pelo QR — quem está sentado já tem mesa, e ali o
        * rodapé é que oferece voltar outro dia. */
-      (estado.mesa || ehMenuPublico()
+      (estado.mesa
         ? ''
-        : '<a class="btn reservar-flutua" href="#/reserva">Ver reserva demonstrativa</a>')
+        : '<a class="btn reservar-flutua" href="#/reserva">Reservar uma mesa</a>')
     );
   }
 
@@ -903,21 +905,19 @@
                 '<a href="' + h(c.instagram.link) + '" target="_blank" rel="noopener">' + ico.insta + '<span>' + h(c.instagram.exibicao) + '</span></a>' +
               '</div>' +
             '</section>' +
-            (ehMenuPublico()
-              ? ''
-              : '<section class="bloco">' +
+            '<section class="bloco">' +
               '<h2 class="bloco__nome">Reservas</h2>' +
               '<p class="nota-servico__texto visita__texto">' +
-              'Grupos acima de oito pessoas e datas especiais são combinados ' +
+              'Consulte dias e horários disponíveis ou combine grupos maiores ' +
               'por telefone com o salão.</p>' +
               '<a class="btn" href="#/reserva">Reservar uma mesa</a>' +
-            '</section>') +
+            '</section>' +
           '</div>' +
         '</div>' +
         '<div class="rodape">' +
           '<p class="selo-demo">Protótipo</p>' +
-          '<p>Horários e contatos vieram do material da casa e ainda não foram ' +
-          'confirmados; nesta demonstração servem de exemplo.</p>' +
+          '<p>Horários e contatos da página de visita ainda são provisórios. ' +
+          'Para reservas, consulte a agenda em tempo real.</p>' +
         '</div>' +
       '</div></main>'
     );
@@ -925,7 +925,7 @@
 
   /* === Vista: reserva ==================================================== */
   /*
-   * Duas telas antes da confirmação demonstrativa:
+   * Duas telas antes da confirmação da reserva:
    *
    *   DISPONIBILIDADE  quantas pessoas · que dia · que horas
    *   DADOS            em nome de quem, com a mesa revista no alto
@@ -946,7 +946,7 @@
    */
 
   var PESSOAS_MIN = 1;
-  var PESSOAS_MAX = 8;
+  var PESSOAS_MAX = 2;
 
   function dataLonga(chave) {
     var d = dataDeChave(chave);
@@ -969,15 +969,16 @@
     return partes.join(' · ');
   }
 
-  /* Um dia sem mesa diz por quê, e o leitor de tela recebe a frase inteira
-   * mesmo quando a marca visível é só um risco no número. */
+  /* O calendário aponta o dia, a consulta desse dia confirma os horários. */
   function servicosDoDia(chave, pessoas) {
     if (fechadoNoDia(chave)) return 'fechado';
+    var item = estado.reservas.availability[chaveDisponibilidade(chave, pessoas)];
+    if (!item) return 'consulte os horários';
+    if (item.status === 'loading') return 'consultando horários';
+    if (item.status === 'error') return 'consulta indisponível';
     var turnos = turnosDoDia(chave, pessoas);
     if (!turnos.length) return 'sem mesas para ' + pluralPessoas(pessoas);
-    return turnos
-      .map(function (t) { return t.nome.toLowerCase(); })
-      .join(' e ');
+    return 'horários disponíveis para ' + pluralPessoas(pessoas);
   }
 
   function vistaReserva(passo) {
@@ -998,21 +999,13 @@
     return passo === 'dados' || !!estado.reserva.hora;
   }
 
-  /* O aviso de demonstração encolheu para uma pastilha e uma linha, coladas ao
-   * título. Antes era uma coluna inteira ao lado do fluxo, no desktop, e um
-   * parágrafo solto embaixo da pergunta, no celular. */
   function cabecaReserva(titulo, nota) {
     return (
       '<header class="reserva__cabeca">' +
         /* `h1`: é o título da tela, como o nome da carta virou na portada do
          * cardápio. Era `h2`, e a reserva ficava sem cabeçalho de nível 1. */
         '<h1 class="reserva__titulo">' + h(titulo) + '</h1>' +
-        (nota
-          ? '<p class="reserva__demo">' +
-              '<span class="selo-demo selo-demo--fino">Demonstração</span>' +
-              '<span>' + h(nota) + '</span>' +
-            '</p>'
-          : '') +
+        (nota ? '<p class="reserva__intro">' + h(nota) + '</p>' : '') +
       '</header>'
     );
   }
@@ -1029,9 +1022,11 @@
 
     return (
       cabecaReserva(
-        'Simule uma reserva',
-        'Nada é enviado. Os dias e horários abaixo são simulados.'
+        'Reservar uma mesa',
+        'Escolha o dia e o horário de chegada. A confirmação é imediata quando houver mesa disponível.'
       ) +
+      estadoConfiguracaoReserva() +
+      (estado.reservas.configStatus !== 'ready' ? '' :
       /* Pessoas fica FORA da grade de duas colunas: ela vale para as duas —
        * muda o calendário e muda os horários —, e dentro da coluna da
        * esquerda empurrava o calendário para baixo do bloco de horários. */
@@ -1045,8 +1040,22 @@
         '</section>' +
       '</div>' +
       erroData +
-      (temPeFixo('disponibilidade') ? pefixo('Continuar') : '')
+      (temPeFixo('disponibilidade') ? pefixo('Continuar') : ''))
     );
+  }
+
+  function estadoConfiguracaoReserva() {
+    var rs = estado.reservas;
+    if (rs.configStatus === 'ready') return '';
+    if (rs.configStatus === 'idle' || rs.configStatus === 'loading') {
+      return '<p class="reserva__estado" role="status">Consultando a agenda…</p>';
+    }
+    if (rs.configStatus === 'disabled') {
+      return '<div class="reserva__estado"><p>As reservas online ainda não estão disponíveis. Fale com o salão para combinar sua visita.</p>' +
+        '<a href="' + h(D.casa.telefone.link) + '">Ligar para o Bistrô</a></div>';
+    }
+    return '<div class="reserva__estado" role="alert"><p>' + h(rs.configError) + '</p>' +
+      '<button type="button" class="btn btn--vazado" data-retry-config>Tentar novamente</button></div>';
   }
 
   function blocoPessoas() {
@@ -1060,13 +1069,6 @@
       );
     }
 
-    /* TEMPORÁRIO (pedido do Pedro): a nota "Mesas maiores que 8..." está
-     * desligada. Para trazer de volta, apagar o `false &&` abaixo. */
-    var nota = false &&
-      '<p class="pessoas__nota">Mesas maiores que ' + PESSOAS_MAX + ' o salão combina por ' +
-      'telefone: <a href="' + h(D.casa.telefone.link) + '">' + h(D.casa.telefone.exibicao) +
-      '</a>.</p>';
-
     return (
       '<div class="pessoas">' +
         '<span class="pessoas__rot" id="rot-pessoas">Pessoas</span>' +
@@ -1079,7 +1081,7 @@
           seta(1, 'Uma pessoa a mais', r.pessoas >= PESSOAS_MAX) +
         '</div>' +
       '</div>' +
-      (nota || '')
+      '<p class="pessoas__nota">Para grupos maiores, fale com o salão.</p>'
     );
   }
 
@@ -1094,10 +1096,14 @@
     return chaveMes(d);
   }
 
-  /* A agenda do protótipo vai até o fim do terceiro mês. Mais do que isso seria
-   * fingir uma disponibilidade que nem existe. */
   var MES_MIN = chaveMes(HOJE);
-  var MES_MAX = chaveMes(new Date(HOJE.getFullYear(), HOJE.getMonth() + 2, 1));
+  var MES_MAX = MES_MIN;
+
+  function atualizarLimitesCalendario() {
+    var limite = new Date(HOJE.getTime());
+    limite.setDate(limite.getDate() + estado.reservas.config.bookingHorizonDays);
+    MES_MAX = chaveMes(limite);
+  }
 
   function nomeDoMes(mes) {
     return MESES[Number(mes.slice(5, 7)) - 1] + ' de ' + mes.slice(0, 4);
@@ -1128,7 +1134,7 @@
     for (var dia = 1; dia <= total; dia++) {
       var chave = chaveData(new Date(ano, m, dia));
       var st = estadoDoDia(chave, r.pessoas);
-      var travado = st === 'passado' || st === 'fechado';
+      var travado = st === 'passado' || st === 'fechado' || st === 'fora';
       if (!travado) {
         candidatos.push(chave);
         if (r.data === chave) ativa = chave;
@@ -1140,11 +1146,11 @@
     for (var d2 = 1; d2 <= total; d2++) {
       var ch = chaveData(new Date(ano, m, d2));
       var est = estadoDoDia(ch, r.pessoas);
-      var trav = est === 'passado' || est === 'fechado';
+      var trav = est === 'passado' || est === 'fechado' || est === 'fora';
       var hoje2 = ch === hojeChave;
 
       var rotulo = maiusculaInicial(dataLonga(ch)) + (hoje2 ? ', hoje' : '') + ', ' +
-        (est === 'passado' ? 'já passou' : servicosDoDia(ch, r.pessoas));
+        (est === 'passado' ? 'já passou' : est === 'fora' ? 'fora do período de reservas' : servicosDoDia(ch, r.pessoas));
 
       celulas +=
         '<button type="button" class="cal__dia" data-estado="' + est + '"' +
@@ -1200,34 +1206,23 @@
         h(maiusculaInicial(dataLonga(r.data))) +
       '</h3>';
 
+    var item = estado.reservas.availability[chaveDisponibilidade(r.data, r.pessoas)];
+    if (!item || item.status === 'loading') {
+      return titulo + '<p class="horas__espera" role="status">Consultando horários disponíveis…</p>';
+    }
+    if (item.status === 'error') {
+      return titulo + '<div class="reserva__estado" role="alert"><p>' + h(item.error) + '</p>' +
+        '<button type="button" class="btn btn--vazado" data-retry-availability>Tentar novamente</button></div>';
+    }
+
     var turnos = turnosDoDia(r.data, r.pessoas);
 
     if (!turnos.length) {
-      var fechado = fechadoNoDia(r.data);
-      var alts = alternativasDeData(r.data, r.pessoas)
-        .map(function (chave) {
-          return (
-            '<button type="button" class="pilula pilula--alt" data-data="' + chave + '" ' +
-            'aria-label="' + h(maiusculaInicial(dataLonga(chave))) + '">' +
-            h(dataCurta(chave)) + '</button>'
-          );
-        })
-        .join('');
-
       return (
         titulo +
         '<div class="sem-horario">' +
-          '<p>' + (fechado
-            ? 'A casa fecha às segundas.'
-            : 'As mesas deste dia já estão comprometidas para ' +
-              h(pluralPessoas(r.pessoas)) + '.') +
-          '</p>' +
-          (alts
-            ? '<p class="sem-horario__rot">Dias por perto com mesa livre</p>' +
-              '<div class="pilulas">' + alts + '</div>'
-            : '<p class="sem-horario__rot">Vale falar com o salão: ' +
-              '<a href="' + h(D.casa.telefone.link) + '">' +
-              h(D.casa.telefone.exibicao) + '</a>.</p>') +
+          '<p>Não há mesa disponível para ' + h(pluralPessoas(r.pessoas)) +
+          ' neste dia. Escolha outra data ou fale com o salão.</p>' +
         '</div>'
       );
     }
@@ -1264,12 +1259,6 @@
     var r = estado.reserva;
     var e = estado.erros;
 
-    var ocasioes = D.ocasioes
-      .map(function (o) {
-        return '<option value="' + h(o) + '"' + (r.ocasiao === o ? ' selected' : '') + '>' + h(o) + '</option>';
-      })
-      .join('');
-
     function campo(id, rotulo, tipo, valor, ajuda, obrigatorio) {
       var erro = e[id];
       return (
@@ -1292,7 +1281,7 @@
     return (
       cabecaReserva(
         'Em nome de quem?',
-        'Reserva demonstrativa: nada será enviado ao restaurante.'
+        'Ao confirmar, seu lugar entra na agenda do Bistrô. Guarde o link privado para alterar ou cancelar.'
       ) +
 
       /* A mesa escolhida vira uma linha só, com "Alterar" ao lado — não um
@@ -1305,15 +1294,15 @@
       campo('nome', 'Nome', 'text', r.nome, '', true) +
       campo('telefone', 'Telefone', 'tel', r.telefone, 'Para o salão avisar se algo mudar.', true) +
       campo('email', 'E-mail', 'email', r.email, '', false) +
-
       '<div class="campo">' +
-        '<label for="ocasiao">Ocasião <span class="rotulo__opcional">(opcional)</span></label>' +
-        '<select class="entrada" id="ocasiao" name="ocasiao">' +
-          '<option value="">Sem ocasião especial</option>' + ocasioes +
-        '</select>' +
+        '<label for="observacao">Observações <span class="rotulo__opcional">(opcional)</span></label>' +
+        '<textarea class="entrada" id="observacao" name="observacao" maxlength="1000">' + h(r.observacao) + '</textarea>' +
       '</div>' +
-
-      pefixo('Concluir demonstração', '#/reserva', true)
+      (estado.reservas.createError
+        ? '<p class="reserva__erro-global" role="alert">' + h(estado.reservas.createError) + '</p>' : '') +
+      (estado.reservas.createPayload
+        ? '<p class="reserva__aviso">A resposta é incerta. Tente novamente com os mesmos dados; se persistir, consulte o salão antes de refazer o pedido.</p>' : '') +
+      pefixo(estado.reservas.saving ? 'Confirmando…' : 'Confirmar reserva', '#/reserva', true)
     );
   }
 
@@ -1328,7 +1317,7 @@
           (voltar
             ? '<a class="btn btn--vazado" href="' + h(voltar) + '">Voltar</a>'
             : '') +
-          '<button type="submit" class="btn">' + h(rotulo) + '</button>' +
+          '<button type="submit" class="btn"' + (estado.reservas.saving ? ' disabled' : '') + '>' + h(rotulo) + '</button>' +
         '</div>' +
       '</div>'
     );
@@ -1336,33 +1325,239 @@
 
   function vistaConfirmada() {
     var r = estado.reserva;
+    var record = estado.reservas.record;
+    if (!record) return '';
+    var link = criarLinkGestao(estado.reservas.manageToken);
 
     return (
       barraHtml({ voltar: estado.mesa ? '#/cardapio' : '#/' }) +
       '<main id="conteudo" class="confirmado"><div class="wrap">' +
         '<div class="confirmado__marca">' + ico.check + '</div>' +
-        '<h1 class="confirmado__titulo">Simulação concluída</h1>' +
-        '<p class="confirmado__sub">Reserva demonstrativa: nada foi enviado ao ' +
-        'restaurante e nenhum contato foi registrado.</p>' +
+        '<h1 class="confirmado__titulo">Mesa confirmada</h1>' +
+        '<p class="confirmado__sub">Sua reserva está na agenda do Bistrô. Salve o link privado abaixo: ele é necessário para consultar, remarcar ou cancelar.</p>' +
         '<div class="cartao">' +
           '<div class="cartao__destaque">' +
-            '<p class="cartao__data">' + h(maiusculaInicial(dataLonga(r.data))) + '</p>' +
-            '<p class="cartao__hora">' + h(r.hora) + '</p>' +
-            '<p class="cartao__pessoas">' + r.pessoas + (r.pessoas === 1 ? ' pessoa' : ' pessoas') +
-            ' · em nome de ' + h(r.nome) + '</p>' +
+            '<p class="cartao__data">' + h(maiusculaInicial(dataLonga(record.date))) + '</p>' +
+            '<p class="cartao__hora">' + h(record.arrivalTime) + '</p>' +
+            '<p class="cartao__pessoas">' + record.partySize + (record.partySize === 1 ? ' pessoa' : ' pessoas') +
+            ' · em nome de ' + h(record.name) + '</p>' +
           '</div>' +
           '<div class="resumo resumo--nu">' +
-            (r.ocasiao ? '<div class="resumo__linha"><span class="resumo__rot">Ocasião</span><span class="resumo__val">' + h(r.ocasiao) + '</span></div>' : '') +
             (r.observacao ? '<div class="resumo__linha"><span class="resumo__rot">Observação</span><span class="resumo__val">' + h(r.observacao) + '</span></div>' : '') +
-            '<div class="resumo__linha"><span class="resumo__rot">Contato</span><span class="resumo__val">' + h(r.telefone) + '</span></div>' +
           '</div>' +
         '</div>' +
         '<div class="confirmado__acoes">' +
+          '<a class="btn" href="' + h(link) + '">Abrir minha reserva</a>' +
+          '<button type="button" class="btn btn--vazado" data-copy-management>Copiar link privado</button>' +
           '<a class="btn" href="#/cardapio">Ver o cardápio</a>' +
           '<a class="btn btn--vazado" href="' + (estado.mesa ? '#/cardapio' : '#/') + '">Voltar ao início</a>' +
         '</div>' +
       '</div></main>'
     );
+  }
+
+  function criarLinkGestao(token) {
+    return window.location.origin + window.location.pathname + '#/reserva/gerenciar/' + encodeURIComponent(token);
+  }
+
+  function ligarConfirmacao() {
+    var button = $('[data-copy-management]');
+    if (!button) return;
+    button.addEventListener('click', function () {
+      if (!navigator.clipboard || !navigator.clipboard.writeText) {
+        anuncia('Abra sua reserva e salve o endereço da página.');
+        return;
+      }
+      navigator.clipboard.writeText(criarLinkGestao(estado.reservas.manageToken)).then(function () {
+        button.textContent = 'Link copiado';
+        anuncia('Link privado copiado. Guarde-o em um local seguro.');
+      }).catch(function () { anuncia('Não foi possível copiar. Abra sua reserva e salve o endereço da página.'); });
+    });
+  }
+
+  function statusDaReserva(status) {
+    return {
+      confirmed: 'Confirmada', seated: 'Cliente recebido', completed: 'Visita concluída',
+      cancelled: 'Cancelada', no_show: 'Não compareceu'
+    }[status] || 'Reserva';
+  }
+
+  function mostrarGestao() {
+    var rs = estado.reservas;
+    rs.manageMode = 'view';
+    raiz.innerHTML = vistaGestao();
+    estado.vista = 'gerenciar';
+    ligarGestao();
+    if (rs.manageStatus !== 'idle') return;
+    rs.manageStatus = 'loading';
+    raiz.innerHTML = vistaGestao();
+    RESERVAS.manage(rs.manageToken).then(function (record) {
+      if (window.location.hash !== '#/reserva/gerenciar/' + rs.manageToken) return;
+      rs.record = record;
+      rs.manageStatus = 'ready';
+      raiz.innerHTML = vistaGestao();
+      ligarGestao();
+    }).catch(function (error) {
+      if (window.location.hash !== '#/reserva/gerenciar/' + rs.manageToken) return;
+      rs.manageStatus = 'error';
+      rs.manageError = error.status === 404 || error.status === 403
+        ? 'Este link de reserva não é válido ou não está mais disponível.'
+        : error.message || 'Não foi possível consultar a reserva.';
+      raiz.innerHTML = vistaGestao();
+      ligarGestao();
+    });
+  }
+
+  function vistaGestao() {
+    var rs = estado.reservas;
+    var record = rs.record;
+    var corpo;
+    if (rs.manageStatus === 'loading' || rs.manageStatus === 'idle') {
+      corpo = '<p class="reserva__estado" role="status">Consultando sua reserva…</p>';
+    } else if (rs.manageStatus === 'error') {
+      corpo = '<div class="reserva__estado" role="alert"><p>' + h(rs.manageError) + '</p>' +
+        '<button type="button" class="btn btn--vazado" data-retry-manage>Tentar novamente</button></div>';
+    } else {
+      corpo =
+        '<div class="cartao">' +
+          '<div class="cartao__destaque">' +
+            '<p class="reserva__status">' + h(statusDaReserva(record.status)) + '</p>' +
+            '<p class="cartao__data">' + h(maiusculaInicial(dataLonga(record.date))) + '</p>' +
+            '<p class="cartao__hora">' + h(record.arrivalTime) + '</p>' +
+            '<p class="cartao__pessoas">' + h(pluralPessoas(record.partySize)) + ' · em nome de ' + h(record.name) + '</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="reserva__acoes">' +
+          (record.canReschedule ? '<a class="btn" href="#/reserva/remarcar">Remarcar</a>' : '') +
+          (record.canCancel ? '<button type="button" class="btn btn--vazado" data-cancel>Cancelar reserva</button>' : '') +
+          '<a class="btn btn--vazado" href="#/cardapio">Ver cardápio</a>' +
+        '</div>' +
+        (rs.confirmCancel ? '<div class="reserva__confirmar" role="group" aria-label="Confirmar cancelamento">' +
+          '<p>Cancelar esta reserva? A mesa será liberada para outra pessoa.</p>' +
+          '<button type="button" class="btn" data-confirm-cancel>Sim, cancelar</button>' +
+          '<button type="button" class="btn btn--vazado" data-keep-booking>Manter reserva</button></div>' : '') +
+        (rs.manageError ? '<p class="reserva__erro-global" role="alert">' + h(rs.manageError) + '</p>' : '');
+    }
+    return barraHtml({ voltar: '#/cardapio' }) +
+      '<main id="conteudo" class="reserva reserva--gestao"><div class="wrap">' +
+      cabecaReserva('Sua reserva', 'Este é um link privado. Compartilhe apenas com quem pode gerir sua mesa.') +
+      corpo + '</div></main>';
+  }
+
+  function ligarGestao() {
+    var rs = estado.reservas;
+    var retry = $('[data-retry-manage]');
+    if (retry) retry.addEventListener('click', function () {
+      rs.manageStatus = 'idle';
+      rs.manageError = '';
+      mostrarGestao();
+    });
+    var cancel = $('[data-cancel]');
+    if (cancel) cancel.addEventListener('click', function () {
+      rs.confirmCancel = true;
+      raiz.innerHTML = vistaGestao();
+      ligarGestao();
+    });
+    var keep = $('[data-keep-booking]');
+    if (keep) keep.addEventListener('click', function () {
+      rs.confirmCancel = false;
+      raiz.innerHTML = vistaGestao();
+      ligarGestao();
+    });
+    var confirm = $('[data-confirm-cancel]');
+    if (confirm) confirm.addEventListener('click', function () {
+      confirm.disabled = true;
+      confirm.textContent = 'Cancelando…';
+      rs.manageError = '';
+      RESERVAS.cancel(rs.manageToken, rs.record.revision).then(function (record) {
+        rs.record = record;
+        rs.confirmCancel = false;
+        raiz.innerHTML = vistaGestao();
+        ligarGestao();
+        anuncia('Reserva cancelada.');
+      }).catch(function (error) {
+        rs.manageError = error.message || 'Não foi possível cancelar.';
+        rs.confirmCancel = false;
+        if (error.status === 409) rs.manageStatus = 'idle';
+        mostrarGestao();
+      });
+    });
+  }
+
+  function vistaRemarcar() {
+    var rs = estado.reservas;
+    var record = rs.record;
+    var r = estado.reserva;
+    return barraHtml({ voltar: '#/reserva/gerenciar/' + rs.manageToken }) +
+      '<main id="conteudo" class="reserva reserva--pe"><div class="wrap">' +
+      '<form id="form-remarcar" novalidate>' +
+        cabecaReserva('Escolha outra chegada', 'A reserva atual permanece confirmada até a nova data ser aceita.') +
+        '<p class="reserva__atual">Sua mesa atual: ' + h(maiusculaInicial(dataLonga(record.date))) +
+          ', às ' + h(record.arrivalTime) + ' · ' + h(pluralPessoas(record.partySize)) + '.</p>' +
+        estadoConfiguracaoReserva() +
+        (rs.configStatus === 'ready' ? '<div class="disp"><div class="disp__lado">' + calendarioHtml(r.mes || MES_MIN) +
+          '</div><section class="disp__horas" id="bloco-horas" aria-labelledby="horas-titulo">' + blocoHorarios() + '</section></div>' : '') +
+        (rs.manageError ? '<p class="reserva__erro-global" role="alert">' + h(rs.manageError) + '</p>' : '') +
+        (r.hora ? '<div class="pe-fixo"><p class="pe-fixo__mini">' + h(rotuloReserva()) + '</p>' +
+          '<div class="pe-fixo__acoes"><a class="btn btn--vazado" href="#/reserva/gerenciar/' + h(rs.manageToken) + '">Voltar</a>' +
+          '<button class="btn" type="submit">Confirmar alteração</button></div></div>' : '') +
+      '</form></div></main>';
+  }
+
+  function ligarRemarcacao() {
+    var form = $('#form-remarcar');
+    if (!form) return;
+    var rs = estado.reservas;
+    var r = estado.reserva;
+    var retry = $('[data-retry-availability]', form);
+    if (retry) retry.addEventListener('click', function () { carregarDisponibilidade(r.data, r.pessoas); });
+    var retryConfig = $('[data-retry-config]', form);
+    if (retryConfig) retryConfig.addEventListener('click', function () {
+      rs.configStatus = 'idle';
+      carregarConfigReserva();
+    });
+    form.addEventListener('click', function (ev) {
+      var nav = ev.target.closest('[data-mes]');
+      if (nav) {
+        r.mes = deslocarMes(r.mes, Number(nav.dataset.mes));
+        raiz.innerHTML = vistaRemarcar();
+        ligarRemarcacao();
+        return;
+      }
+      var day = ev.target.closest('[data-data]');
+      if (day) {
+        r.data = day.dataset.data;
+        r.mes = r.data.slice(0, 7);
+        r.hora = null;
+        carregarDisponibilidade(r.data, r.pessoas);
+        raiz.innerHTML = vistaRemarcar();
+        ligarRemarcacao();
+        return;
+      }
+      var hour = ev.target.closest('[data-hora]');
+      if (hour) {
+        r.hora = hour.dataset.hora;
+        raiz.innerHTML = vistaRemarcar();
+        ligarRemarcacao();
+      }
+    });
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      if (!r.hora || !turnosDoDia(r.data, r.pessoas).some(function (group) { return group.horas.includes(r.hora); })) return;
+      var button = $('[type="submit"]', form);
+      if (button) { button.disabled = true; button.textContent = 'Alterando…'; }
+      RESERVAS.reschedule(rs.manageToken, rs.record.revision, r.data, r.hora).then(function (record) {
+        rs.record = record;
+        rs.manageError = '';
+        rs.manageStatus = 'ready';
+        window.location.hash = '#/reserva/gerenciar/' + rs.manageToken;
+      }).catch(function (error) {
+        rs.manageError = error.message || 'Não foi possível remarcar. Sua reserva original permanece válida.';
+        if (error.status === 409) rs.manageStatus = 'idle';
+        raiz.innerHTML = vistaRemarcar();
+        ligarRemarcacao();
+      });
+    });
   }
 
   /* === Sobreposições ===================================================== */
@@ -2034,23 +2229,49 @@
     if (soltarPortada) soltarPortada();
 
     if (raizRota === 'reserva') {
-      /* A entrada integrada publica somente o cardapio. O mockup de reserva
-       * continua intacto na raiz do app para estudo, mas nao pode ser aberto
-       * por hash salvo, refresh ou digitacao direta em `/menu/`. */
-      if (ehMenuPublico()) {
-        window.location.replace('#/cardapio');
+      var passo = partes[1] || 'disponibilidade';
+
+      if (passo === 'gerenciar') {
+        var token = partes[2];
+        if (!token || !/^[A-Za-z0-9_-]{43,256}$/.test(token)) {
+          window.location.replace('#/reserva');
+          return;
+        }
+        if (estado.reservas.manageToken !== token) {
+          estado.reservas.manageToken = token;
+          estado.reservas.record = null;
+          estado.reservas.manageStatus = 'idle';
+          estado.reservas.manageMode = 'view';
+        }
+        mostrarGestao();
         return;
       }
 
-      var passo = partes[1] || 'disponibilidade';
+      if (passo === 'remarcar') {
+        if (!estado.reservas.record || !estado.reservas.record.canReschedule || !estado.reservas.manageToken) {
+          window.location.replace('#/reserva/gerenciar/' + (estado.reservas.manageToken || ''));
+          return;
+        }
+        estado.reserva.pessoas = estado.reservas.record.partySize;
+        estado.reserva.data = null;
+        estado.reserva.hora = null;
+        estado.reserva.mes = MES_MIN;
+        estado.reservas.manageMode = 'reschedule';
+        raiz.innerHTML = vistaRemarcar();
+        estado.vista = 'remarcar';
+        ligarRemarcacao();
+        carregarConfigReserva();
+        return;
+      }
 
       if (passo === 'confirmada') {
-        if (!estado.reserva.data || !estado.reserva.hora || !estado.reserva.nome) {
+        if (!estado.reservas.record || !estado.reservas.manageToken) {
           window.location.replace('#/reserva');
           return;
         }
         raiz.innerHTML = vistaConfirmada();
         estado.vista = 'confirmada';
+        ligarConfirmacao();
         window.scrollTo(0, 0);
         return;
       }
@@ -2072,6 +2293,7 @@
       raiz.innerHTML = vistaReserva(passo);
       estado.vista = 'reserva:' + passo;
       ligarReserva(passo);
+      carregarConfigReserva();
       window.scrollTo(0, 0);
       return;
     }
@@ -2279,6 +2501,23 @@
     var form = $('#form-reserva');
     if (!form) return;
     var r = estado.reserva;
+    var rs = estado.reservas;
+    if (passo === 'dados' && rs.createPayload) {
+      $$('input, textarea, select', form).forEach(function (field) { field.disabled = true; });
+      var back = $('.pe-fixo__acoes a', form);
+      if (back) back.hidden = true;
+    }
+
+    var retryConfig = $('[data-retry-config]', form);
+    if (retryConfig) retryConfig.addEventListener('click', function () {
+      rs.configStatus = 'idle';
+      carregarConfigReserva();
+      redesenharReserva(passo);
+    });
+    var retryAvailability = $('[data-retry-availability]', form);
+    if (retryAvailability) retryAvailability.addEventListener('click', function () {
+      carregarDisponibilidade(r.data, r.pessoas);
+    });
 
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
@@ -2286,7 +2525,7 @@
       if (passo === 'disponibilidade') {
         /* A barra só aparece com horário escolhido, mas a validação continua:
          * o horário pode ter caído entre o desenho da tela e o envio. */
-        if (!r.data || !r.hora) {
+        if (!r.data || !r.hora || !turnosDoDia(r.data, r.pessoas).some(function (t) { return t.horas.includes(r.hora); })) {
           estado.erros.data = 'Escolha um dia e um horário para continuar.';
           redesenharReserva('disponibilidade');
           var alvo = $('#erro-data');
@@ -2299,7 +2538,7 @@
         return;
       }
 
-      colherDados();
+      if (!rs.createPayload) colherDados();
       var erros = {};
       if (r.nome.trim().length < 2) erros.nome = 'Diga o nome da reserva.';
       var digitos = r.telefone.replace(/\D/g, '');
@@ -2321,8 +2560,45 @@
         return;
       }
 
-      // Revisão e confirmação na mesma tela: nada sai daqui.
-      window.location.hash = '#/reserva/confirmada';
+      if (rs.saving) return;
+      if (!rs.createPayload) {
+        rs.idempotencyKey = RESERVAS.randomIdempotencyKey();
+        rs.manageToken = RESERVAS.randomManageToken();
+        rs.createPayload = {
+          date: r.data,
+          arrivalTime: r.hora,
+          partySize: r.pessoas,
+          name: r.nome.trim(),
+          phone: r.telefone.trim(),
+          email: r.email.trim() || undefined,
+          notes: r.observacao.trim() || undefined,
+          idempotencyKey: rs.idempotencyKey,
+          manageToken: rs.manageToken
+        };
+      }
+      rs.saving = true;
+      rs.createError = '';
+      var button = $('[type="submit"]', form);
+      if (button) { button.disabled = true; button.textContent = 'Confirmando…'; }
+      RESERVAS.create(rs.createPayload).then(function (record) {
+        if (!record || record.status !== 'confirmed' || !record.id) {
+          throw new Error('A confirmação não foi concluída. Consulte o salão antes de tentar novamente.');
+        }
+        rs.record = record;
+        rs.saving = false;
+        rs.createPayload = null;
+        window.location.hash = '#/reserva/confirmada';
+      }).catch(function (error) {
+        rs.saving = false;
+        rs.createError = error.message || 'Não foi possível confirmar a reserva.';
+        if (error.status >= 400 && error.status < 500 && error.status !== 429) {
+          rs.createPayload = null;
+          rs.idempotencyKey = null;
+          rs.manageToken = null;
+        }
+        redesenharSeReserva();
+        anuncia(rs.createError);
+      });
     });
 
     if (passo === 'disponibilidade') {
@@ -2360,7 +2636,7 @@
             /* Andou para fora do mês visível: vira o mês e continua de lá. */
             var novo = chave.slice(0, 7);
             if (novo < MES_MIN || novo > MES_MAX) return;
-            if (fechadoNoDia(chave)) continue;
+          if (fechadoNoDia(chave) || alemDoHorizonte(chave)) continue;
             r.mes = novo;
             redesenharReserva('disponibilidade');
             anuncia(nomeDoMes(r.mes));
@@ -2388,14 +2664,16 @@
           if (novo === r.pessoas) return;
           r.pessoas = novo;
           estado.erros = {};
+          rs.createPayload = null;
           var recado = pluralPessoas(r.pessoas);
-          /* Mudou o tamanho da mesa: a simulação é refeita e o horário
-           * escolhido pode não valer mais para o grupo novo. */
-          if (revalidarHorario()) {
+          if (r.hora) {
+            r.hora = null;
+            r.turno = null;
             recado += '. O horário escolhido não atende esta mesa; escolha outro.';
           }
           redesenharReserva('disponibilidade');
           anuncia(recado);
+          if (r.data) carregarDisponibilidade(r.data, r.pessoas);
           focarDeVolta('[data-pessoas="' + bp.dataset.pessoas + '"]', '[data-pessoas]');
           return;
         }
@@ -2422,6 +2700,7 @@
           r.data = chave;
           r.mes = chave.slice(0, 7);
           estado.erros = {};
+          rs.createPayload = null;
           redesenharReserva('disponibilidade');
           anuncia(
             maiusculaInicial(dataLonga(chave)) + ': ' +
@@ -2431,14 +2710,15 @@
           /* Sem avanço automático e sem pulo: os horários entram embaixo do
            * calendário, e a página só se move se eles estiverem fora da vista. */
           trazerHorarios();
+          carregarDisponibilidade(chave, r.pessoas);
           return;
         }
 
         var bh = ev.target.closest('[data-hora]');
         if (bh) {
           r.hora = bh.dataset.hora;
-          r.turno = bh.dataset.turno;
           estado.erros = {};
+          rs.createPayload = null;
           redesenharReserva('disponibilidade');
           anuncia(rotuloReserva() + '. Toque em Continuar.');
           focarDeVolta('[data-hora="' + r.hora + '"]', '.hora');
@@ -2450,7 +2730,12 @@
       // Guarda o que foi digitado ao sair de cada campo, para o Voltar do
       // navegador nunca devolver um formulário vazio.
       form.addEventListener('change', colherDados);
-      form.addEventListener('input', colherDados);
+      form.addEventListener('input', function () {
+        colherDados();
+        if (rs.createPayload && !rs.saving) {
+          rs.createError = '';
+        }
+      });
     }
   }
 
@@ -2466,6 +2751,8 @@
   function revalidarHorario() {
     var r = estado.reserva;
     if (!r.data || !r.hora) return false;
+    var item = estado.reservas.availability[chaveDisponibilidade(r.data, r.pessoas)];
+    if (!item || item.status !== 'ready') return false;
     var vago = turnosDoDia(r.data, r.pessoas).some(function (t) {
       return t.horas.indexOf(r.hora) !== -1;
     });

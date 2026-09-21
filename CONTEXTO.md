@@ -41,6 +41,13 @@ da Nicolini responderem HTTP 200. O rewrite `/menu-engine` e a configuração de
 preview deste app passaram a apontar para esse alias Production, substituindo
 o candidato protegido por Vercel SSO.
 
+**Candidato local de Reservas (21/09/2026):** a skin pública de `/menu/`
+foi preparada para consultar disponibilidade e confirmar mesas por API direta
+do Restaurants Engine, além de gerar link privado para consultar, remarcar e
+cancelar. O cardápio continua no `/menu-engine`. O código local não prova que
+a API de reservas foi migrada, configurada para o Bistrô, publicada ou validada
+na produção; antes disso, a tela informa indisponibilidade sem simular mesas.
+
 ## O que vive dentro deste app
 
 Um único projeto React/Vite com quatro frentes:

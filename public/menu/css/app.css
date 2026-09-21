@@ -3004,6 +3004,99 @@ select.entrada {
   margin-top: 24px;
 }
 
+/* Reserva real: estados de rede e gestão dentro do vocabulário do mockup. */
+.reserva__intro {
+  max-width: 56ch;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.reserva__estado {
+  max-width: 56ch;
+  margin: 26px 0;
+  padding: 22px 24px;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  background: var(--paper-2);
+  color: var(--texto);
+  line-height: 1.55;
+}
+
+.reserva__estado a {
+  color: var(--marca);
+  text-underline-offset: 3px;
+}
+
+.reserva__estado .btn {
+  margin-top: 16px;
+}
+
+.reserva__erro-global {
+  max-width: 56ch;
+  margin: 22px 0 0;
+  padding: 14px 18px;
+  border-left: 2px solid #9d3427;
+  background: #f7e8e2;
+  color: #862e22;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.reserva__aviso {
+  max-width: 56ch;
+  margin-top: 15px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.reserva--gestao .cartao {
+  max-width: 520px;
+  margin-top: 30px;
+}
+
+.reserva__status {
+  width: fit-content;
+  margin: 0 auto 15px;
+  padding: 5px 12px;
+  border: 1px solid var(--ouro);
+  border-radius: 99px;
+  color: var(--marca);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.reserva__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 520px;
+  margin-top: 22px;
+}
+
+.reserva__confirmar {
+  max-width: 520px;
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  background: var(--paper-2);
+  line-height: 1.5;
+}
+
+.reserva__confirmar .btn { margin: 14px 8px 0 0; }
+.reserva__atual {
+  max-width: 56ch;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 14px;
+}
+
 /* --- Página de visita ----------------------------------------------------- */
 
 .visita {
