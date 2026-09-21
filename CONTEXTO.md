@@ -27,6 +27,14 @@ para o Vercel SSO do Preview do Engine. Logo, a jornada real de cardápio segue
 **BLOQUEADA por proteção externa**, sem retorno aos fixtures, até a validação
 autenticada do Engine.
 
+**Reteste browser autenticado (21/09/2026):** uma sessão Safari já autenticada
+na Vercel abriu diretamente o Preview do Engine e recebeu o DTO publicado da
+Nicolini. Porém, no alias público do institucional, `/menu/` exibiu o estado
+honesto “Cardápio indisponível — Protected deployment”. A autenticação não é
+repassada pelo rewrite interprojeto `/menu-engine`; portanto, login na Vercel
+por si só não fecha o gate público. Não reduzir a Deployment Protection nem
+introduzir segredo no cliente sem decisão explícita.
+
 ## O que vive dentro deste app
 
 Um único projeto React/Vite com quatro frentes:
