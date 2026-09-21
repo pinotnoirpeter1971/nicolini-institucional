@@ -35,6 +35,12 @@ repassada pelo rewrite interprojeto `/menu-engine`; portanto, login na Vercel
 por si só não fecha o gate público. Não reduzir a Deployment Protection nem
 introduzir segredo no cliente sem decisão explícita.
 
+**Integração Production (21/09/2026):** o Engine foi promovido no alias
+`https://capilano-restaurant-engines.vercel.app` após `/login` e o DTO público
+da Nicolini responderem HTTP 200. O rewrite `/menu-engine` e a configuração de
+preview deste app passaram a apontar para esse alias Production, substituindo
+o candidato protegido por Vercel SSO.
+
 ## O que vive dentro deste app
 
 Um único projeto React/Vite com quatro frentes:
