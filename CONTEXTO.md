@@ -1,11 +1,15 @@
-> **21/09/2026 — Reservas R2 retomadas, em validação local.** `public/menu` contém
-> revisão de aprovação humana/300 pessoas, horários exatos e datas bloqueadas.
-> Sem commit/deploy desta rodada. Preservar alterações concorrentes em src/ e
-> publicar futuramente só o lote autorizado. Estado de retomada no STATUS do engine.
+> **21/09/2026 — Reservas R2 publicadas e validadas.** Código `5527fa3`, deployment
+> `dpl_8LHm4g1U7XVpdxHKhcJ9YEPixYW6`. Aprovação humana/300 pessoas, horários exatos,
+> datas bloqueadas e link privado com recuperação. Engine e banco atualizados;
+> 6 testes de produção PASS. Nicolini manual/19:30/21:00/e-mail oculto, online
+> fechado até configurar dias reais. Mesas opcionais no manual. Sino validado;
+> push em dispositivo real ainda não comprovado. Release em worktree limpo:
+> Rustichella/WhatsApp publicados e alterações concorrentes locais preservados.
+> Evidências e operação em `Capilano Engines/restaurantes/docs/STATUS.md`.
 
 # Contexto — Institucional Nicolini
 
-**Reservas publicadas e validadas em 21/09/2026:** integração de `public/menu`
+**Histórico R1, anterior à R2 acima:** integração de `public/menu`
 recuperada de `78c7b0b` sobre a publicação Rustichella `9a2fd92`. Novo código
 `e1188ec`, deployment promovido `dpl_DmTbLPFKVoed3F9qgw4DsDdK3ZZJ`.
 Playwright de produção 5 PASS, incluindo confirmação, agenda, remarcação e
