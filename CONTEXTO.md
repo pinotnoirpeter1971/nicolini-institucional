@@ -1,11 +1,15 @@
 # Contexto — Institucional Nicolini
 
-**Reservas retomadas em 21/09/2026:** integração de `public/menu` recuperada do
-commit `78c7b0b` sobre a publicação atual `9a2fd92`, preservando a copy Rustichella
-e os links Bistrô → WhatsApp. Alterações locais de paralaxe/CSS de outra frente
-ficam intactas e fora da publicação de reservas. Novo candidato deve ser
-construído em checkout isolado; o candidato antigo `dpl_9eqLtHLc31fHTPpPt7rYr7B7rjC7`
-não é a base de promoção. Evidências finais no STATUS do Restaurants Engine.
+**Reservas publicadas e validadas em 21/09/2026:** integração de `public/menu`
+recuperada de `78c7b0b` sobre a publicação Rustichella `9a2fd92`. Novo código
+`e1188ec`, deployment promovido `dpl_DmTbLPFKVoed3F9qgw4DsDdK3ZZJ`.
+Playwright de produção 5 PASS, incluindo confirmação, agenda, remarcação e
+cancelamento em restaurante fictício isolado/arquivado. Nicolini permanece com
+reservas online fechadas até cadastrar mesas e horários reais. Textos/estética
+publicados da Rustichella e links Bistrô → WhatsApp preservados; alterações locais
+de paralaxe/CSS de outra frente intactas e fora desta publicação. O candidato
+antigo `dpl_9eqLtHLc31fHTPpPt7rYr7B7rjC7` não foi promovido.
+Evidências completas em `Capilano Engines/restaurantes/docs/STATUS.md`.
 
 **Rotas públicas:** `/` é Empório; `/bistro` é a vitrine; `/menu/` reúne cardápio
 e reservas. `/bistro/menu` abre `/menu/`; `/bistro/reservas` abre diretamente
