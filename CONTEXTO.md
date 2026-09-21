@@ -1,5 +1,12 @@
 # Contexto — Institucional Nicolini
 
+**Pausa de reservas em 21/09/2026, a pedido de Pedro:** integração local e
+jornada real em fixture passaram. Commit local `78c7b0b`, sem push; candidato
+Vercel `dpl_9eqLtHLc31fHTPpPt7rYr7B7rjC7` iniciado com `--prod --skip-domain`,
+sem promoção solicitada. Aguardar autorização de retomada. Checkpoint completo
+em `Capilano Engines/restaurantes/docs/STATUS.md`. Não ativar reservas comerciais
+sem cadastro real das mesas e horários.
+
 > Leia antes o [`README.md`](../../README.md) da raiz. Este arquivo é o contexto
 > detalhado do app `apps/institucional`.
 
@@ -77,9 +84,12 @@ acervo do e-commerce e servem como referência de enquadramento, não como arte
 final. Substituir tudo antes de publicar. O item "Blog" do menu leva a uma seção
 da home; ainda não existe como rota própria.
 
-**Atualização editorial (18/09/2026):** o resumo do hero de `/rustichella` é
-“Um dos pastifícios mais renomados da alta gastronomia vem da Itália até Caxias
-do Sul, com menu especial no Bistrô Nicolini.”
+**Atualização editorial (21/09/2026):** o primeiro parágrafo abaixo do título em
+`/rustichella` e `/bistro/rustichella` foi atualizado para o texto aprovado pelo
+cliente: “Um dos pastifícios mais renomados da Itália chegará a Caxias do Sul,
+trazendo a proprietária Stefania juntamente de seu Chef estrelado Emmanuel di
+Liddo, marcando três noites inesquecíveis com a mais alta gastronomia no Bistrô
+Nicolini.”
 
 ## Relação com os outros apps
 
