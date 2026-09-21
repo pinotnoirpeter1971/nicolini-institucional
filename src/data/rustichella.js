@@ -36,7 +36,7 @@ export const evento = {
    * sabe o que e a Rustichella: um rotulo em caixa alta nao resolveria isso.
    */
   resumo:
-    'Um dos pastifícios mais renomados da alta gastronomia vem da Itália até Caxias do Sul, com menu especial no Bistrô Nicolini.',
+    'Um dos pastifícios mais renomados da Itália chegará a Caxias do Sul, trazendo a proprietária Stefania juntamente de seu Chef estrelado Emmanuel di Liddo, marcando três noites inesquecíveis com a mais alta gastronomia no Bistrô Nicolini.',
   /*
    * O titulo agora e o encontro das duas casas, escrito por extenso. A unica
    * quebra possivel e depois do "&": os espacos internos de cada marca sao
