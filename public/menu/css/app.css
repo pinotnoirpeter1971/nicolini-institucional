@@ -2352,6 +2352,33 @@ svg {
   cursor: default;
 }
 
+.passo__entrada {
+  width: 58px;
+  min-width: 0;
+  padding: 5px 2px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--texto);
+  font: inherit;
+  font-size: 19px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  appearance: textfield;
+}
+
+.passo__entrada::-webkit-inner-spin-button,
+.passo__entrada::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.passo__entrada:focus-visible {
+  outline: 2px solid var(--marca);
+  outline-offset: 1px;
+}
+
 .passo__valor {
   display: flex;
   align-items: baseline;
@@ -2529,6 +2556,12 @@ svg {
   text-decoration-thickness: 1px;
 }
 
+.cal__dia[data-estado='bloqueado'] .cal__num {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
 .cal__dia[disabled] {
   cursor: default;
 }
@@ -2536,6 +2569,10 @@ svg {
 .cal__dia[disabled] .cal__num {
   color: var(--muted);
   opacity: 0.34;
+}
+
+.cal__dia[data-estado='bloqueado'][disabled] .cal__num {
+  opacity: 0.72;
 }
 
 .cal__dia[disabled]:hover .cal__num {

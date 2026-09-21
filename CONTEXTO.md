@@ -1,3 +1,8 @@
+> **21/09/2026 — Reservas R2 retomadas, em validação local.** `public/menu` contém
+> revisão de aprovação humana/300 pessoas, horários exatos e datas bloqueadas.
+> Sem commit/deploy desta rodada. Preservar alterações concorrentes em src/ e
+> publicar futuramente só o lote autorizado. Estado de retomada no STATUS do engine.
+
 # Contexto — Institucional Nicolini
 
 **Reservas publicadas e validadas em 21/09/2026:** integração de `public/menu`
