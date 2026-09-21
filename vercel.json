@@ -1,4 +1,8 @@
 {
+  "redirects": [
+    { "source": "/bistro/reservas", "destination": "/menu/#/reserva", "permanent": false },
+    { "source": "/bistro/menu", "destination": "/menu/", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/menu-engine/api/v1/public/restaurants/nicolini", "destination": "https://capilano-restaurant-engines.vercel.app/api/v1/public/restaurants/nicolini" },
     { "source": "/menu", "destination": "/menu/index.html" },
