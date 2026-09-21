@@ -18,6 +18,15 @@ privado `pinotnoirpeter1971/nicolini-institucional`. O alias publicado na Vercel
 é a referência operacional até que uma mudança seja validada e promovida.
 E-commerce e `apps/webapp-bistro` não entram no índice.
 
+**Publicação Git comprovada (21/09/2026):** o commit inicial `0fe4bf3`
+disparou a produção Vercel `dpl_FCVBqk44EsFURt9x9ThYSm8Jc2jG`; o alias
+`https://nicolini-institucional.vercel.app` e as rotas `/menu/`,
+`/menu/js/app.js` e o logo do menu responderam HTTP 200. A rota estática está
+no ar, mas o DTO publicado do Engine, acessado via `/menu-engine`, recebe 302
+para o Vercel SSO do Preview do Engine. Logo, a jornada real de cardápio segue
+**BLOQUEADA por proteção externa**, sem retorno aos fixtures, até a validação
+autenticada do Engine.
+
 ## O que vive dentro deste app
 
 Um único projeto React/Vite com quatro frentes:
