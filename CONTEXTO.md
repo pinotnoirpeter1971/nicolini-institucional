@@ -1,11 +1,31 @@
+> **21/09/2026 — Reservas R2 publicadas e validadas.** Código `5527fa3`, deployment
+> `dpl_8LHm4g1U7XVpdxHKhcJ9YEPixYW6`. Aprovação humana/300 pessoas, horários exatos,
+> datas bloqueadas e link privado com recuperação. Engine e banco atualizados;
+> 6 testes de produção PASS. Nicolini manual/19:30/21:00/e-mail oculto, online
+> fechado até configurar dias reais. Mesas opcionais no manual. Sino validado;
+> push em dispositivo real ainda não comprovado. Release em worktree limpo:
+> Rustichella/WhatsApp publicados e alterações concorrentes locais preservados.
+> Evidências e operação em `Capilano Engines/restaurantes/docs/STATUS.md`.
+
 # Contexto — Institucional Nicolini
 
-**Pausa de reservas em 21/09/2026, a pedido de Pedro:** integração local e
-jornada real em fixture passaram. Commit local `78c7b0b`, sem push; candidato
-Vercel `dpl_9eqLtHLc31fHTPpPt7rYr7B7rjC7` iniciado com `--prod --skip-domain`,
-sem promoção solicitada. Aguardar autorização de retomada. Checkpoint completo
-em `Capilano Engines/restaurantes/docs/STATUS.md`. Não ativar reservas comerciais
-sem cadastro real das mesas e horários.
+**Histórico R1, anterior à R2 acima:** integração de `public/menu`
+recuperada de `78c7b0b` sobre a publicação Rustichella `9a2fd92`. Novo código
+`e1188ec`, deployment promovido `dpl_DmTbLPFKVoed3F9qgw4DsDdK3ZZJ`.
+Playwright de produção 5 PASS, incluindo confirmação, agenda, remarcação e
+cancelamento em restaurante fictício isolado/arquivado. Nicolini permanece com
+reservas online fechadas até cadastrar mesas e horários reais. Textos/estética
+publicados da Rustichella e links Bistrô → WhatsApp preservados; alterações locais
+de paralaxe/CSS de outra frente intactas e fora desta publicação. O candidato
+antigo `dpl_9eqLtHLc31fHTPpPt7rYr7B7rjC7` não foi promovido.
+Evidências completas em `Capilano Engines/restaurantes/docs/STATUS.md`.
+
+**Rotas públicas:** `/` é Empório; `/bistro` é a vitrine; `/menu/` reúne cardápio
+e reservas. `/bistro/menu` abre `/menu/`; `/bistro/reservas` abre diretamente
+`/menu/#/reserva`. Links existentes da vitrine continuam no WhatsApp. O domínio
+provável `nicolinigastronomia.com` depende de confirmação do cliente: não foi
+conectado nem alterado DNS. A mesma estrutura de caminhos funcionará nele;
+ao conectar, liberar somente as origens definitivas no CORS do engine.
 
 > Leia antes o [`README.md`](../../README.md) da raiz. Este arquivo é o contexto
 > detalhado do app `apps/institucional`.
@@ -47,13 +67,6 @@ introduzir segredo no cliente sem decisão explícita.
 da Nicolini responderem HTTP 200. O rewrite `/menu-engine` e a configuração de
 preview deste app passaram a apontar para esse alias Production, substituindo
 o candidato protegido por Vercel SSO.
-
-**Candidato local de Reservas (21/09/2026):** a skin pública de `/menu/`
-foi preparada para consultar disponibilidade e confirmar mesas por API direta
-do Restaurants Engine, além de gerar link privado para consultar, remarcar e
-cancelar. O cardápio continua no `/menu-engine`. O código local não prova que
-a API de reservas foi migrada, configurada para o Bistrô, publicada ou validada
-na produção; antes disso, a tela informa indisponibilidade sem simular mesas.
 
 ## O que vive dentro deste app
 
@@ -97,6 +110,12 @@ cliente: “Um dos pastifícios mais renomados da Itália chegará a Caxias do S
 trazendo a proprietária Stefania juntamente de seu Chef estrelado Emmanuel di
 Liddo, marcando três noites inesquecíveis com a mais alta gastronomia no Bistrô
 Nicolini.”
+
+**Ajuste visual (21/09/2026):** a caixa do primeiro parágrafo do hero de
+`/rustichella` foi ampliada de `46ch` para `64ch`, mantendo a limitação natural
+do container em telas estreitas. O hero também passou a usar a mesma paralaxe
+contida do Bistrô, com movimento apenas na foto, `requestAnimationFrame` e
+respeito a `prefers-reduced-motion`; texto, logos e links permanecem estáticos.
 
 ## Relação com os outros apps
 
