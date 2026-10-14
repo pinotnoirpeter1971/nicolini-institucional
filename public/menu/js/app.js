@@ -31,6 +31,23 @@
     return Array.prototype.slice.call((ctx || document).querySelectorAll(sel));
   }
 
+  /** Contact syntax only: this does not verify that a WhatsApp account exists. */
+  function normalizeReservationPhone(value) {
+    const input = value.trim();
+    if (!/^\+?[\d\s().-]+$/.test(input)) return null;
+    const digits = input.replace(/\D/g, "");
+    const international = input.startsWith("+");
+    // Historical contacts also store 55 + DDD without a leading +. Only strip
+    // country code at international length, never the Brazilian DDD 55 itself.
+    const countryCode = digits.startsWith("55") && (international || digits.length === 12 || digits.length === 13);
+    const brazilian = countryCode ? digits.slice(2) : digits;
+    if (!international || digits.startsWith("55")) {
+      // Keep Brazilian national digits compatible with existing contact comparisons.
+      return /^[1-9]\d(?:[2-9]\d{7}|9\d{8})$/.test(brazilian) ? brazilian : null;
+    }
+    return /^[1-9]\d{7,14}$/.test(digits) ? `+${digits}` : null;
+  }
+
   function dinheiro(valor) {
     return 'R$ ' + valor.toLocaleString('pt-BR');
   }
@@ -1343,7 +1360,7 @@
       '</div>' +
 
       campo('nome', 'Nome', 'text', r.nome, '', true) +
-      campo('telefone', 'Telefone', 'tel', r.telefone, 'Para o salão avisar se algo mudar.', true) +
+      campo('telefone', 'WhatsApp', 'tel', r.telefone, 'Inclua o DDD ou +código do país. A equipe usará este número para falar com você.', true) +
       (estado.reservas.config && estado.reservas.config.emailEnabled
         ? campo('email', 'E-mail', 'email', r.email, '', false) : '') +
       '<div class="campo">' +
@@ -2673,9 +2690,10 @@
       if (!rs.createPayload) colherDados();
       var erros = {};
       if (r.nome.trim().length < 2) erros.nome = 'Diga o nome da reserva.';
-      var digitos = r.telefone.replace(/\D/g, '');
-      if (!digitos) erros.telefone = 'Informe um telefone de contato.';
-      else if (digitos.length < 10) erros.telefone = 'Telefone incompleto — inclua o DDD.';
+      if (!r.telefone.trim()) erros.telefone = 'Informe seu WhatsApp.';
+      else if (!normalizeReservationPhone(r.telefone)) {
+        erros.telefone = 'Verifique o WhatsApp: inclua o DDD ou +código do país.';
+      }
       if (rs.config && rs.config.emailEnabled && r.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email)) {
         erros.email = 'Verifique o e-mail: parece faltar algo.';
       }

@@ -9,6 +9,16 @@
 
 # Contexto — Institucional Nicolini
 
+**13/10/2026 — Skin de reservas ajustada e testada localmente:** `public/menu/js/app.js`
+espelha a fonte do web app com WhatsApp obrigatório, orientação de DDD ou
++código do país e validação sintática igual à do Engine. O request preserva
+`phone.trim()`; e-mail continua opcional quando habilitado pela configuração.
+Playwright com API simulada local passou em desktop/mobile: entradas inválidas,
+contatos brasileiro/internacional, e-mail vazio/preenchido/oculto, recibo pendente
+e gestão pelo link privado. Build passou em exportação de `main` mais esse arquivo,
+sem incluir alterações concorrentes de Rustichella/Bistrô/CSS. Esta rodada não
+publicou a skin nem enviou reservas ou mensagens reais. Aceite: `NOT_RUN(Pedro)`.
+
 **Histórico R1, anterior à R2 acima:** integração de `public/menu`
 recuperada de `78c7b0b` sobre a publicação Rustichella `9a2fd92`. Novo código
 `e1188ec`, deployment promovido `dpl_DmTbLPFKVoed3F9qgw4DsDdK3ZZJ`.
