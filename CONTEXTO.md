@@ -1,4 +1,4 @@
-> **21/09/2026 — Reservas R2 publicadas e validadas.** Código `5527fa3`, deployment
+> **Histórico de 21/09/2026 — Reservas R2 publicadas e validadas.** Código `5527fa3`, deployment
 > `dpl_8LHm4g1U7XVpdxHKhcJ9YEPixYW6`. Aprovação humana/300 pessoas, horários exatos,
 > datas bloqueadas e link privado com recuperação. Engine e banco atualizados;
 > 6 testes de produção PASS. Nicolini manual/19:30/21:00/e-mail oculto, online
@@ -9,15 +9,22 @@
 
 # Contexto — Institucional Nicolini
 
-**13/10/2026 — Skin de reservas ajustada e testada localmente:** `public/menu/js/app.js`
-espelha a fonte do web app com WhatsApp obrigatório, orientação de DDD ou
+**13/10/2026 — Skin de reservas publicada:** código
+`ae7509ac3d47c3cd18b48408e7ce5d1ed102e0ab`, deployment
+`dpl_FVf2ZeSsU4ndpVP4a7LaMuePPh5D` READY. `/menu/` e `/menu/js/app.js`
+responderam HTTP 200 e servem o campo WhatsApp obrigatório, orientação de DDD ou
 +código do país e validação sintática igual à do Engine. O request preserva
-`phone.trim()`; e-mail continua opcional quando habilitado pela configuração.
-Playwright com API simulada local passou em desktop/mobile: entradas inválidas,
-contatos brasileiro/internacional, e-mail vazio/preenchido/oculto, recibo pendente
-e gestão pelo link privado. Build passou em exportação de `main` mais esse arquivo,
-sem incluir alterações concorrentes de Rustichella/Bistrô/CSS. Esta rodada não
-publicou a skin nem enviou reservas ou mensagens reais. Aceite: `NOT_RUN(Pedro)`.
+`phone.trim()`. O e-mail opcional da Nicolini foi habilitado no backend;
+reservas online seguem desativadas, sem janelas reais, em modo manual com
+chegadas 19:30/21:00. A skin espelha a fonte do web app. Playwright com API
+simulada local passou em desktop/mobile: entradas inválidas, contatos
+brasileiro/internacional, e-mail vazio/preenchido/oculto, recibo pendente e gestão
+pelo link privado. Build passou em exportação de `main` com a skin, excluindo
+alterações concorrentes de Rustichella/Bistrô/CSS. O Engine passou em dois testes
+de navegador na produção (fluxo manual e falha de catálogo), usando restaurantes
+fictícios próprios, arquivados ao final. Envio de convites e upload aguardam credenciais; push no aparelho aguarda
+validação. A abertura de reservas Nicolini depende dos dias/horários reais
+e do aceite, sem tornar os provedores um gate artificial dessa jornada. Aceite: `NOT_RUN(Pedro)`.
 
 **Histórico R1, anterior à R2 acima:** integração de `public/menu`
 recuperada de `78c7b0b` sobre a publicação Rustichella `9a2fd92`. Novo código
