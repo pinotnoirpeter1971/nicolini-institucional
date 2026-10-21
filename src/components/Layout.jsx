@@ -244,8 +244,6 @@ function Footer() {
             )}
             <Link to="/a-loja">A loja física</Link>
             <Link to="/bistro">Bistrô Nicolini</Link>
-            {/* Temporario: sai do rodape depois de outubro de 2026. */}
-            <Link to="/rustichella">Jantar Rustichella</Link>
           </div>
         </div>
 

@@ -181,12 +181,5 @@ export const materias = [
 export const navEmporio = [
   { tipo: 'ancora', id: 'a-casa', rotulo: 'O Empório' },
   { tipo: 'ancora', id: 'contato', rotulo: 'Como chegar' },
-  /*
-   * TEMPORARIO — o jantar sai do site depois de outubro de 2026. Ao remover a
-   * landing, remover esta entrada aqui E a gemea em `navBistro` (`bistro.js`): a rota
-   * continuaria resolvendo (ver `App.jsx`), entao o link nao quebraria — so
-   * ficaria anunciando no header um jantar que ja aconteceu, que e pior.
-   */
-  { tipo: 'rota', to: '/rustichella', rotulo: 'Jantar Rustichella' },
   { tipo: 'rota', to: '/bistro', rotulo: 'Bistrô' },
 ];
