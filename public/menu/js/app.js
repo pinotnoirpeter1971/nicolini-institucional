@@ -251,6 +251,13 @@
     return !!cfg && Array.isArray(cfg.blockedDates) && cfg.blockedDates.indexOf(chave) !== -1;
   }
 
+  /* A frase que a casa escreveu ao fechar o dia (config.closures), quando houver. */
+  function notaDoDia(chave) {
+    var cfg = estado.reservas.config;
+    var fechado = cfg && Array.isArray(cfg.closures) && cfg.closures.filter(function (c) { return c.date === chave; })[0];
+    return (fechado && fechado.publicNote) || '';
+  }
+
   function passouNoDia(chave) {
     return chave < chaveData(HOJE);
   }
@@ -919,6 +926,12 @@
 
   /* === Vista: visita ===================================================== */
 
+  /* Com o horário ao vivo do Engine, a visita diz como está hoje (frase do dia fechado incluída). */
+  function hojeHtml() {
+    if (typeof D.casa.textoDeHoje !== 'function') return '';
+    return '<p class="nota-servico__texto visita__texto" data-hoje>' + h(D.casa.textoDeHoje()) + '</p>';
+  }
+
   function vistaVisita() {
     var c = D.casa;
     var horarios = c.horarios
@@ -945,6 +958,7 @@
           '<div>' +
             '<section class="bloco">' +
               '<h2 class="bloco__nome">Horários</h2>' +
+              hojeHtml() +
               '<ul class="horarios">' + horarios + '</ul>' +
             '</section>' +
             '<section class="bloco">' +
@@ -1029,7 +1043,7 @@
 
   /* O calendário aponta o dia, a consulta desse dia confirma os horários. */
   function servicosDoDia(chave, pessoas) {
-    if (bloqueadoNoDia(chave)) return 'data indisponível';
+    if (bloqueadoNoDia(chave)) return notaDoDia(chave) || 'data indisponível';
     if (fechadoNoDia(chave)) return 'fechado';
     var item = estado.reservas.availability[chaveDisponibilidade(chave, pessoas)];
     if (!item) return 'consulte os horários';
