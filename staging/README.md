@@ -19,3 +19,10 @@ Pré-requisito: Engine de staging no ar em `http://127.0.0.1:3200` (roteiro em
   pelo servidor, apontando para o Engine de staging. O servidor recusa Engine fora de
   loopback.
 - Variáveis: `PORT` (5199, a origem já autorizada no Engine) e `ENGINE_STAGING_URL`.
+
+## SDK 0.2.0 e horário ao vivo (branch `claude/menu-v2`)
+
+O adaptador lê `content.house` do Engine (SDK 0.2.0, `vendor/…-0.2.0.js`): horários por dia no
+fuso da casa, dias fechados e a frase pública do dia fechado. Sem `house` na resposta (Engine
+antigo), mantém os horários de `dados.js`. A frase de "hoje" da capa vem de `casa.textoDeHoje`
+(definida pelo adaptador); sem ele, `app.js` usa a tabela estática como antes.

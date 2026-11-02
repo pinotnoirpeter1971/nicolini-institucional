@@ -1,7 +1,9 @@
 import {
   exchangePreview,
-  fetchPublicContent
-} from './vendor/capilano-restaurants-public-sdk-0.1.0.js';
+  fetchPublicContent,
+  houseStatus,
+  wallClock
+} from './vendor/capilano-restaurants-public-sdk-0.2.0.js';
 
 const config = window.CAPILANO_ENGINE;
 
@@ -125,6 +127,85 @@ function serviceFromMenu(menu, content) {
   return service;
 }
 
+/* === Horário da casa (ao vivo, vem do Engine em `content.house`) ============ */
+
+var DIAS_LONGOS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+var ORDEM = [1, 2, 3, 4, 5, 6, 0];
+
+function hora(clock) {
+  var parts = clock.split(':');
+  return Number(parts[0]) + 'h' + (parts[1] === '00' ? '' : parts[1]);
+}
+
+function faixas(schedule, weekday) {
+  return schedule.hours
+    .filter(function (entry) { return entry.weekday === weekday; })
+    .map(function (entry) { return hora(entry.opensAt) + '–' + hora(entry.closesAt); })
+    .join(' · ');
+}
+
+/* Mesma forma de `casa.horarios` em dados.js: o resto do menu não muda. Dias vizinhos
+ * com as mesmas faixas viram uma linha; os dias fechados vão para o fim. */
+function horariosFromHouse(schedule) {
+  var rows = [];
+  ORDEM.forEach(function (weekday) {
+    var texto = faixas(schedule, weekday);
+    var last = rows[rows.length - 1];
+    if (last && last.hora === (texto || 'Fechado')) {
+      last.dias.push(weekday);
+      return;
+    }
+    rows.push({ hora: texto || 'Fechado', dias: [weekday], fechado: !texto });
+  });
+  rows.forEach(function (row) {
+    var first = DIAS_LONGOS[row.dias[0]];
+    var lastName = DIAS_LONGOS[row.dias[row.dias.length - 1]];
+    row.dia = row.dias.length === 1 ? first
+      : row.dias.length === 2 ? first + ' e ' + lastName.toLowerCase()
+      : first + ' a ' + lastName.toLowerCase();
+  });
+  return rows.filter(function (row) { return !row.fechado; })
+    .concat(rows.filter(function (row) { return row.fechado; }));
+}
+
+function addDays(date, days) {
+  var value = new Date(date + 'T00:00:00Z');
+  value.setUTCDate(value.getUTCDate() + days);
+  return value.toISOString().slice(0, 10);
+}
+
+/* A frase da capa descreve o dia (não o instante): hoje aberto → "Hoje, 12h–15h · 19h–23h";
+ * dia fechado → a frase pública que a casa escreveu, ou "Fechado hoje" e quando volta. */
+function todayText(house, schedule) {
+  var clock = wallClock(new Date(), house.timezone);
+  var closure = function (date) {
+    return house.closures.find(function (entry) { return entry.date === date; });
+  };
+  var today = closure(clock.date);
+  var open = !today && faixas(schedule, clock.weekday);
+  if (open) return 'Hoje, ' + open;
+  if (today && today.publicNote) return today.publicNote;
+  for (var ahead = 1; ahead <= 14; ahead++) {
+    var date = addDays(clock.date, ahead);
+    var weekday = new Date(date + 'T00:00:00Z').getUTCDay();
+    var texto = !closure(date) && faixas(schedule, weekday);
+    if (texto) {
+      var quando = ahead === 1 ? 'amanhã' : DIAS_LONGOS[weekday].toLowerCase();
+      return 'Fechado hoje. Retornamos ' + quando + ', às ' + texto.split('·')[0].split('–')[0].trim();
+    }
+  }
+  return 'Fechado hoje';
+}
+
+function applyHouse(house) {
+  var schedule = house.schedules.slice().sort(function (a, b) { return a.position - b.position; })[0];
+  window.BISTRO.house = house;
+  window.BISTRO.houseStatus = function () { return houseStatus(house, new Date()); };
+  if (!schedule) return;
+  window.BISTRO.casa.horarios = horariosFromHouse(schedule);
+  window.BISTRO.casa.textoDeHoje = function () { return todayText(house, schedule); };
+}
+
 async function loadContent() {
   const preview = /^#preview=([A-Za-z0-9_-]+)$/.exec(window.location.hash);
   if (preview) {
@@ -158,6 +239,7 @@ try {
       foco: homeHero.foco
     };
   }
+  if (content.house) applyHouse(content.house);
   window.BISTRO.servicos = content.menus.map(function (menu) {
     return serviceFromMenu(menu, content);
   });

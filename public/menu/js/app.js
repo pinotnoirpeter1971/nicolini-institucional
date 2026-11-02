@@ -579,6 +579,8 @@
   }
 
   function textoDeHoje() {
+    /* Com o horário ao vivo do Engine, a frase vem dele (no fuso da casa e com os dias fechados). */
+    if (typeof D.casa.textoDeHoje === 'function') return D.casa.textoDeHoje();
     var hoje = new Date().getDay();
     var linha = linhaDoDia(hoje);
     if (linha && !linha.fechado) return 'Hoje, ' + linha.hora;
