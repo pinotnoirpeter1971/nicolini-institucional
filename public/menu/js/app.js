@@ -131,9 +131,6 @@
      * deixa de disputar a atenção. Não existe interruptor disso na interface. */
     mesa: null,
     servico: servicoInicial ? servicoInicial.id : null,
-    /* Última carta que tem pastilha própria (almoço ou jantar). É para onde o
-     * "Voltar ao cardápio" da carta de vinhos devolve a pessoa. */
-    servicoBase: servicoInicial ? servicoInicial.id : null,
     vista: null, // assinatura da vista já desenhada, para não redesenhar à toa
     reserva: {
       /* Duas pessoas é a mesa mais comum e faz o calendário já dizer alguma
@@ -424,7 +421,7 @@
     /*
      * A barra do cardápio é outra coisa: fixa, transparente sobre a foto no
      * alto e chapa escura depois da dobra (ver `.barra--carta` no CSS). Ela
-     * carrega a marca e o índice, e só. Quem diz que seção está sendo lida é o
+     * carrega a marca, e só. Quem diz que seção está sendo lida é o
      * próprio título da seção, que gruda logo abaixo dela — não uma cópia do
      * nome escrita aqui dentro. "Reservar" saiu: virou a pastilha discreta do
      * canto inferior.
@@ -706,41 +703,18 @@
         '</div></main>';
     }
 
-    /*
-     * O seletor de cima responde a uma pergunta só — qual refeição? —, e por
-     * isso ficou com duas pastilhas: Almoço e Jantar. Vinhos saiu daqui: não é
-     * uma terceira refeição, é outra carta, consultada no meio da refeição e
-     * quase sempre depois de escolher a comida. Ela se alcança pelo índice do
-     * cabeçalho pegajoso, que é navegação, e não por uma pastilha que fingia
-     * ser uma escolha do mesmo tipo.
-     */
-    var seletor;
-
-    if (s.foraDasAbas) {
-      /* Dentro da carta de vinhos, a faixa deixa de ser seletor e vira
-       * endereço: diz em que carta a pessoa está e por onde se volta. */
-      var base = acharServico(estado.servicoBase) || D.servicos[0];
-      seletor =
-        '<div class="carta-atual">' +
-          '<a class="carta-atual__voltar" href="#/cardapio/' + base.id + '" ' +
-            'aria-label="Voltar para a carta ' + h(base.nome) + '">' +
-            ico.voltar + '<span>' + h(base.curto) + '</span>' +
-          '</a>' +
-          '<p class="carta-atual__nome">' + h(s.nome) + '</p>' +
-        '</div>';
-    } else {
-      var abas = D.servicos
-        .filter(function (sv) { return !sv.foraDasAbas; })
-        .map(function (sv) {
-          var atual = sv.id === s.id;
-          return (
-            '<a class="aba" href="#/cardapio/' + sv.id + '"' +
-            (atual ? ' aria-current="page"' : '') + '>' + h(sv.curto) + '</a>'
-          );
-        })
-        .join('');
-      seletor = '<nav class="cartas cartas--abas" aria-label="Refeição">' + abas + '</nav>';
-    }
+    /* O seletor de cima responde a uma pergunta só — qual refeição? —: uma
+     * pastilha por carta. */
+    var abas = D.servicos
+      .map(function (sv) {
+        var atual = sv.id === s.id;
+        return (
+          '<a class="aba" href="#/cardapio/' + sv.id + '"' +
+          (atual ? ' aria-current="page"' : '') + '>' + h(sv.curto) + '</a>'
+        );
+      })
+      .join('');
+    var seletor = '<nav class="cartas cartas--abas" aria-label="Refeição">' + abas + '</nav>';
 
     /*
      * A PORTADA: uma palavra, e o horário.
@@ -755,8 +729,7 @@
      *   estado. A página é uma só, e é isto: o menu da casa.
      *
      * Então a portada carrega a palavra e o horário do serviço, e mais nada. O
-     * nome da carta vive na pastilha; na carta de vinhos, que não tem pastilha,
-     * ele vive na faixa de endereço logo abaixo ("‹ Jantar | Carta de vinhos").
+     * nome da carta vive na pastilha.
      *
      * O texto no DOM é "Menu" e a caixa alta é do CSS: em caixa alta no
      * próprio texto, parte dos leitores de tela soletra a palavra. O nome da
@@ -2196,7 +2169,7 @@
       '</div>' +
       '<div class="busca__resultados"><div class="wrap" id="saida-busca">' +
         '<p class="busca__dica">Digite ao menos duas letras. A busca procura em ' +
-        'todas as cartas: executivo, jantar e vinhos.</p>' +
+        'todas as cartas.</p>' +
       '</div></div>';
 
     document.body.appendChild(caixa);
@@ -2213,7 +2186,7 @@
       if (achados === null) {
         saida.innerHTML =
           '<p class="busca__dica">Digite ao menos duas letras. A busca procura em ' +
-          'todas as cartas: executivo, jantar e vinhos.</p>';
+          'todas as cartas.</p>';
         return;
       }
 
@@ -2221,7 +2194,7 @@
         saida.innerHTML =
           '<div class="busca__vazio">' +
             '<h2>Nada com “' + h(termo.trim()) + '”</h2>' +
-            '<p>Nenhum prato ou vinho do cardápio tem esse nome. Tente outra ' +
+            '<p>Nenhum prato do cardápio tem esse nome. Tente outra ' +
             'palavra, ou percorra as cartas.</p>' +
           '</div>';
         anuncia('Nenhum resultado para ' + termo.trim());
@@ -2327,8 +2300,6 @@
       if (idServico && acharServico(idServico)) {
         idServico = acharServico(idServico).id;
         estado.servico = idServico;
-        /* Guarda a refeição para a carta de vinhos saber por onde devolver. */
-        if (!acharServico(idServico).foraDasAbas) estado.servicoBase = idServico;
       }
 
       var assinatura = 'cardapio:' + estado.servico;

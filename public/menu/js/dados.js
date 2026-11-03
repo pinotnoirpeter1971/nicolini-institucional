@@ -21,7 +21,7 @@
  * `outrasFotos` são OUTROS QUADROS DO MESMO PRATO, do mesmo ensaio — nunca de
  * um prato parecido. Alimentam a galeria do painel de detalhe, e só existem
  * onde o ensaio de fato tem mais de um quadro aproveitável: a maioria dos itens
- * (e todos os vinhos) segue com uma foto só, e o painel então não mostra
+ * segue com uma foto só, e o painel então não mostra
  * galeria nenhuma.
  */
 (function (global) {
@@ -83,8 +83,8 @@
 
   /*
    * SERVIÇO ≠ CATEGORIA.
-   * Serviço (ou carta) é o que se está consultando: o almoço executivo, o
-   * jantar, a carta de vinhos. Categoria é a divisão interna daquele serviço.
+   * Serviço (ou carta) é o que se está consultando: o almoço executivo ou o
+   * jantar. Categoria é a divisão interna daquele serviço.
    * As abas de serviço são o ÚNICO controle que troca de carta; as categorias
    * só levam a pessoa a um ponto da mesma lista.
    *
@@ -416,88 +416,6 @@
               nome: 'Tiramisú da casa',
               descricao: 'Lorem ipsum dolor sit amet.',
               precos: [{ valor: 52 }],
-              origem: 'demo'
-            }
-          ]
-        }
-      ]
-    },
-
-    {
-      id: 'vinhos',
-      nome: 'Carta de vinhos',
-      curto: 'Vinhos',
-      tipo: 'carta',
-      /* Fora do seletor de cima: as pastilhas ficam com Almoço e Jantar, que
-       * são a mesma pergunta ("qual refeição?"). A carta de vinhos é outra
-       * carta, e se chega a ela pelo índice do cardápio. */
-      foraDasAbas: true,
-      quando: 'Servidos em todos os turnos',
-      nota: 'Rótulos italianos e franceses da adega da casa. A taça muda com frequência — vale perguntar ao salão.',
-      foto: {
-        src: 'assets/fotos/ambiente-adega.jpg',
-        alt: 'Rótulos italianos alinhados na adega do bistrô',
-        foco: '50% 45%'
-      },
-      categorias: [
-        {
-          id: 'tintos',
-          nome: 'Tintos',
-          itens: [
-            {
-              id: 'barolo',
-              nome: 'Barolo Conterno 2013',
-              descricao: 'Nebbiolo do Piemonte, safra 2013. Tanino ainda vivo.',
-              foto: 'assets/fotos/vinho-barolo.jpg',
-              foco: '50% 50%',
-              fotoAlt: 'Rótulo de Barolo em uma garrafa deitada na adega',
-              precos: [{ rotulo: 'taça', valor: 62 }, { rotulo: 'garrafa', valor: 320 }],
-              origem: 'demo'
-            },
-            {
-              id: 'brunello',
-              nome: 'Brunello di Montalcino',
-              descricao: 'Sangiovese da Toscana, longa guarda. Só em garrafa.',
-              foto: 'assets/fotos/vinho-brunello.jpg',
-              foco: '50% 50%',
-              fotoAlt: 'Rótulo escuro de Brunello di Montalcino em garrafa deitada',
-              precos: [{ rotulo: 'garrafa', valor: 690 }],
-              origem: 'demo'
-            },
-            {
-              id: 'bourgogne',
-              nome: 'Bourgogne Pinot Noir',
-              descricao: 'Borgonha leve, fruta vermelha e acidez alta. Vai bem com massa.',
-              foto: 'assets/fotos/vinho-bourgogne.jpg',
-              foco: '50% 50%',
-              fotoAlt: 'Rótulo branco de Bourgogne em garrafa deitada na adega',
-              precos: [{ rotulo: 'taça', valor: 46 }, { rotulo: 'garrafa', valor: 230 }],
-              origem: 'demo'
-            }
-          ]
-        },
-        {
-          id: 'brancos',
-          nome: 'Brancos',
-          itens: [
-            {
-              id: 'chablis-laroche',
-              nome: 'Chablis Saint Martin',
-              descricao: 'Chardonnay 2023, sem madeira. Mineral, bom com o peixe do dia.',
-              foto: 'assets/fotos/vinho-chablis-laroche.jpg',
-              foco: '50% 50%',
-              fotoAlt: 'Rótulo de Chablis Saint Martin em garrafa deitada',
-              precos: [{ rotulo: 'taça', valor: 52 }, { rotulo: 'garrafa', valor: 260 }],
-              origem: 'demo'
-            },
-            {
-              id: 'chablis-goichot',
-              nome: 'Chablis Goichot Frères',
-              descricao: 'Chardonnay 2023, mais redondo que o anterior, final salino.',
-              foto: 'assets/fotos/vinho-chablis-goichot.jpg',
-              foco: '50% 50%',
-              fotoAlt: 'Rótulo de Chablis Goichot Frères em garrafa deitada',
-              precos: [{ rotulo: 'taça', valor: 48 }, { rotulo: 'garrafa', valor: 240 }],
               origem: 'demo'
             }
           ]

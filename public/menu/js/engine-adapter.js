@@ -111,7 +111,6 @@ function serviceFromMenu(menu, content) {
     preco: menu.basePriceCents == null ? null : menu.basePriceCents / 100,
     precoNota: pick(menu, fields, prefix, 'priceNote', 'price_note') || 'por pessoa',
     foto: hero,
-    foraDasAbas: key === 'vinhos',
     categorias: menu.sections.map(function (section) {
       return {
         id: slug(section.name) + '-' + section.id.slice(0, 8),

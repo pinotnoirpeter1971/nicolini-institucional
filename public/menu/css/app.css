@@ -494,10 +494,6 @@ svg {
  * sobra uma faixa fixa inteira de tela para o cardápio.
  */
 /*
- * Duas pastilhas, uma pergunta: qual refeição? Vinhos saiu daqui — é outra
- * carta, não uma terceira refeição, e vive no índice do cabeçalho pegajoso.
- */
-/*
  * O que sobrou no papel: o controle. O horário subiu para a portada — ele
  * responde "o que é isto e quando", que é a pergunta da foto, e não "o que eu
  * faço", que é a pergunta daqui.
@@ -565,55 +561,6 @@ svg {
   background: var(--ink);
   color: var(--paper-2);
   font-weight: 600;
-}
-
-/*
- * Dentro da carta de vinhos a faixa deixa de ser seletor e vira endereço: diz
- * em que carta a pessoa está e por onde se volta. Sem isto, trocar de carta
- * pelo índice era um salto sem retorno visível.
- */
-.carta-atual {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  align-self: stretch;
-  padding: 6px 14px 6px 6px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--paper-2);
-}
-
-.carta-atual__voltar {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 40px;
-  padding: 0 12px 0 8px;
-  border-radius: 999px;
-  color: var(--marca);
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background var(--dur) var(--ease);
-}
-
-.carta-atual__voltar:hover {
-  background: var(--soft);
-}
-
-.carta-atual__voltar svg {
-  width: 17px;
-  height: 17px;
-  stroke-width: 1.8;
-}
-
-.carta-atual__nome {
-  margin-left: auto;
-  font-family: var(--serif-sc);
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  color: var(--texto);
 }
 
 /* --- Capa (acesso antes da visita) ---------------------------------------- */
@@ -1455,7 +1402,7 @@ svg {
 
 /* Um por linha, com o rótulo numa coluna de largura fixa: os valores ficam
  * alinhados entre si e entre itens, que é o que permite comparar a carta de
- * relance. Lado a lado, na largura do celular, eles quebravam o nome do vinho
+ * relance. Lado a lado, na largura do celular, eles quebravam o nome do prato
  * em três linhas. */
 .prato__precos span {
   display: flex;
@@ -1463,8 +1410,8 @@ svg {
   gap: 8px;
 }
 
-/* "taça" e "garrafa" em itálico da mesma serifada: é a forma de uma carta de
- * vinhos, e não reintroduz a sans dentro do conteúdo. */
+/* O rótulo do preço ("meia", "inteira") em itálico da mesma serifada: não
+ * reintroduz a sans dentro do conteúdo. */
 .prato__precos small {
   min-width: 54px;
   font-size: 13.5px;
