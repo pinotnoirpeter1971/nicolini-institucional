@@ -2,8 +2,9 @@ import {
   exchangePreview,
   fetchPublicContent,
   houseStatus,
+  menuKey,
   wallClock
-} from './vendor/capilano-restaurants-public-sdk-0.2.0.js';
+} from './vendor/capilano-restaurants-public-sdk-0.3.0.js';
 
 const config = window.CAPILANO_ENGINE;
 
@@ -27,12 +28,15 @@ function slug(text) {
     .replace(/^-|-$/g, '');
 }
 
-function fieldPrefix(menu) {
-  const normalized = slug(menu.name);
-  if (normalized.includes('vinho')) return 'menus.vinhos';
-  if (normalized.includes('almoco') || normalized.includes('executivo')) return 'menus.executivo';
-  if (normalized.includes('jantar')) return 'menus.jantar';
-  return 'menus.' + normalized;
+/*
+ * Cada cardápio tem uma chave estável (`menu.key`), que não muda ao renomear.
+ * Publicações antigas não trazem a chave nem os textos no cardápio: aí a chave sai
+ * do nome (mesma regra do Engine) e os textos vêm dos campos `menus.<chave>.*`.
+ * Quem decide é a presença do campo próprio no cardápio, nunca o valor: um texto
+ * apagado no painel chega como `null` e não volta a ler o campo antigo.
+ */
+function pick(menu, fields, prefix, own, legacy) {
+  return own in menu ? menu[own] : fields[prefix + '.' + legacy];
 }
 
 function mediaPhoto(media) {
@@ -89,22 +93,25 @@ function itemFromDish(dish, currency) {
 }
 
 function serviceFromMenu(menu, content) {
-  const prefix = fieldPrefix(menu);
+  const key = menuKey(menu);
+  const prefix = 'menus.' + key;
   const fields = content.fields || {};
-  const hero = mediaPhoto(fields[prefix + '.hero']);
+  const hero = mediaPhoto(pick(menu, fields, prefix, 'hero', 'hero'));
   const service = {
+    /* `id` segue o nome (endereços que já circulam); `chave` acha o mesmo cardápio depois de renomear. */
     id: slug(menu.name),
+    chave: key,
     engineId: menu.id,
     nome: menu.name,
-    curto: fields[prefix + '.short'] || menu.name,
-    quando: fields[prefix + '.schedule'] || '',
-    nota: fields[prefix + '.note'] || '',
-    observacao: fields[prefix + '.observation'] || '',
+    curto: pick(menu, fields, prefix, 'shortName', 'short') || menu.name,
+    quando: pick(menu, fields, prefix, 'schedule', 'schedule') || '',
+    nota: pick(menu, fields, prefix, 'note', 'note') || '',
+    observacao: pick(menu, fields, prefix, 'observation', 'observation') || '',
     tipo: menu.mode === 'fixed' ? 'fixo' : 'carta',
     preco: menu.basePriceCents == null ? null : menu.basePriceCents / 100,
-    precoNota: fields[prefix + '.price_note'] || 'por pessoa',
+    precoNota: pick(menu, fields, prefix, 'priceNote', 'price_note') || 'por pessoa',
     foto: hero,
-    foraDasAbas: prefix.endsWith('.vinhos'),
+    foraDasAbas: key === 'vinhos',
     categorias: menu.sections.map(function (section) {
       return {
         id: slug(section.name) + '-' + section.id.slice(0, 8),
@@ -125,6 +132,37 @@ function serviceFromMenu(menu, content) {
     }
   }
   return service;
+}
+
+/* === Página do site (manifesto `nicolini-site@2`) ===========================
+ * Endereço, contatos e fotos da casa vêm do Engine quando publicados; sem valor
+ * (ou numa publicação anterior ao @2), o site fica com o que está em `dados.js`. */
+function text(value) {
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function phoneLink(value, prefix) {
+  const digits = value.replace(/\D/g, '');
+  return prefix + (digits.indexOf('55') === 0 && digits.length > 11 ? digits : '55' + digits);
+}
+
+function applyPage(fields) {
+  const casa = window.BISTRO.casa;
+  const endereco = text(fields['contato.endereco']);
+  const cidade = text(fields['contato.cidade']);
+  const telefone = text(fields['contato.telefone']);
+  const whatsapp = text(fields['contato.whatsapp']);
+  const instagram = text(fields['redes.instagram']);
+  if (endereco) casa.endereco = endereco;
+  if (cidade) casa.cidade = cidade;
+  if (telefone) casa.telefone = { exibicao: telefone, link: phoneLink(telefone, 'tel:+') };
+  if (whatsapp) casa.whatsapp = { exibicao: whatsapp, link: phoneLink(whatsapp, 'https://wa.me/') };
+  if (instagram) {
+    const handle = instagram.replace(/[?#].*$/, '').replace(/\/+$/, '').split('/').pop();
+    casa.instagram = { exibicao: handle ? '@' + handle.replace(/^@/, '') : instagram, link: instagram };
+  }
+  const galeria = Array.isArray(fields['casa.galeria']) ? fields['casa.galeria'].map(mediaPhoto).filter(Boolean) : [];
+  if (galeria.length) casa.ambiente = galeria;
 }
 
 /* === Horário da casa (ao vivo, vem do Engine em `content.house`) ============ */
@@ -239,6 +277,7 @@ try {
       foco: homeHero.foco
     };
   }
+  applyPage(content.fields || {});
   if (content.house) applyHouse(content.house);
   window.BISTRO.servicos = content.menus.map(function (menu) {
     return serviceFromMenu(menu, content);

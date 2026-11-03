@@ -207,6 +207,10 @@
     for (var i = 0; i < D.servicos.length; i++) {
       if (D.servicos[i].id === id) return D.servicos[i];
     }
+    /* Link pela chave estável do cardápio (não muda quando o nome muda). */
+    for (var j = 0; j < D.servicos.length; j++) {
+      if (D.servicos[j].chave && D.servicos[j].chave === id) return D.servicos[j];
+    }
     return null;
   }
 
@@ -2321,6 +2325,7 @@
     if (raizRota === 'cardapio') {
       var idServico = partes[1];
       if (idServico && acharServico(idServico)) {
+        idServico = acharServico(idServico).id;
         estado.servico = idServico;
         /* Guarda a refeição para a carta de vinhos saber por onde devolver. */
         if (!acharServico(idServico).foraDasAbas) estado.servicoBase = idServico;

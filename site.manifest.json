@@ -1,0 +1,14 @@
+{
+  "contractVersion": 1,
+  "interfaceId": "nicolini-site@2",
+  "capabilities": { "catalog": true, "images": true, "video": false, "tags": true, "maxDishMedia": 6 },
+  "fields": [
+    { "key": "home.hero", "type": "media", "label": "Capa de entrada", "group": "Página", "required": false, "policy": "owner", "limits": { "maxItems": 1, "maxVideos": 0 } },
+    { "key": "contato.endereco", "type": "short_text", "label": "Endereço", "group": "Contato", "required": false, "policy": "owner", "limits": { "maxLength": 160 } },
+    { "key": "contato.cidade", "type": "short_text", "label": "Cidade", "group": "Contato", "required": false, "policy": "owner", "limits": { "maxLength": 80 } },
+    { "key": "contato.telefone", "type": "short_text", "label": "Telefone", "group": "Contato", "required": false, "policy": "owner", "limits": { "maxLength": 40 } },
+    { "key": "contato.whatsapp", "type": "short_text", "label": "WhatsApp", "group": "Contato", "required": false, "policy": "owner", "limits": { "maxLength": 40 } },
+    { "key": "redes.instagram", "type": "link", "label": "Instagram", "group": "Contato", "required": false, "policy": "owner", "limits": { "maxLength": 200 } },
+    { "key": "casa.galeria", "type": "media_list", "label": "Fotos da casa", "group": "Página", "required": false, "policy": "owner", "limits": { "maxItems": 12, "maxVideos": 0 } }
+  ]
+}

@@ -26,3 +26,18 @@ O adaptador lê `content.house` do Engine (SDK 0.2.0, `vendor/…-0.2.0.js`): ho
 fuso da casa, dias fechados e a frase pública do dia fechado. Sem `house` na resposta (Engine
 antigo), mantém os horários de `dados.js`. A frase de "hoje" da capa vem de `casa.textoDeHoje`
 (definida pelo adaptador); sem ele, `app.js` usa a tabela estática como antes.
+
+## Fatia B: chave estável do cardápio e `nicolini-site@2` (SDK 0.3.0)
+
+- Cada cardápio chega com `key` (não muda ao renomear) e com os próprios textos (`shortName`,
+  `schedule`, `note`, `observation`, `priceNote`, `hero`). O adaptador usa a regra: se o
+  campo próprio existe no cardápio, vale ele (mesmo `null`); senão lê `menus.<chave>.*`
+  (publicações antigas). Sem `key`, a chave sai do nome pelo `menuKey()` do SDK 0.3.0.
+- `service.id` continua o slug do nome (endereços que já circulam); `service.chave` é a
+  chave estável, e `#/cardapio/<chave>` abre o mesmo cardápio depois de renomear.
+- `site.manifest.json` (raiz do app, fora de `public/`) é o manifesto `nicolini-site@2`:
+  capa, endereço, cidade, telefone, WhatsApp, Instagram e fotos da casa. Sem valor publicado,
+  o site fica com o que está em `dados.js`.
+- `staging/engine-config.js` usa `nicolini-copia` quando aberto por `localhost:5199` e
+  `bistro-teste` por `127.0.0.1:5199`.
+

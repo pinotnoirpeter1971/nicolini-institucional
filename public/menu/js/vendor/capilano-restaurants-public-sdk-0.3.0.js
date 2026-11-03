@@ -1,3 +1,21 @@
+/**
+ * Chave estável do cardápio: `menu.key` ou, em publicação anterior que não a traz, o slug
+ * do nome pela mesma regra do Engine (`menuKeyFromName`). Para sites lerem os dois.
+ */
+export function menuKey(menu) {
+    if (menu.key)
+        return menu.key;
+    const slug = menu.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    if (slug.includes("vinho"))
+        return "vinhos";
+    if (slug.includes("almoco") || slug.includes("executivo"))
+        return "executivo";
+    if (slug.includes("jantar"))
+        return "jantar";
+    if (!slug)
+        return "cardapio";
+    return /^[0-9]/.test(slug) ? `m-${slug}` : slug;
+}
 export class RestaurantsPublicError extends Error {
     status;
     constructor(message, status) {
