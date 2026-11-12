@@ -32,6 +32,17 @@
   em `src/menu-do-site.ts`) e acende na ativação. `NEXT_PUBLIC_SITE_DADOS=engine`
   faz o `next dev` ler o Engine em vez do simulado. Teste: `npm run test:catalogo`
   (precisa do staging em `ENGINE_STAGING`, padrão `http://127.0.0.1:3280`).
+- **Sacola e pedido ligados ao Engine (Etapa 3):** a sacola, o envio e o recibo
+  falam direto com o Engine pelo SDK (`src/engine/navegador.ts`), no navegador:
+  nada roda no servidor do site, e o token do recibo vai no `#` e no corpo do
+  `POST`. No build de produção continuam apagados (`modulos.pedidos`). Para o
+  `next dev` ler o staging: `NEXT_PUBLIC_SITE_DADOS=engine`,
+  `NEXT_PUBLIC_ENGINE_URL=http://127.0.0.1:3280` e
+  `NEXT_PUBLIC_ENGINE_CASA=bistro-teste` (por exemplo num
+  `.env.development.local`, que não se versiona), aberto em
+  `http://127.0.0.1:5183` (a origem autorizada); com isso o painel do
+  laboratório some. Teste: `npm run test:pedidos` (casa recebendo: ponta a
+  ponta, clique duplo e reenvio, preço alterado, recibo; casa pausada: recusa).
 - Como rodar, onde fica cada coisa e as variáveis públicas: [`README.md`](README.md).
 
 ### Rotas e o que não pode quebrar (`next.config.ts`)

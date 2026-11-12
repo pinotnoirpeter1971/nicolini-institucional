@@ -23,9 +23,9 @@ export function HospedeDaSacola() {
   return <PainelDaSacola aberto={estado === 'aberto'} fechar={fechar} />;
 }
 
-/* Só no `next dev`: no build de produção a condição é `false` e o import some. */
+/* Só no `next dev` com dados simulados: no build de produção a condição é `false` e o import some. */
 const PainelDoLaboratorio =
-  process.env.NODE_ENV === 'development' ? dynamic(() => import('../laboratorio/PainelDoLaboratorio'), { ssr: false }) : null;
+  process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_SITE_DADOS !== 'engine' ? dynamic(() => import('../laboratorio/PainelDoLaboratorio'), { ssr: false }) : null;
 
 export function HospedeDoLaboratorio() {
   return PainelDoLaboratorio ? <PainelDoLaboratorio /> : null;

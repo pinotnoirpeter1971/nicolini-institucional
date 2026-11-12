@@ -5,7 +5,8 @@ import { useSyncExternalStore } from 'react';
 /*
  * A sacola no navegador (SPEC-SITE §6). Guarda SÓ o id do produto e a
  * quantidade (unidades, ou gramas no produto por peso), numa chave versionada.
- * Nome e preço vêm sempre do Engine quando a sacola abre. Conteúdo inválido ou
+ * Nome e preço vêm sempre do Engine quando a sacola abre. A observação do
+ * pedido fica numa chave ao lado, até o envio dar certo. Conteúdo inválido ou
  * de versão antiga é descartado sem quebrar a página. Abas diferentes ficam
  * iguais pelo evento `storage`.
  *
@@ -110,7 +111,26 @@ export function substituir(linhas: LinhaGuardada[]) {
 }
 
 export function esvaziar() {
+  gravarObservacao('');
   gravar([]);
+}
+
+/* A observação do pedido também fica no navegador, ao lado da sacola, até o envio dar certo. */
+const OBSERVACAO = 'nicolini:sacola-observacao:v1';
+export function lerObservacao(): string {
+  try {
+    return (localStorage.getItem(OBSERVACAO) ?? '').slice(0, 2000);
+  } catch {
+    return '';
+  }
+}
+export function gravarObservacao(texto: string) {
+  try {
+    if (texto) localStorage.setItem(OBSERVACAO, texto);
+    else localStorage.removeItem(OBSERVACAO);
+  } catch {
+    /* sem armazenamento: só não lembra */
+  }
 }
 
 export function abrirPainel() {

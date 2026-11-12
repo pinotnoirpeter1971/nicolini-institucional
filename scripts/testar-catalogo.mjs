@@ -116,12 +116,13 @@ try {
 }
 
 await cenario('Casa sem Produtos (nicolini): tudo escondido', 'nicolini', staging, async ({ porta }) => {
-  for (const c of ['/produtos', '/produtos/queijos', '/produto/queijo-serrano']) {
+  for (const c of ['/produtos', '/produtos/queijos', '/produto/queijo-serrano', '/sacola', '/pedido']) {
     const r = await pedir(porta, c);
     conferir(`${c} → 404 com a página do site`, r.status === 404 && r.corpo.includes('Página não encontrada'), `veio ${r.status}`);
   }
   const home = await pedir(porta, '/');
   conferir('/ sem Produtos no menu', !/href="\/produtos/.test(home.corpo));
+  conferir('/ sem a sacola no header nem link para /sacola ou /pedido', !home.corpo.includes('cabecalho__sacola') && !/href="\/(sacola|pedido)/.test(home.corpo));
   const sm = await pedir(porta, '/sitemap.xml');
   conferir('sitemap.xml só com as páginas fixas', !/\/produto/.test(sm.corpo));
 });
@@ -145,6 +146,9 @@ try {
     conferir('produto por peso sem oferta estruturada', /"@type":"Product"/.test(peso.corpo) && !/"@type":"Offer"/.test(peso.corpo));
     const un = await pedir(porta, '/produto/azeite-extra-virgem-portugues');
     conferir('produto por unidade: preço e oferta estruturada', un.status === 200 && /R\$\s*89,90/.test(un.corpo) && /"@type":"Offer"[^}]*"price":"89.90"/.test(un.corpo));
+    /* Pedidos segue apagado no build (modulos.pedidos), mesmo com a casa tendo Encomendas no Engine. */
+    conferir('Pedidos apagado no build: produto à venda sem "Adicionar", sem sacola no header', !/Adicionar/.test(un.corpo) && !un.corpo.includes('cabecalho__sacola'));
+    for (const c of ['/sacola', '/pedido']) conferir(`${c} → 404 (Pedidos apagado no build)`, (await pedir(porta, c)).status === 404);
     const indisp = await pedir(porta, '/produto/taleggio');
     conferir('produto indisponível: aviso e nenhuma ação de adicionar', indisp.status === 200 && /Indisponível no momento/.test(indisp.corpo) && !/Adicionar à sacola/.test(indisp.corpo));
     const consulta = await pedir(porta, '/produto/vinho-barolo-riserva');

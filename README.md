@@ -36,6 +36,7 @@ npm run dev --workspaces=false         # laboratório: next dev em 0.0.0.0:5183 
 npm run build --workspaces=false       # next build: as páginas saem estáticas
 npm test --workspaces=false            # build + teste do contrato de endereços
 npm run test:rotas --workspaces=false  # só o teste, sobre o build que já existe
+npm run test:pedidos --workspaces=false  # sacola e pedido contra o Engine de staging (bistro-teste)
 npm run start --workspaces=false       # next start em 5183, para conferir o build
 ```
 

@@ -17,7 +17,7 @@ import { modulos } from '../menu-do-site';
 import { Alerta, Arrow } from '../components/Icons';
 import { Migalhas } from '../ui/Migalhas';
 import { limites } from '../ui/Quantidade';
-import { esvaziar, substituir, type LinhaGuardada } from './armazem';
+import { esvaziar, gravarObservacao, lerObservacao, substituir, type LinhaGuardada } from './armazem';
 import { esquecerTentativa, lembrarPedido, tentativaPara } from './aparelho';
 import { LinhaDaSacola } from './LinhaDaSacola';
 import { useLinhasDaSacola, type Linha } from './linhas';
@@ -68,6 +68,7 @@ export function PaginaDaSacola() {
   const caixaDeAviso = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setNota(lerObservacao());
     let vivo = true;
     configDePedidos()
       .then((c) => vivo && setConfig(c))
@@ -153,11 +154,13 @@ export function PaginaDaSacola() {
     const itens = s.linhas.map((l) => ({ productId: l.id, quantity: l.q }));
     const customerName = nome.trim();
     const note = nota.trim() || null;
-    /* Chave e token nascem juntos e ficam guardados ANTES de chamar o Engine. */
-    const assinatura = JSON.stringify([itens, customerName, note]);
-    const { idempotencyKey, token } = tentativaPara(assinatura);
     const antes = s.linhas;
     const totalAntes = s.totalCents;
+    /* Chave e token nascem juntos e ficam guardados ANTES de chamar o Engine.
+     * Valem para este corpo exato: mudou a sacola, o nome, a observação ou o
+     * total mostrado (uma recusa que trocou o preço), nascem outros. */
+    const assinatura = JSON.stringify([itens, customerName, note, totalAntes]);
+    const { idempotencyKey, token } = tentativaPara(assinatura);
     setEstado('enviando');
     try {
       const recibo = await enviarPedido({ idempotencyKey, token, customerName, note, items: itens, expectedTotalCents: totalAntes });
@@ -388,7 +391,10 @@ export function PaginaDaSacola() {
                       id="pedido-nota"
                       ref={campoNota}
                       value={nota}
-                      onChange={(e) => setNota(e.target.value)}
+                      onChange={(e) => {
+                        setNota(e.target.value);
+                        gravarObservacao(e.target.value);
+                      }}
                       rows={3}
                       placeholder="Ex.: jamón fatiado bem fino"
                       aria-invalid={Boolean(erros.nota)}
