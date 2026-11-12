@@ -1,20 +1,26 @@
-import { Layout, Arrow, Redes } from '../components/Layout';
+import Link from 'next/link';
+import { Arrow } from '../components/Icons';
 import { Balcoes } from '../components/Balcoes';
 import { CasaFotos } from '../components/CasaFotos';
 import { Reveal } from '../components/Reveal';
-import { casa, materias } from '../data/casa';
+import { casa } from '../data/casa';
+import { modulos } from '../menu-do-site';
+import { CartaoDeProduto } from '../ui/CartaoDeProduto';
+import { CapaNoCartao, enderecoDaMateria } from '../ui/CartaoDeMateria';
+
+/*
+ * A home (DESIGN-BRIEF §7). A abertura é a do site no ar (hero, "A casa" e
+ * "Nossos produtos"); depois entram o destaque de produtos e o bloco vermelho
+ * do e-commerce, o Blog (agora real, com link) e o fechamento. O destaque e o
+ * Blog só aparecem com o módulo aceso e com conteúdo; a página não pede nada
+ * ao Engine quando eles estão apagados.
+ */
 
 function Hero() {
   return (
-    <section className="hero" data-header-hero>
+    <section className="hero hero--casa">
       <div className="hero__media">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster="/media/hero-fatiando-presunto-poster.jpg"
-        >
+        <video autoPlay muted loop playsInline poster="/media/hero-fatiando-presunto-poster.jpg">
           <source src="/media/hero-fatiando-presunto.webm" type="video/webm" />
           <source src="/media/hero-fatiando-presunto.mp4" type="video/mp4" />
         </video>
@@ -22,10 +28,7 @@ function Hero() {
       <div className="hero__scrim" />
 
       <div className="hero__inner">
-        <p
-          className="eyebrow hero__reveal"
-          style={{ '--d': '60ms', color: 'rgba(255, 255, 255, 0.72)' }}
-        >
+        <p className="eyebrow hero__reveal" style={{ '--d': '60ms', color: 'rgba(255, 255, 255, 0.72)' }}>
           O EMPÓRIO NICOLINI
         </p>
         <h1 className="hero__reveal" style={{ '--d': '150ms' }}>
@@ -34,19 +37,64 @@ function Hero() {
           <em>alta gastronomia.</em>
         </h1>
         <p className="hero__sub hero__reveal" style={{ '--d': '270ms' }}>
-          A seleção de ingredientes da Nicolini é curada a dedo, com produtos
-          de todo o mundo.
+          A seleção de ingredientes da Nicolini é curada a dedo, com produtos de todo o mundo.
         </p>
+        {modulos.produtos && (
+          <div className="hero__cta hero__reveal" style={{ '--d': '360ms' }}>
+            <Link className="botao botao--claro" href="/produtos">
+              Explorar a seleção <Arrow />
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
-export default function Home() {
-  const { endereco } = casa;
-
+/* O bloco vermelho do e-commerce: a exceção de cor, uma por página (§10). */
+function TabuaDeFrios() {
+  const conversa = `https://wa.me/${casa.whatsapp.link}?text=${encodeURIComponent('Olá! Quero saber da tábua de frios da Nicolini.')}`;
   return (
-    <Layout overlay ancorasLocais>
+    <section className="destaque-vermelho" aria-labelledby="tabua-de-frios">
+      <div className="wrap destaque-vermelho__grade">
+        <Reveal className="destaque-vermelho__foto">
+          <img src="/media/blog/cestas.jpg" alt="Caixa vermelha da Nicolini com a seleção de frios" width="1000" height="1500" loading="lazy" decoding="async" />
+        </Reveal>
+        <Reveal className="destaque-vermelho__texto" delay={90}>
+          <p className="eyebrow">Seleção de frios</p>
+          <h2 id="tabua-de-frios">
+            Conheça nossa
+            <br />
+            selecionada
+            <br />
+            <em>tábua de frios.</em>
+          </h2>
+          <p>Monte sua caixa sob medida ou escolha o padrão da casa. Com aparência Nicolini.</p>
+          <div className="acoes">
+            <a className="botao botao--claro" href={conversa} target="_blank" rel="noreferrer">
+              Fale com a casa <Arrow direction="upRight" />
+            </a>
+            {modulos.produtos && (
+              <Link className="link" href="/produtos/charcutaria">
+                Ver a charcutaria <Arrow />
+              </Link>
+            )}
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * @param {{
+ *   destaques?: import('../engine/sdk-0.7.0/index.js').PublicProductCardData[],
+ *   recentes?: import('../engine/sdk-0.7.0/index.js').BlogCardData[],
+ * }} props
+ */
+export default function Home({ destaques = [], recentes = [] }) {
+  return (
+    <>
       <Hero />
 
       <section id="a-casa" className="band band--paper section section--casa">
@@ -65,14 +113,13 @@ export default function Home() {
             </h2>
             <div className="prose">
               <p>
-                A Nicolini foi criada para quem aprecia a boa cozinha e busca
-                pelos melhores ingredientes. Nossa seleção reúne produtos
-                renomados dos quatro cantos do mundo, cada um com uma história
-                única e o melhor padrão de qualidade.
+                A Nicolini foi criada para quem aprecia a boa cozinha e busca pelos melhores ingredientes. Nossa seleção
+                reúne produtos renomados dos quatro cantos do mundo, cada um com uma história única e o melhor padrão de
+                qualidade.
               </p>
               <p>
-                É onde você pode descobrir produtos, aprender mais sobre cada
-                um e levar para casa aquilo um pouco de cada canto do mundo.
+                É onde você pode descobrir produtos, aprender mais sobre cada um e levar para casa aquilo um pouco de cada
+                canto do mundo.
               </p>
             </div>
           </Reveal>
@@ -88,67 +135,88 @@ export default function Home() {
                 A Nicolini tem tudo que você <em>busca.</em>
               </h2>
             </div>
+            {modulos.produtos && (
+              <Link className="link secao__head-acao" href="/produtos">
+                Ver todos os produtos <Arrow />
+              </Link>
+            )}
           </Reveal>
         </div>
 
         <Reveal delay={80}>
-          <Balcoes />
+          <Balcoes comLinks={modulos.produtos} />
         </Reveal>
       </section>
 
-      {/* Texto de um lado, duas materias simetricas do outro — a mesma logica
-          do bloco editorial do e-commerce, so que com o grid e os componentes
-          do institucional. Antes eram tres blocos empilhados (cabecalho,
-          grade assimetrica com uma materia "lead" maior, e uma terceira tira
-          "tambem no blog"); agora e uma linha so. */}
-      <section id="blog" className="band band--soft section section--blog">
-        <div className="wrap blog__layout">
-          <Reveal className="blog__intro">
-            <p className="eyebrow">Blog Nicolini</p>
-            <h2>
-              Você cozinha,
-              <br />
-              com mais <em>repertório.</em>
-            </h2>
-            <p>
-              Histórias de origem, ideias para cozinhar, produtos que merecem
-              contexto e conversas que continuam depois da sobremesa.
-            </p>
-          </Reveal>
-
-          {materias.slice(0, 2).map((materia, indice) => (
-            <Reveal
-              as="article"
-              className="materia"
-              key={materia.slug}
-              delay={80 + indice * 100}
-            >
-              <div className="materia__figure">
-                <img src={materia.foto} alt="" loading="lazy" />
+      {destaques.length > 0 && (
+        <section className="band band--paper section secao-destaques" aria-labelledby="selecao-da-semana">
+          <div className="wrap">
+            <Reveal className="cabeca-de-secao">
+              <div>
+                <p className="eyebrow">Seleção da semana</p>
+                <h2 id="selecao-da-semana">
+                  O que a casa
+                  <br />
+                  <em>recomenda.</em>
+                </h2>
               </div>
-              <p className="eyebrow">{materia.assunto}</p>
-              <h3>{materia.titulo}</h3>
-              <p className="materia__resumo">{materia.resumo}</p>
+              <Link className="link" href="/produtos">
+                Ver todos os produtos <Arrow />
+              </Link>
             </Reveal>
-          ))}
-        </div>
-      </section>
+            <div className="grade-de-produtos grade-de-produtos--quatro">
+              {destaques.map((produto) => (
+                <CartaoDeProduto key={produto.id} produto={produto} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
-      {/* Antes disto era uma unica faixa vermelha, cheia (foto grande + titulo
-          enorme + grade de horario/contato + dois botoes de estilos
-          diferentes brigando entre si). Trocado pelo mesmo desenho de
-          fechamento do Bistro — ver `como-chegar`/`mapa` em Bistro.jsx —, com
-          os mesmos componentes (`.emporio`, `.reserva__grid`, `.horarios`,
-          `.mapa`): uma foto e um convite curto, depois os dados em texto
-          discreto, e o mapa sangrando no fim. */}
+      <TabuaDeFrios />
+
+      {recentes.length > 0 && (
+        <section id="blog" className="band band--soft section section--blog">
+          <div className="wrap blog__layout">
+            <Reveal className="blog__intro">
+              <p className="eyebrow">Blog Nicolini</p>
+              <h2>
+                Você cozinha,
+                <br />
+                com mais <em>repertório.</em>
+              </h2>
+              <p>
+                Histórias de origem, ideias para cozinhar, produtos que merecem contexto e conversas que continuam depois
+                da sobremesa.
+              </p>
+              <Link className="link blog__todas" href="/blog">
+                Ver todas as matérias <Arrow />
+              </Link>
+            </Reveal>
+
+            {recentes.map((materia, indice) => (
+              <Reveal as="article" className="materia" key={materia.id} delay={80 + indice * 100}>
+                <Link href={enderecoDaMateria(materia)} className="materia__link">
+                  <div className="materia__figure">
+                    <CapaNoCartao capa={materia.cover} sizes="(max-width: 760px) 100vw, 30vw" />
+                  </div>
+                  <p className="eyebrow">{materia.category?.name ?? 'Blog Nicolini'}</p>
+                  <h3>{materia.title}</h3>
+                  <p className="materia__resumo">{materia.excerpt}</p>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Fechamento: a fachada e o convite do site no ar. Contato, horários e
+          endereço passaram ao rodapé de cinco colunas, e o mapa mora na página
+          da loja física: a home não repete os dois. */}
       <section className="band band--paper section">
         <div className="emporio">
           <Reveal className="emporio__figure">
-            <img
-              src="/media/loja/fachada.jpg"
-              alt="Fachada de entrada do Empório Nicolini"
-              loading="lazy"
-            />
+            <img src="/media/loja/fachada.jpg" alt="Fachada de entrada do Empório Nicolini" loading="lazy" decoding="async" />
           </Reveal>
 
           <Reveal delay={90}>
@@ -160,95 +228,24 @@ export default function Home() {
             </h2>
             <div className="prose" style={{ marginTop: 24 }}>
               <p>
-                A Nicolini é um lugar para descobrir, perguntar, provar e levar
-                para casa aquilo que muda uma receita ou um encontro.
+                A Nicolini é um lugar para descobrir, perguntar, provar e levar para casa aquilo que muda uma receita ou
+                um encontro.
+              </p>
+              <p>
+                {casa.endereco.linha1}, {casa.endereco.bairro}. {casa.horarios.map((h) => `${h.dia}: ${h.hora.toLowerCase()}`).join('; ')}.
               </p>
             </div>
-          </Reveal>
-        </div>
-      </section>
-
-      <section id="contato" className="band band--ink section">
-        <div className="wrap reserva__grid">
-          <Reveal>
-            <h2>Contato</h2>
-            <div className="prose">
-              <div>
-                <a
-                  className="link"
-                  href={`https://wa.me/${casa.whatsapp.link}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {casa.whatsapp.exibicao} <Arrow direction="upRight" />
-                </a>
-              </div>
-              <div>
-                <a className="link" href={`tel:${casa.telefone.link}`}>
-                  {casa.telefone.exibicao}
-                </a>
-              </div>
-              <div>
-                <a className="link" href={`mailto:${casa.email}`}>
-                  {casa.email}
-                </a>
-              </div>
-              <Redes />
-            </div>
-          </Reveal>
-
-          <Reveal delay={90}>
-            <h2>Horários</h2>
-            <dl className="horarios">
-              {casa.horarios.map((item) => (
-                <div key={item.dia} className={item.fechado ? 'is-fechado' : undefined}>
-                  <dt>{item.dia}</dt>
-                  <dd>{item.hora}</dd>
-                </div>
-              ))}
-            </dl>
-          </Reveal>
-
-          <Reveal delay={180}>
-            <h2>Onde fica</h2>
-            <div className="prose">
-              <address style={{ fontStyle: 'normal' }}>
-                {endereco.linha1}
-                <br />
-                {endereco.bairro} · {endereco.cidade} · {endereco.estado}
-                <br />
-                CEP {endereco.cep}
-              </address>
-              <div>
-                <a className="link" href={casa.mapsBusca} target="_blank" rel="noreferrer">
-                  Abrir no Google Maps <Arrow direction="upRight" />
-                </a>
-              </div>
+            <div className="acoes" style={{ marginTop: 26 }}>
+              <Link className="link" href="/a-loja">
+                A loja física <Arrow />
+              </Link>
+              <a className="link" href={casa.mapsBusca} target="_blank" rel="noreferrer">
+                Abrir no Google Maps <Arrow direction="upRight" />
+              </a>
             </div>
           </Reveal>
         </div>
       </section>
-
-      <section className="mapa" aria-label="Mapa com a localização do Empório Nicolini">
-        <iframe
-          src={casa.mapsEmbed}
-          title="Mapa com a localização do Empório Nicolini"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          allowFullScreen
-        />
-        <div className="mapa__card">
-          <p className="eyebrow">Como chegar</p>
-          <address>
-            {endereco.linha1}
-            <br />
-            {endereco.bairro} · {endereco.cidade}
-          </address>
-          <a className="link" href={casa.mapsBusca} target="_blank" rel="noreferrer">
-            Traçar rota <Arrow direction="upRight" />
-          </a>
-        </div>
-      </section>
-    </Layout>
+    </>
   );
 }

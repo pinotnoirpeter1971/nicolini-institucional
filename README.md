@@ -14,6 +14,12 @@ Hoje tem:
 - `/menu/` — cardápio e reservas do Bistrô: app estático em `public/menu`,
   que fala com o Restaurants Engine.
 
+No laboratório (`next dev`) também: `/produtos`, `/produto/<slug>`, `/blog`,
+`/eventos`, `/sacola`, `/pedido` e `/politica-de-privacidade`, com dados
+simulados no formato do SDK do Engine. No build de produção essas páginas
+respondem 404 até a ativação (chaves em `src/menu-do-site.ts`; ver
+"Design do site" no `CONTEXTO.md`).
+
 O plano em andamento (blog, eventos, produtos e pedido sem pagamento) está em
 `Capilano Suite/plans/nicolini-site/`. **Contexto, regras e limites:**
 [`CONTEXTO.md`](CONTEXTO.md).
@@ -43,12 +49,18 @@ Só um `next dev` roda por pasta: o laboratório da 5183 ocupa este checkout.
 | O quê | Onde |
 | --- | --- |
 | Teste do contrato de endereços | `scripts/testar-rotas.mjs` |
-| Rotas | `app/` (`page.tsx`, `a-loja/`, `bistro/`, `rustichella/`, `not-found.tsx`, `robots.ts`, `sitemap.ts`) |
+| Rotas | `app/` (`(casa)/` com a home, `a-loja/` e as telas novas; `bistro/`, `rustichella/`, `not-found.tsx`, `robots.ts`, `sitemap.ts`) |
+| Moldura (header, rodapé, peças travadas) | `src/moldura/`, montada nos `layout.tsx` de rota |
+| Módulos acesos, peças de loja e menu | `src/menu-do-site.ts` |
+| Dados do Engine (SDK copiado, simulado, fonte) | `src/engine/` |
+| Sacola e recibo | `src/sacola/` |
+| Peças das telas novas | `src/ui/` |
+| Painel do laboratório (só `next dev`) | `src/laboratorio/` |
 | Layout raiz, metadados globais e ordem do CSS | `app/layout.tsx` |
 | Metadados por página (título, descrição, imagem, canônico) | `src/metadados.ts` |
 | Configuração pública (variáveis de ambiente) | `src/site.ts` |
 | Redirects, rewrites e cabeçalhos (antes `vercel.json`) | `next.config.ts` |
-| Páginas e componentes (JSX) | `src/paginas/`, `src/components/`, `src/hooks/` |
+| Páginas e componentes | `src/paginas/`, `src/components/`, `src/hooks/` |
 | Dados locais | `src/data/` |
 | CSS por área | `src/styles/` (ordem no `CONTEXTO.md`) |
 | Fontes | `src/fonts/` (woff2 + licença OFL), declaradas em `src/styles/fontes.css` |
@@ -62,4 +74,5 @@ Todas têm padrão no código; nenhuma é obrigatória.
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | `https://www.emporionicolini.com.br` | Origem pública: canônico, sitemap, imagens de compartilhamento |
 | `NEXT_PUBLIC_SITE_INDEXAVEL` | ligada | Chave única de indexação. `false` ou `0` põe `noindex` em tudo; o `robots.txt` nunca bloqueia. Só aceita ausente, `true`, `1`, `false`, `0`: outro valor derruba o build |
-| `NEXT_PUBLIC_ENGINE_URL` | `https://capilano-restaurant-engines.vercel.app` | Destino do repasse `/menu-engine/...` |
+| `NEXT_PUBLIC_ENGINE_URL` | `https://capilano-restaurant-engines.vercel.app` | Destino do repasse `/menu-engine/...` e, na ativação, das leituras do Blog, Produtos e Pedidos |
+| `NEXT_PUBLIC_ENGINE_CASA` | `nicolini` | Chave da casa no Engine (a mesma do `/menu`) |

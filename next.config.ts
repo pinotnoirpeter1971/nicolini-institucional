@@ -129,7 +129,12 @@ const nextConfig: NextConfig = {
     if (!indexavel) {
       comuns.push({ key: 'X-Robots-Tag', value: 'noindex' });
     }
-    return [{ source: '/:caminho*', headers: comuns }];
+    return [
+      { source: '/:caminho*', headers: comuns },
+      /* O recibo (/pedido#<token>) não manda o endereço a ninguém (SPEC-SITE
+       * §7.1). Regra depois da geral: a última vence na mesma chave. */
+      { source: '/pedido', headers: [{ key: 'Referrer-Policy', value: 'no-referrer' }] },
+    ];
   },
 };
 

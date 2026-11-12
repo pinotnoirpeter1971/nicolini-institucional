@@ -1,0 +1,498 @@
+/* Blog, matéria e eventos (no estilo do blog), mais as páginas de texto (privacidade) e o 404. Área nova (design, 12/11/2026); a ordem de importação está em app/layout.tsx. */
+
+/* Home: o bloco do Blog agora leva às matérias. */
+.materia__link {
+  display: block;
+}
+
+.materia__figure {
+  position: relative;
+}
+
+.blog__todas {
+  margin-top: 22px;
+}
+
+/* Cartão de matéria. */
+.materia-cartao {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  min-width: 0;
+}
+
+.materia-cartao__capa {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--fundo-foto);
+}
+
+.materia-cartao__capa img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 760ms var(--ease);
+}
+
+.materia-cartao:hover .materia-cartao__capa img {
+  transform: scale(1.03);
+}
+
+.materia-cartao .eyebrow {
+  margin-bottom: 8px;
+}
+
+.materia-cartao__tipo {
+  color: var(--muted);
+}
+
+.materia-cartao h3 {
+  font-size: clamp(1.45rem, 1.8vw, 1.8rem);
+  line-height: 1.1;
+}
+
+.materia-cartao h3 a {
+  transition: color 200ms var(--ease);
+}
+
+.materia-cartao h3 a:hover {
+  color: var(--marca);
+}
+
+.materia-cartao__resumo {
+  max-width: 46ch;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.7;
+}
+
+.materia-cartao__meta {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* A primeira da lista, em destaque. */
+.materia-cartao--destaque {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
+  align-items: center;
+  gap: clamp(28px, 5vw, 72px);
+  padding-bottom: clamp(48px, 6vw, 80px);
+  margin-bottom: clamp(48px, 6vw, 80px);
+  border-bottom: 1px solid var(--line);
+}
+
+.materia-cartao--destaque .materia-cartao__capa {
+  aspect-ratio: 3 / 2;
+}
+
+.materia-cartao--destaque h3 {
+  font-size: clamp(2.1rem, 3.4vw, 3.3rem);
+  line-height: 1.02;
+}
+
+.lista-do-blog {
+  padding: clamp(48px, 6vw, 88px) 0 clamp(72px, 8vw, 120px);
+}
+
+.grade-de-materias {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(44px, 5vw, 64px) clamp(20px, 2.6vw, 36px);
+}
+
+/* Matéria. */
+.materia__cabeca {
+  display: grid;
+  justify-items: center;
+  max-width: 980px;
+  padding: clamp(28px, 4vw, 48px) 0 clamp(32px, 4vw, 52px);
+  text-align: center;
+}
+
+.materia__cabeca .migalhas ol {
+  justify-content: center;
+}
+
+.materia__cabeca h1 {
+  max-width: 20ch;
+  font-size: clamp(2.6rem, 5.6vw, 5.2rem);
+}
+
+.materia__linha-fina {
+  max-width: 46ch;
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+  line-height: 1.65;
+}
+
+.materia__meta {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
+.materia__capa {
+  max-width: 1240px;
+}
+
+.materia__capa > img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--fundo-foto);
+}
+
+.materia__corpo {
+  width: min(720px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: clamp(40px, 5vw, 72px) 0 clamp(64px, 8vw, 112px);
+  color: var(--ink-soft);
+  font-size: 1.08rem;
+  line-height: 1.85;
+}
+
+.materia__corpo > p + p {
+  margin-top: 1.1em;
+}
+
+.materia__corpo em {
+  color: inherit;
+}
+
+.materia__corpo strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.materia__corpo a:not(.link) {
+  color: var(--marca);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.materia__corpo h2 {
+  margin: 2em 0 0.6em;
+  color: var(--ink);
+  font-size: clamp(1.8rem, 2.6vw, 2.3rem);
+  line-height: 1.08;
+}
+
+.materia__figura {
+  margin: 2.4em 0;
+}
+
+.materia__figura img {
+  width: 100%;
+  height: auto;
+  max-height: min(860px, 88vh);
+  object-fit: cover;
+  background: var(--fundo-foto);
+}
+
+.materia__figura figcaption {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.materia__citacao {
+  margin: 2.4em 0;
+  padding: 0;
+  text-align: center;
+}
+
+.materia__citacao::before {
+  display: block;
+  width: 32px;
+  height: 1px;
+  margin: 0 auto 26px;
+  background: var(--marca);
+  content: '';
+}
+
+.materia__citacao p {
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+  font-style: italic;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+}
+
+.materia__citacao cite {
+  display: block;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.materia__compartilhar {
+  margin-top: 3em !important;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+/* Fotos e vídeos do corpo passam um pouco da coluna de texto no largo. */
+@media (min-width: 1000px) {
+  .materia__figura {
+    margin-inline: -96px;
+  }
+}
+
+/* Eventos. */
+.eventos {
+  padding-top: clamp(48px, 6vw, 80px);
+}
+
+.eventos + .eventos {
+  padding-bottom: clamp(72px, 8vw, 120px);
+}
+
+.eventos__titulo {
+  margin-bottom: clamp(24px, 3vw, 40px);
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ink);
+  font-size: clamp(2rem, 3vw, 2.8rem);
+}
+
+.eventos__vazio {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 8px 0 24px;
+  color: var(--muted);
+}
+
+.grade-de-eventos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(40px, 5vw, 64px) clamp(24px, 3vw, 40px);
+}
+
+.grade-de-eventos--passados {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.evento-cartao {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  min-width: 0;
+}
+
+.evento-cartao__capa {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--fundo-foto);
+}
+
+.evento-cartao__capa img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 760ms var(--ease), filter 400ms var(--ease);
+}
+
+.evento-cartao:hover .evento-cartao__capa img {
+  transform: scale(1.03);
+}
+
+.evento-cartao.is-passado .evento-cartao__capa img {
+  filter: saturate(0.6);
+}
+
+.evento-cartao__data {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  justify-items: center;
+  min-width: 68px;
+  padding: 10px 12px 12px;
+  color: var(--ink);
+  background: var(--paper);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.evento-cartao__data b {
+  margin-bottom: 4px;
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.evento-cartao .eyebrow {
+  margin-bottom: 8px;
+}
+
+.evento-cartao.is-passado .eyebrow {
+  color: var(--muted);
+}
+
+.evento-cartao h3 {
+  font-size: clamp(1.6rem, 2.2vw, 2.2rem);
+  line-height: 1.06;
+}
+
+.evento-cartao h3 a:hover {
+  color: var(--marca);
+}
+
+.evento-cartao__quando {
+  margin-top: 10px;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.08rem;
+}
+
+.evento-cartao .link {
+  margin-top: 14px;
+}
+
+.grade-de-eventos--passados .evento-cartao h3 {
+  font-size: clamp(1.35rem, 1.7vw, 1.65rem);
+}
+
+.evento__ficha {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px 56px;
+  margin: 28px 0 0;
+}
+
+.evento__ficha dt {
+  color: var(--marca);
+  font-size: 0.69rem;
+  font-weight: 650;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.evento__ficha dd {
+  margin: 6px 0 0;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+}
+
+.evento__acoes {
+  justify-content: center;
+  margin-top: 28px;
+}
+
+/* Política de privacidade e outras páginas de texto. */
+.texto-legal {
+  max-width: 760px;
+  padding: clamp(28px, 4vw, 48px) 0 clamp(72px, 8vw, 120px);
+}
+
+.texto-legal h1 {
+  font-size: clamp(2.8rem, 5vw, 4.4rem);
+}
+
+.texto-legal__corpo {
+  margin-top: clamp(28px, 4vw, 44px);
+  color: var(--ink-soft);
+  font-size: 1.02rem;
+  line-height: 1.8;
+}
+
+.texto-legal__corpo h2 {
+  margin: 1.8em 0 0.5em;
+  font-size: 1.6rem;
+  line-height: 1.1;
+}
+
+.texto-legal__corpo a {
+  color: var(--marca);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.texto-legal__lede {
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  line-height: 1.5;
+}
+
+.texto-legal__responsavel {
+  margin-top: 2em;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+/* 404: centrado, como no e-commerce, com a ação sólida. */
+.pagina-404 {
+  padding: clamp(80px, 12vw, 168px) 0;
+  text-align: center;
+}
+
+.pagina-404 h1 {
+  max-width: 13ch;
+  margin: 0 auto;
+}
+
+.pagina-404 p:not(.eyebrow) {
+  max-width: 44ch;
+  margin: 26px auto 0;
+  color: var(--muted);
+}
+
+.pagina-404 .acoes {
+  justify-content: center;
+  margin-top: 34px;
+}
+
+@media (max-width: 1100px) {
+  .grade-de-materias,
+  .grade-de-eventos--passados {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .materia-cartao--destaque {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .grade-de-materias,
+  .grade-de-eventos,
+  .grade-de-eventos--passados {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .materia__capa {
+    width: 100%;
+  }
+
+  .materia__capa > img,
+  .materia__capa .video {
+    aspect-ratio: 4 / 3;
+  }
+
+  .materia__corpo {
+    font-size: 1.02rem;
+  }
+}

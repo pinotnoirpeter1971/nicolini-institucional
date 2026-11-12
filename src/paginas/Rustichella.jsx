@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Layout, Arrow } from '../components/Layout';
-import { Chevron } from '../components/Icons';
+import { Arrow, Chevron } from '../components/Icons';
 import { CasaFotos } from '../components/CasaFotos';
 import { Reveal } from '../components/Reveal';
 import { casa } from '../data/casa';
@@ -14,7 +13,6 @@ import {
   delegacao,
   evento,
   fatos,
-  navEvento,
   sangria,
   tempos,
   tira,
@@ -72,7 +70,6 @@ function Hero() {
   return (
     <section
       className={`hero hero--evento ${pronto ? 'esta-pronto' : ''}`}
-      data-header-hero
       ref={secao}
     >
       <div className="hero__media">
@@ -226,7 +223,7 @@ export default function Rustichella() {
   const { endereco } = casa;
 
   return (
-    <Layout overlay tema="rustichella" nav={navEvento} ancorasLocais>
+    <>
       <Hero />
 
       {/*
@@ -529,6 +526,6 @@ export default function Rustichella() {
           </a>
         </div>
       </section>
-    </Layout>
+    </>
   );
 }

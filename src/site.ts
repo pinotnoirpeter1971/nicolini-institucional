@@ -28,6 +28,15 @@ export const indexavel = lerChaveDeIndexacao(process.env.NEXT_PUBLIC_SITE_INDEXA
 
 export const engineUrl = (process.env.NEXT_PUBLIC_ENGINE_URL || 'https://capilano-restaurant-engines.vercel.app').replace(/\/+$/, '');
 
+/* A chave da casa no Engine (o mesmo `nicolini` do /menu). Blog, Produtos e
+ * Pedidos são lidos por ela (SPEC-SITE §3.1). */
+export const casaNoEngine = process.env.NEXT_PUBLIC_ENGINE_CASA || 'nicolini';
+
+/* Laboratório: `next dev`. Só nele os módulos novos aparecem, com dados
+ * simulados (src/engine/simulado). No build de produção esta constante é
+ * `false` já na compilação, e o código simulado nem entra no pacote. */
+export const laboratorio = process.env.NODE_ENV === 'development';
+
 /* As páginas fixas do site, na ordem do sitemap. Os módulos (blog, produtos)
  * entram depois, pelos índices do Engine. */
 export const paginasFixas = ['/', '/a-loja', '/bistro', '/rustichella'] as const;

@@ -69,6 +69,8 @@ export const secoes = [
 export const setores = [
   {
     id: 'charcutaria',
+    /* Slug da categoria de Produtos no Engine: o balcão leva a ela quando o módulo está aceso. */
+    categoria: 'charcutaria',
     nome: 'Charcutaria',
     texto: 'Do Jàmon ao Parma, selecionamos os melhores embutidos do mundo.',
     destaque:
@@ -77,6 +79,7 @@ export const setores = [
   },
   {
     id: 'queijos',
+    categoria: 'queijos',
     nome: 'Queijos',
     texto: 'Dos grandes franceses aos italianos de longa maturação.',
     destaque:
@@ -85,6 +88,7 @@ export const setores = [
   },
   {
     id: 'massas',
+    categoria: 'massas',
     nome: 'Massas',
     texto: 'Massas italianas, do grano duro à fresca.',
     destaque:
@@ -93,6 +97,7 @@ export const setores = [
   },
   {
     id: 'vinhos',
+    categoria: 'vinhos',
     nome: 'Vinhos',
     texto: 'Garrafas para abrir agora e ou para guardar na adega.',
     destaque:
@@ -101,6 +106,7 @@ export const setores = [
   },
   {
     id: 'mercearia',
+    categoria: 'conservas',
     nome: 'Conservas',
     texto: 'Latas, vidros e preparos com padrão Nicolini.',
     destaque:

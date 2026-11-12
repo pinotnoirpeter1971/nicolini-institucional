@@ -12,6 +12,11 @@
   isolation: isolate;
 }
 
+/* Na home, o vídeo ocupa o resto da primeira tela, abaixo da faixa e do header. */
+.hero--casa {
+  min-height: max(520px, calc(100svh - var(--moldura-topo)));
+}
+
 .hero__media {
   position: absolute;
   z-index: -2;

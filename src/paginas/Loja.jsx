@@ -1,4 +1,5 @@
-import { Layout, Arrow, Redes } from '../components/Layout';
+import { Arrow } from '../components/Icons';
+import { Redes } from '../moldura/Redes';
 import { Balcoes } from '../components/Balcoes';
 import { Reveal } from '../components/Reveal';
 import { casa } from '../data/casa';
@@ -7,7 +8,7 @@ export default function Loja() {
   const { endereco } = casa;
 
   return (
-    <Layout>
+    <>
       <section className="band band--paper page-top">
         <div className="wrap">
           <Reveal>
@@ -129,6 +130,6 @@ export default function Loja() {
           </a>
         </div>
       </section>
-    </Layout>
+    </>
   );
 }

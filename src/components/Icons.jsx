@@ -88,3 +88,66 @@ export const IconeRede = ({ nome }) => {
   const Desenho = desenhos[nome];
   return Desenho ? <Desenho /> : null;
 };
+
+/*
+ * Peças da moldura nova (sacola, menu, quantidade, vídeo). Mesmo traçado das
+ * outras (viewBox 16, contorno de 1.3), para conviverem com Arrow e Pin.
+ */
+export const Sacola = () => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M3.2 5.4h9.6l-.7 8.1H3.9l-.7-8.1Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+    <path d="M5.8 6.2V4.6a2.2 2.2 0 0 1 4.4 0v1.6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+);
+
+export const Menu = () => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M2 4.5h12M2 8h12M2 11.5h12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+);
+
+export const Fechar = () => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="m3.5 3.5 9 9M12.5 3.5l-9 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+);
+
+export const Minus = () => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M3 8h10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+);
+
+export const Busca = () => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <circle cx="7" cy="7" r="4.6" stroke="currentColor" strokeWidth="1.3" />
+    <path d="m10.4 10.4 3.2 3.2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+);
+
+export const Pessoa = () => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <circle cx="8" cy="5.4" r="2.6" stroke="currentColor" strokeWidth="1.3" />
+    <path d="M2.9 13.6c.5-2.6 2.3-4 5.1-4s4.6 1.4 5.1 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+);
+
+export const Coracao = () => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M13.8 6.1c0 3.4-5.8 6.8-5.8 6.8S2.2 9.5 2.2 6.1A3 3 0 0 1 8 4.3a3 3 0 0 1 5.8 1.8Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+  </svg>
+);
+
+export const Play = () => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M5.2 3.4v9.2L12.6 8 5.2 3.4Z" fill="currentColor" />
+  </svg>
+);
+
+export const Alerta = () => (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3" />
+    <path d="M8 4.8v3.8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    <circle cx="8" cy="11" r=".8" fill="currentColor" />
+  </svg>
+);

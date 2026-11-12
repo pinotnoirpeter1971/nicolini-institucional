@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Arrow, Layout } from '../src/components/Layout';
-import { Reveal } from '../src/components/Reveal';
+import { Arrow } from '../src/components/Icons';
+import { Moldura } from '../src/moldura/Moldura';
+import { modulos } from '../src/menu-do-site';
 
 /*
- * Endereço inexistente responde 404 com esta página (antes caía na home).
- * Mesma linguagem da página da loja: só classes que já existem no CSS.
+ * Endereço inexistente responde 404 com esta página. Desenho do e-commerce
+ * (centrado, ação sólida), redação do site no ar. Também é a resposta das
+ * páginas de módulo apagado.
  */
 export const metadata: Metadata = {
   title: 'Página não encontrada — Nicolini',
@@ -14,31 +16,31 @@ export const metadata: Metadata = {
 
 export default function NaoEncontrada() {
   return (
-    <Layout>
-      <section className="band band--paper page-top">
+    <Moldura>
+      <section className="pagina-404">
         <div className="wrap">
-          <Reveal>
-            <p className="eyebrow">Página não encontrada</p>
-            <h1>
-              Este endereço
-              <br />
-              não está <em>na casa.</em>
-            </h1>
-            <p>
-              O link pode ter mudado ou saído do ar. A loja, o bistrô e o
-              cardápio continuam aqui.
-            </p>
-            <div className="acoes">
-              <Link className="link" href="/">
-                Voltar ao início <Arrow />
+          <p className="eyebrow">Página não encontrada</p>
+          <h1>
+            Este endereço
+            <br />
+            não está <em>na casa.</em>
+          </h1>
+          <p>O link pode ter mudado ou saído do ar. A loja, o bistrô e o cardápio continuam aqui.</p>
+          <div className="acoes">
+            <Link className="botao botao--escuro" href="/">
+              Voltar ao início <Arrow />
+            </Link>
+            {modulos.produtos && (
+              <Link className="link" href="/produtos">
+                Ver os produtos <Arrow />
               </Link>
-              <Link className="link" href="/bistro">
-                Bistrô Nicolini <Arrow />
-              </Link>
-            </div>
-          </Reveal>
+            )}
+            <Link className="link" href="/bistro">
+              Bistrô Nicolini <Arrow />
+            </Link>
+          </div>
         </div>
       </section>
-    </Layout>
+    </Moldura>
   );
 }

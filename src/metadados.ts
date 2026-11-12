@@ -41,3 +41,40 @@ export function metadados({ caminho, titulo, descricao, ogTitulo, ogDescricao, o
     twitter: { card: 'summary_large_image' },
   };
 }
+
+/*
+ * Metadados das páginas novas (produtos, blog, eventos, sacola, recibo). A
+ * imagem de compartilhamento é a capa ou a primeira foto; sem ela, a da casa.
+ * `privada` põe noindex (sacola e recibo, SPEC-SITE §4).
+ */
+export function metadadosDaPagina({
+  caminho,
+  titulo,
+  descricao,
+  imagem,
+  privada = false,
+}: {
+  caminho: string;
+  titulo: string;
+  descricao: string;
+  imagem?: { url: string; width: number; height: number } | null;
+  privada?: boolean;
+}): Metadata {
+  const tituloCompleto = `${titulo} — Nicolini`;
+  return {
+    title: tituloCompleto,
+    description: descricao,
+    alternates: { canonical: caminho },
+    openGraph: {
+      type: 'website',
+      siteName: 'Nicolini',
+      locale: 'pt_BR',
+      title: tituloCompleto,
+      description: descricao,
+      url: caminho,
+      images: [imagem ? { url: imagem.url, width: imagem.width, height: imagem.height } : { url: emporio.ogImagem, width: 1200, height: 630 }],
+    },
+    twitter: { card: 'summary_large_image' },
+    ...(privada ? { robots: { index: false, follow: false } } : {}),
+  };
+}

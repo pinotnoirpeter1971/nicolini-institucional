@@ -19,6 +19,11 @@ import '../src/styles/responsivo.css';
 import '../src/styles/bistro.css';
 import '../src/styles/moldura-whatsapp.css';
 import '../src/styles/rustichella.css';
+/* Áreas do design de 12/11/2026 (moldura nova, produtos, blog, sacola e recibo). */
+import '../src/styles/componentes.css';
+import '../src/styles/produtos.css';
+import '../src/styles/blog.css';
+import '../src/styles/pedido.css';
 
 /* O layout raiz não chama o Engine (SPEC-SITE §1.6). */
 export const metadata: Metadata = {

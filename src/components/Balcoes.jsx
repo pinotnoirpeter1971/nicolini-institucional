@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { setores } from '../data/casa';
 
 /*
@@ -65,29 +66,46 @@ export function useArrasto() {
  * clique — por isso cada item e um botao de verdade, com aria-expanded.
  * No celular o trilho vira rolagem lateral e a linha curta fica sempre visivel.
  */
-export function Balcoes() {
+/*
+ * Com Produtos aceso (`comLinks`), cada balcão leva à categoria dele
+ * (DESIGN-BRIEF §7): vira link, com a mesma foto e o mesmo hover; no toque o
+ * texto curto já está à vista, então o toque navega.
+ */
+export function Balcoes({ comLinks = false }) {
   const [aberto, setAberto] = useState(null);
   const trilho = useArrasto();
 
+  const miolo = (setor) => (
+    <>
+      <span className="balcao__foto">
+        <img src={setor.foto} alt={setor.nome} loading="lazy" draggable="false" />
+        <span className="balcao__scrim" aria-hidden="true" />
+        <span className="balcao__destaque">{setor.destaque}</span>
+      </span>
+      <span className="balcao__nome">{setor.nome}</span>
+      <span className="balcao__texto">{setor.texto}</span>
+    </>
+  );
+
   return (
     <div className="rail" ref={trilho}>
-      {setores.map((setor) => (
-        <button
-          type="button"
-          key={setor.id}
-          className={`balcao ${aberto === setor.id ? 'is-open' : ''}`}
-          aria-expanded={aberto === setor.id}
-          onClick={() => setAberto((atual) => (atual === setor.id ? null : setor.id))}
-        >
-          <span className="balcao__foto">
-            <img src={setor.foto} alt={setor.nome} loading="lazy" draggable="false" />
-            <span className="balcao__scrim" aria-hidden="true" />
-            <span className="balcao__destaque">{setor.destaque}</span>
-          </span>
-          <span className="balcao__nome">{setor.nome}</span>
-          <span className="balcao__texto">{setor.texto}</span>
-        </button>
-      ))}
+      {setores.map((setor) =>
+        comLinks ? (
+          <Link key={setor.id} href={`/produtos/${setor.categoria}`} className="balcao" draggable="false">
+            {miolo(setor)}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            key={setor.id}
+            className={`balcao ${aberto === setor.id ? 'is-open' : ''}`}
+            aria-expanded={aberto === setor.id}
+            onClick={() => setAberto((atual) => (atual === setor.id ? null : setor.id))}
+          >
+            {miolo(setor)}
+          </button>
+        ),
+      )}
     </div>
   );
 }

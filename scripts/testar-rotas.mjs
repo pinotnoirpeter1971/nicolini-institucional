@@ -329,6 +329,79 @@ try {
     );
   }
 
+  /*
+   * Design de 12/11/2026: as páginas que dependem do Engine só existem no
+   * laboratório (next dev, dados simulados). No build de produção os módulos
+   * estão apagados em src/menu-do-site.ts: página 404, item fora do menu e do
+   * rodapé, nenhum bloco na home, e nada do simulado no pacote.
+   */
+  console.log('\nMódulos apagados no build de produção (nada simulado vai a público)');
+  for (const caminho of [
+    '/produtos',
+    '/produtos/queijos',
+    '/produto/parmigiano-reggiano-24-meses',
+    '/blog',
+    '/blog/categoria/receita-do-mes',
+    '/blog/jamon-de-bellota',
+    '/eventos',
+    '/eventos/nicolini-e-rustichella',
+    '/sacola',
+    '/pedido',
+    '/politica-de-privacidade',
+  ]) {
+    const r = await pedir(caminho);
+    conferir(`${caminho} → 404 com a página do site`, r.status === 404 && r.corpo.includes('Página não encontrada'), `veio ${r.status}`);
+  }
+  const pedido = await pedir('/pedido');
+  conferir('/pedido Referrer-Policy: no-referrer', pedido.headers['referrer-policy'] === 'no-referrer', pedido.headers['referrer-policy']);
+
+  const apagados = ['/produtos', '/blog', '/eventos', '/sacola', '/pedido', '/politica-de-privacidade'];
+  for (const caminho of ['/', '/a-loja', '/bistro', '/rustichella', '/nao-existe']) {
+    const r = await pedir(caminho);
+    const links = [...r.corpo.matchAll(/href="(\/[^"#?]*)/g)].map((m) => m[1]);
+    const proibidos = links.filter((l) => apagados.some((a) => l === a || l.startsWith(`${a}/`)) || l.startsWith('/produto/'));
+    conferir(`${caminho} sem link para módulo apagado`, proibidos.length === 0, proibidos.join(' '));
+    conferir(`${caminho} sem a sacola no header`, !r.corpo.includes('cabecalho__sacola'));
+    /*
+     * Decisão de Pedro (12/11/2026): as peças do header do e-commerce ficam à
+     * vista, mas travadas. Todas desativadas, nenhuma leva a página que não
+     * existe, nada de formulário; as de fora do header seguem apagadas.
+     */
+    const travadas = [...r.corpo.matchAll(/<button\b[^>]*class="(faixa-de-anuncio__cep|cabecalho__cep|cabecalho__icone|cabecalho__travado|cabecalho__departamentos)"[^>]*>/g)];
+    const soltas = travadas.filter((m) => !m[0].includes('aria-disabled="true"')).map((m) => m[1]);
+    const busca = r.corpo.match(/<input\b[^>]*type="search"[^>]*>/g) ?? [];
+    conferir(
+      `${caminho} com as peças do header à vista e travadas (faixa, busca, CEP, conta, curtidos, departamentos)`,
+      travadas.length === 7 && soltas.length === 0 && busca.length === 1 && busca.every((b) => /\sdisabled(="")?[\s>/]/.test(b)),
+      `${travadas.length} botões, soltos: ${soltas.join(' ') || 'nenhum'}, busca: ${busca.join(' ')}`,
+    );
+    const semPagina = links.filter((l) => /^\/(busca|buscar|conta|minha-conta|curtidos|favoritos|departamentos|cep|checkout|entrar)(\/|$)/.test(l));
+    conferir(`${caminho} sem link para página que não existe`, semPagina.length === 0 && !/<form\b/.test(r.corpo), semPagina.join(' '));
+    conferir(`${caminho} sem newsletter, selos de pagamento nem promessa de entrega`, !/newsletter|rodape__pagamentos|Entrega grátis/.test(r.corpo));
+    conferir(`${caminho} sem o laboratório`, !/laboratorio|dados simulados/i.test(r.corpo));
+    conferir(`${caminho} com o header novo (Bistrô e Loja física)`, r.corpo.includes('class="cabecalho') && links.includes('/bistro') && links.includes('/a-loja'));
+  }
+  const homeNova = await pedir('/');
+  conferir('/ sem o destaque de produtos e sem o bloco do Blog', !/selecao-da-semana|id="blog"/.test(homeNova.corpo));
+  conferir('/ com o bloco vermelho da tábua de frios', homeNova.corpo.includes('tabua-de-frios'));
+
+  /* O simulado não pode estar no pacote: nem no JavaScript do navegador nem no do servidor. */
+  const marcas = ['dados-simulados-do-laboratorio-nicolini', '5a1a0000-0000-4000-8000', 'Cinco Jotas', 'Noite de queijos franceses', 'nicolini:laboratorio:'];
+  const achados = [];
+  const varrer = (dir) => {
+    for (const item of readdirSync(dir, { withFileTypes: true })) {
+      const caminho = join(dir, item.name);
+      if (item.isDirectory()) varrer(caminho);
+      else if (/\.(js|html|json|rsc|body|txt|map)$/.test(item.name)) {
+        const texto = readFileSync(caminho, 'utf8');
+        for (const m of marcas) if (texto.includes(m)) achados.push(`${caminho.replace(raiz, '')} (${m})`);
+      }
+    }
+  };
+  varrer(join(raiz, '.next', 'static'));
+  varrer(join(raiz, '.next', 'server'));
+  conferir('build de produção sem dado simulado nem laboratório (.next/static e .next/server)', achados.length === 0, achados.slice(0, 5).join(', '));
+
   console.log('\nrobots.txt e sitemap.xml');
   const robots = await pedir('/robots.txt');
   conferir('robots.txt → 200', robots.status === 200);
@@ -337,6 +410,7 @@ try {
   const sitemap = await pedir('/sitemap.xml');
   const locs = [...sitemap.corpo.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
   conferir('sitemap.xml → 200 com as quatro páginas fixas', sitemap.status === 200 && ['/', '/a-loja', '/bistro', '/rustichella'].every((p) => locs.includes(p)), locs.join(' '));
+  conferir('sitemap.xml sem página de módulo apagado', locs.length === 4, locs.join(' '));
 } catch (erro) {
   falhas++;
   console.error(erro);

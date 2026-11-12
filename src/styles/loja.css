@@ -2,7 +2,8 @@
 /* Página utilitária da loja --------------------------------------------- */
 
 .page-top {
-  padding: calc(var(--header-h-solid) + clamp(66px, 9vw, 116px)) 0
+  /* O header agora ocupa o próprio lugar (sticky) fora das páginas com hero. */
+  padding: clamp(66px, 9vw, 116px) 0
     clamp(64px, 8vw, 106px);
 }
 

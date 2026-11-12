@@ -24,7 +24,8 @@
   --sans: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     sans-serif;
   --logo: 'Times New Roman', Times, Georgia, serif;
-  --wrap: min(1240px, calc(100% - 56px));
+  /* Largura do e-commerce (DESIGN-BRIEF §4): 1360px, com 36px de margem. */
+  --wrap: min(1360px, calc(100% - 72px));
   /* Faixa mais larga que a medida de texto, para blocos que sao sobretudo
    * fotografia — hoje so o trilho dos balcoes.
    *
@@ -36,9 +37,16 @@
   /* E a mais estreita, para a abertura: margens maiores fazem "A casa" abrir
    * intima e a faixa dos balcoes abrir larga logo depois. */
   --wrap-casa: min(1080px, calc(100% - 128px));
-  --gutter: max(28px, calc((100vw - min(1240px, 100vw - 56px)) / 2));
-  --header-h: 92px;
-  --header-h-solid: 72px;
+  --gutter: max(36px, calc((100vw - min(1360px, 100vw - 72px)) / 2));
+  /* O header do e-commerce (preso no topo): logo, busca e ferramentas em cima,
+   * navegação embaixo. A faixa de anúncio fica acima dele e rola junto. */
+  --faixa-h: 34px;
+  --cabecalho-topo: 88px;
+  --cabecalho-nav: 47px;
+  --header-h: calc(var(--cabecalho-topo) + var(--cabecalho-nav));
+  --header-h-solid: var(--header-h);
+  --moldura-topo: calc(var(--faixa-h) + var(--header-h));
+  --fundo-foto: #ece9e2;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --bg: var(--paper);
   --fg: var(--ink);
@@ -262,3 +270,35 @@ p {
   transform: none;
 }
 
+
+/* Moldura nova e telas novas ------------------------------------------- */
+
+/* Menu do celular ou painel aberto: a página de trás não rola. */
+html.sem-rolagem,
+html.sem-rolagem body {
+  overflow: hidden;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.pular-para-o-conteudo {
+  position: fixed;
+  z-index: 100;
+  top: -80px;
+  left: 10px;
+  padding: 10px 14px;
+  color: var(--white);
+  background: var(--ink);
+  font-size: 0.88rem;
+}
+
+.pular-para-o-conteudo:focus {
+  top: 10px;
+}

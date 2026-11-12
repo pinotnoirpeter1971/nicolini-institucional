@@ -17,6 +17,13 @@
   estoque, frete e conta de cliente continuam fora.
 - **`/rustichella` fica no site** (o evento de outubro passou, mas a landing
   vira um evento dentro de "Eventos"). `/bistro/rustichella` redireciona para ela.
+- **Design do site (Etapa 2, 12/11/2026): entregue no laboratório, aguardando
+  o aceite de Pedro.** Moldura nova (header do e-commerce, rodapé de cinco
+  colunas) em todas as páginas, e as telas novas (Produtos, Blog, Eventos,
+  sacola, recibo, privacidade) com dados simulados, **só no `next dev`**. No
+  build de produção os módulos estão apagados: o site no ar continua com as
+  quatro páginas. Detalhes, escolhas e aceite na seção
+  [Design do site](#design-do-site-etapa-2-12112026).
 - Como rodar, onde fica cada coisa e as variáveis públicas: [`README.md`](README.md).
 
 ### Rotas e o que não pode quebrar (`next.config.ts`)
@@ -83,8 +90,13 @@ encerra. Mudou um endereço, mude a tabela e o teste juntos.
   `X-Robots-Tag: noindex` em todas as respostas. O `robots.txt` nunca bloqueia
   a leitura; ligado, aponta o `sitemap.xml` (hoje só as quatro páginas fixas).
 - Canônico em cada página, a partir de `NEXT_PUBLIC_SITE_URL`.
-- O layout raiz **não chama o Engine** (SPEC-SITE §1.6). O header ainda é o de
-  antes; o redesenho é a próxima trilha (design).
+- O layout raiz **não chama o Engine** (SPEC-SITE §1.6): o menu vem de
+  `src/menu-do-site.ts`. A moldura (header, rodapé, WhatsApp, painel da
+  sacola) mora nos layouts de rota (`app/(casa)/layout.tsx`,
+  `app/bistro/layout.tsx`, `app/rustichella/layout.tsx`).
+- Os módulos apagados não entram no sitemap (continua com as quatro páginas
+  fixas). `/pedido` responde com `Referrer-Policy: no-referrer` (o token do
+  recibo vai no `#`, que não sai do navegador, mas o cabeçalho fecha a porta).
 
 ### Publicação da migração
 
@@ -117,9 +129,17 @@ ordem abaixo é igual ao arquivo original.
 9. `moldura-whatsapp.css` — botão flutuante do WhatsApp
 10. `rustichella.css` — tema `tema--rustichella` e `/rustichella`
 
-Áreas novas entram **no fim**, cada uma com arquivo próprio, criado pela
-trilha que a fizer: `blog.css`, `produtos.css`, `pedido.css` (sacola e recibo).
-Assim as trilhas paralelas não editam o mesmo arquivo.
+Áreas novas entram **no fim**, cada uma com arquivo próprio:
+
+11. `componentes.css` — peças comuns das telas novas (botões, migalhas, foto, preço, quantidade, cartões, vazio, painel)
+12. `produtos.css` — `/produtos`, categoria, produto, destaque e bloco vermelho da home
+13. `blog.css` — `/blog`, categoria, matéria, `/eventos` e evento
+14. `pedido.css` — sacola (painel e página), recibo e privacidade
+
+Na trilha de design (12/11/2026) `moldura-cabecalho.css` e
+`moldura-rodape.css` foram reescritos (header e rodapé do e-commerce), e
+`responsivo.css` perdeu as regras do header e do rodapé antigos; os outros
+arquivos de 1 a 10 seguem como vieram do `styles.css`, com ajustes pequenos.
 
 ### Fontes
 
@@ -129,6 +149,91 @@ em `src/fonts/` (woff2 variáveis de `@fontsource-variable` 5.3.0, latin e
 latin-ext, licença OFL ao lado). Nenhuma das quatro páginas pede nada a
 `fonts.googleapis.com`/`fonts.gstatic.com`; quem ainda pede é o iframe do mapa
 do Google e o app `/menu/` (fora desta troca).
+
+### Design do site (Etapa 2, 12/11/2026)
+
+Trilha de design do plano (`Capilano Suite/plans/nicolini-site/DESIGN-BRIEF.md`),
+na branch `nicolini/site-novo`, sobre `1cefd8c`. Base visual: o protótipo do
+e-commerce (`~/Documents/nicolini-website`, referência, não fonte de CSS);
+redação, abertura da home e acabamento do site no ar.
+
+**Aceite de Pedro: pendente** (`NOT_RUN(Pedro)`). Registre aqui, nesta linha,
+a data e o que foi aprovado ou pedido de volta. Capturas de cada tela e estado
+(desktop 1440 e celular 390), com índice, entregues ao coordenador junto do
+relatório da trilha.
+
+**Módulos e chaves (`src/menu-do-site.ts`).** `modulos` diz o que está aceso:
+Produtos, Blog, Eventos, Pedidos (sacola e recibo) e Privacidade valem
+`laboratorio` (acesos no `next dev`, apagados no build de produção). Apagado:
+página 404 estática, item fora do header e do rodapé, nenhum bloco na home,
+nada no sitemap. Ligar um módulo na ativação (Etapa 3) é trocar o valor para
+`true` e ligar a fonte em `src/engine/fonte.ts` e `src/engine/navegador.ts`,
+que hoje lançam erro fora do laboratório. `pecasDeLoja` diz o que fazer com as
+peças de loja completa (abaixo). `npm test` confere no build de produção que
+nada disso vaza (404, links, peças travadas, marcas do simulado em
+`.next/static` e `.next/server`, sitemap).
+
+**Dados (`src/engine/`).** `sdk-0.7.0/` é cópia compilada do SDK público do
+Engine (não editar; trocar pela versão nova quando o Engine mudar o contrato).
+`simulado/` tem os dados de exemplo **no formato exato do SDK** e só existe no
+laboratório (o `import` fica atrás de `process.env.NODE_ENV === 'development'`
+escrito no próprio arquivo, para o build de produção cortar o código).
+`fonte.ts` (servidor) e `navegador.ts` (sacola, envio, recibo) são o único
+ponto que a Etapa 3 troca. `formato.ts` formata dinheiro, peso e datas.
+
+**Laboratório (só `next dev`, `localhost:5183`).** Um botão
+"Laboratório · dados simulados" no canto leva a todas as telas e estados e
+escolhe o resultado do próximo envio da sacola. O endereço também serve:
+`?sacola=cheia|com-avisos|vazia`, `?simular=normal|preco-mudou|item-saiu|pausada|limite|falha|nao-recebe`
+na sacola, `?simular=vazio` nas listas, `?painel=sacola`. Recibos de exemplo:
+`/pedido#rec1b0n0v0000001` (não enviado), `/pedido#rec1b0emandament` (em
+atendimento), `/pedido#rec1b0zzzzzzzzzz` (não encontrado).
+
+**Escolhas da trilha (para o aceite):**
+
+1. **Header — decisão de Pedro (12/11/2026), acima do DESIGN-BRIEF §8:** o do
+   protótipo do e-commerce, como ele é. Busca, "Receba em"/CEP, conta,
+   curtidos, Departamentos e a faixa de anúncio ficam **à vista e travados**:
+   desativados (`aria-disabled`/`disabled`, título "Em breve"), sem link, sem
+   rede, sem guardar nada. No celular: menu, logo e sacola, a busca embaixo e
+   o menu escuro do e-commerce, com "Curtidos" e "Minha conta" travados.
+   Newsletter e selos de pagamento, fora do header, seguem apagados. Pedro
+   decide depois o que cada peça faz (cada uma pede spec).
+2. Texto da faixa: "Empório e Bistrô em Caxias do Sul", no lugar do
+   "Entrega grátis em Caxias do Sul" do protótipo (promessa que a casa não
+   fez). Pedro escolhe a mensagem.
+3. As categorias da linha de baixo do header (Queijos, Charcutaria,
+   Conservas, Massas, Vinhos) são configuração do site, não do Engine; na
+   ativação precisam bater com os slugs reais. Com os módulos apagados, a
+   linha mostra Departamentos (travado), Bistrô e Loja física.
+4. Header preso ao rolar no desktop, com sombra; no celular rola com a página,
+   como no e-commerce.
+5. Home: a abertura do site no ar (vídeo e textos, sem botão, como hoje),
+   ocupando o resto da primeira tela abaixo do header. O bloco vermelho da
+   tábua de frios (brief §7) usa o texto do protótipo e "Fale com a casa" no
+   WhatsApp: **confirmar a oferta com a casa**. As duas matérias de exemplo do
+   Blog da home saíram (não tinham página); o Blog volta com o módulo, com
+   matérias reais. Contato e horários foram para o rodapé; o mapa fica em
+   `/a-loja`.
+6. Rodapé de cinco colunas do e-commerce, com os dados reais de `casa.js`.
+7. Rustichella e Bistrô recebem só a moldura, na cor de cada tema. A
+   Rustichella perdeu a navegação por âncoras que tinha no header antigo e
+   guarda a largura de antes; o resto não mudou.
+8. `/eventos/<slug>` de evento com página própria leva a ela (a Rustichella);
+   matéria pedida por `/eventos/` vai para `/blog/`.
+9. Produto por peso: o cartão diz "Vendido por peso", o preço é "o quilo" com
+   "A partir de N g", a quantidade anda em gramas e o total sai com "≈".
+10. Sacola: painel lateral (pelo ícone) e página `/sacola` com resumo e envio;
+    no celular, uma barra presa embaixo com o total e "Enviar pedido". No
+    navegador ficam só ids e quantidades.
+11. Vídeo do YouTube: miniatura com botão; o player (youtube-nocookie) só
+    entra no clique.
+12. Vazios com o "N" da marca e um caminho de volta.
+13. Fontes do site (Instrument Sans e Playfair); as do protótipo ficaram fora.
+
+**Fica para depois:** ligar ao Engine, `revalidate`, sitemap a partir dos
+índices e JSON-LD (Etapa 3); a função de cada peça travada; fotos de produto
+em fundo neutro (os simulados usam fotos da casa).
 
 ## Histórico
 
@@ -224,6 +329,7 @@ Um único projeto (Next desde 11/11/2026; antes React/Vite) com quatro frentes:
 | `/` | **Home institucional:** hero em vídeo, "A casa", galeria decorativa, tarja de origem, cinco balcões, Blog Nicolini, encerramento de visita. |
 | `/a-loja` | Página utilitária: endereço, horários, contato, fotos, mapa. |
 | `/bistro` | **Site do Bistrô** — a *vitrine*: apresentação, ambiente, galeria, contato. Não confundir com o **web app** de cardápio/reservas (`apps/webapp-bistro`), que é outra coisa. |
+| `/produtos`, `/produtos/<categoria>`, `/produto/<slug>`, `/blog`, `/blog/categoria/<slug>`, `/blog/<slug>`, `/eventos`, `/eventos/<slug>`, `/sacola`, `/pedido`, `/politica-de-privacidade` | Telas do plano do site (12/11/2026). **Só no laboratório** até a ativação; no build de produção, 404. Ver Design do site no topo. |
 | `/rustichella` e `/bistro/rustichella` | **Landing do evento** jantar Bistrô Nicolini × Rustichella d'Abruzzo. Formato landing page. A URL curta `/rustichella` é de propósito: vai na bio do Instagram e no impresso. O evento tem data, preço e canal de reserva próprios. O evento passou, mas a landing **fica** no site (decisão de 11/11): vira um evento dentro de "Eventos". `/bistro/rustichella` redireciona para `/rustichella`. |
 
 ## Dados — cada fonte tem seu arquivo, de propósito
@@ -238,10 +344,17 @@ Um único projeto (Next desde 11/11/2026; antes React/Vite) com quatro frentes:
 
 ## Componentes e páginas
 
-- `app/` — as rotas do Next; cada `page.tsx` só aponta para a página em `src/paginas/` e declara os metadados.
-- `src/paginas/` — `Home.jsx`, `Loja.jsx`, `Bistro.jsx`, `Rustichella.jsx` (a pasta saiu de `src/pages/` porque o Next trataria esse nome como roteador antigo).
-- `src/components/` — `Layout.jsx`, `Balcoes.jsx`, `CasaFotos.jsx`,
-  `GaleriaBistro.jsx`, `Reveal.jsx`, `Icons.jsx`.
+- `app/` — as rotas do Next; cada `page.tsx` só aponta para a página em `src/paginas/` e declara os metadados. As páginas da casa ficam no grupo `app/(casa)/` (mesma moldura); `bistro/` e `rustichella/` têm layout próprio, com o tema.
+- `src/paginas/` — `Home.jsx`, `Loja.jsx`, `Bistro.jsx`, `Rustichella.jsx`, `Produtos.tsx`, `Blog.tsx` (a pasta saiu de `src/pages/` porque o Next trataria esse nome como roteador antigo).
+- `src/moldura/` — header, rodapé, peças travadas (`Guardadas.tsx`) e o que a moldura hospeda (painel da sacola, laboratório).
+- `src/ui/` — peças das telas novas (foto, preço, quantidade, cartões, vídeo, blocos da matéria, "ver mais").
+- `src/sacola/` — a sacola (armazém no navegador, painel, página) e o recibo.
+- `src/engine/` — o SDK copiado, o simulado e a fonte (ver Design do site).
+- `src/laboratorio/` — o painel do laboratório (só `next dev`).
+- `src/menu-do-site.ts` — módulos, peças de loja e itens do menu.
+- `src/components/` — `Balcoes.jsx`, `CasaFotos.jsx`,
+  `GaleriaBistro.jsx`, `Reveal.jsx`, `Icons.jsx` (o `Layout.jsx` saiu: a
+  moldura foi para `src/moldura/`).
 - `src/styles/` — CSS por área, inclusive os temas `tema--bistro` e `tema--rustichella` (ordem no topo deste arquivo).
 - `public/media/` — `bistro/`, `bistro/galeria/`, `blog/`, `loja/`, `rustichella/`.
 
@@ -253,8 +366,8 @@ marcados como provisórios em `src/data/`. Pedro edita no ar, e a troca do
 conteúdo fixo pela entrega da casa do Engine não é desta frente. Na landing
 `/rustichella`, o que ainda é provisório está marcado `// MOCKUP` e `CONFIRMAR`
 em `src/data/rustichella.js` (preço "R$ 000", nota de pagamento, modo de
-serviço, horário de chegada). O item "Blog" do menu leva a uma seção da home;
-ainda não existe como rota própria (o blog de verdade vem pelo plano do site).
+serviço, horário de chegada). O Blog agora é rota própria (`/blog`), acesa
+só no laboratório até a ativação; a seção de Blog da home aparece com ele.
 
 **Atualização editorial (21/09/2026):** o primeiro parágrafo abaixo do título em
 `/rustichella` e `/bistro/rustichella` foi atualizado para o texto aprovado pelo

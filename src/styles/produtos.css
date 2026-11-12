@@ -1,0 +1,636 @@
+/* Produtos: cartão, grade, departamentos, categoria, produto, o destaque da home e o bloco vermelho. Área nova (design, 12/11/2026); a ordem de importação está em app/layout.tsx. */
+
+/* Grade de produtos: quatro colunas no largo, duas no celular. */
+.grade-de-produtos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(36px, 4vw, 56px) clamp(16px, 2vw, 28px);
+}
+
+/* Cartão de produto, sem caixa nem sombra (§10). */
+.produto-cartao {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+}
+
+.produto-cartao__foto {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--fundo-foto);
+}
+
+.produto-cartao__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 760ms var(--ease);
+}
+
+.produto-cartao:hover .produto-cartao__foto img {
+  transform: scale(1.035);
+}
+
+.produto-cartao.is-indisponivel .produto-cartao__foto img {
+  filter: grayscale(0.55);
+  opacity: 0.72;
+}
+
+.produto-cartao__info {
+  display: flex;
+  flex-direction: column;
+  padding-top: 16px;
+}
+
+.produto-cartao__marca {
+  margin-bottom: 7px;
+  color: var(--marca);
+  font-size: 0.69rem;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.produto-cartao h3 {
+  font-size: clamp(1.15rem, 1.35vw, 1.32rem);
+  letter-spacing: -0.025em;
+  line-height: 1.16;
+}
+
+.produto-cartao h3 a {
+  transition: color 200ms var(--ease);
+}
+
+.produto-cartao h3 a:hover {
+  color: var(--marca);
+}
+
+.produto-cartao__medida {
+  margin: 6px 0 14px;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.produto-cartao .preco {
+  margin-top: auto;
+}
+
+.produto-cartao__acao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.produto-cartao__acao .quantidade {
+  flex: none;
+}
+
+.produto-cartao__adicionar {
+  flex: 1 1 120px;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 0.86rem;
+}
+
+.produto-cartao__estado {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.produto-cartao__acao .produto-cartao__estado {
+  flex-basis: 100%;
+  margin-top: 0;
+  color: var(--marca);
+}
+
+/* Home e Produtos: o destaque da semana. */
+.secao-destaques {
+  padding-block: clamp(72px, 8vw, 112px);
+}
+
+/* Home: os balcões levam às categorias. */
+a.balcao {
+  cursor: pointer;
+}
+
+.section--balcoes .secao__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 40px;
+}
+
+.hero__cta {
+  margin-top: 32px;
+}
+
+/* O bloco vermelho da tábua de frios: a exceção de cor, uma por página (§10). */
+.destaque-vermelho {
+  padding: clamp(64px, 8vw, 112px) 0;
+  background: var(--paper);
+}
+
+.destaque-vermelho__grade {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  background: var(--red);
+}
+
+.destaque-vermelho__foto {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--red-deep);
+}
+
+.destaque-vermelho__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 60%;
+}
+
+.destaque-vermelho__texto {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 22px;
+  padding: clamp(40px, 7vw, 112px);
+  color: var(--white);
+}
+
+.destaque-vermelho .eyebrow {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.destaque-vermelho h2 {
+  max-width: 11ch;
+  color: var(--white);
+  font-size: clamp(2.6rem, 4.4vw, 4.6rem);
+}
+
+.destaque-vermelho h2 em {
+  color: #2b0e0b;
+}
+
+.destaque-vermelho p:not(.eyebrow) {
+  max-width: 38ch;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+
+.destaque-vermelho .acoes {
+  gap: 16px 28px;
+  margin-top: 8px;
+}
+
+.destaque-vermelho .link {
+  color: var(--white);
+}
+
+/* Produtos: o diretório de categorias (departamentos do e-commerce). */
+.diretorio {
+  padding: clamp(48px, 6vw, 88px) 0 clamp(24px, 4vw, 48px);
+}
+
+.diretorio__cabeca {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.diretorio__cabeca .eyebrow {
+  margin: 0;
+  color: var(--ink);
+}
+
+.diretorio__cabeca p:last-child {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.diretorio ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.diretorio__linha {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1.25fr) 110px 120px 20px;
+  align-items: center;
+  gap: clamp(14px, 2.4vw, 32px);
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.diretorio__numero {
+  color: var(--marca);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+}
+
+.diretorio__nome {
+  font-family: var(--serif);
+  font-size: clamp(1.7rem, 2.6vw, 2.4rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  transition: color 200ms var(--ease);
+}
+
+.diretorio__descricao {
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.diretorio__contagem {
+  color: var(--muted);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.diretorio__foto {
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--fundo-foto);
+}
+
+.diretorio__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 700ms var(--ease);
+}
+
+.diretorio__linha > svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 260ms var(--ease), color 200ms var(--ease);
+}
+
+.diretorio__linha:hover .diretorio__nome,
+.diretorio__linha:hover > svg {
+  color: var(--marca);
+}
+
+.diretorio__linha:hover > svg {
+  transform: translateX(4px);
+}
+
+.diretorio__linha:hover .diretorio__foto img {
+  transform: scale(1.06);
+}
+
+/* Como funciona o pedido: a faixa escura que explica o valor estimado sem assustar. */
+.como-funciona {
+  padding: clamp(56px, 7vw, 96px) 0;
+  color: var(--paper);
+  background: var(--ink);
+}
+
+.como-funciona .eyebrow {
+  color: var(--marca-tint);
+}
+
+.como-funciona ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(24px, 4vw, 64px);
+  margin: 20px 0 0;
+  padding: 0;
+  counter-reset: passo;
+  list-style: none;
+}
+
+.como-funciona li {
+  color: var(--muted-dark);
+  font-size: 0.98rem;
+  line-height: 1.7;
+  counter-increment: passo;
+}
+
+.como-funciona li::before {
+  display: block;
+  margin-bottom: 14px;
+  color: var(--marca-tint);
+  font-family: var(--serif);
+  font-size: 2.4rem;
+  font-style: italic;
+  line-height: 1;
+  content: counter(passo, decimal-leading-zero);
+}
+
+.como-funciona b {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--paper);
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* Categoria: cabeçalho com foto e grade. */
+.topo-de-categoria__grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.62fr);
+  align-items: end;
+  gap: clamp(28px, 5vw, 80px);
+}
+
+.topo-de-categoria h1 {
+  font-size: clamp(3.4rem, 7vw, 6.4rem);
+}
+
+.topo-de-categoria__grade > div > p {
+  max-width: 44ch;
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.topo-de-categoria__foto {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--fundo-foto);
+}
+
+.topo-de-categoria__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.catalogo {
+  padding: clamp(28px, 4vw, 48px) 0 clamp(72px, 8vw, 120px);
+}
+
+.catalogo__contagem {
+  margin-bottom: clamp(20px, 3vw, 32px);
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+/* Produto. */
+.produto {
+  padding: clamp(24px, 3vw, 40px) 0 clamp(64px, 8vw, 112px);
+}
+
+.produto__grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  align-items: start;
+  gap: clamp(32px, 6vw, 104px);
+}
+
+.galeria__principal {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--fundo-foto);
+}
+
+.galeria__principal img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.galeria__miniaturas {
+  display: flex;
+  gap: 10px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.galeria__miniaturas button {
+  width: 76px;
+  aspect-ratio: 4 / 5;
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid transparent;
+  background: var(--fundo-foto);
+  opacity: 0.62;
+  transition: opacity 200ms var(--ease), border-color 200ms var(--ease);
+}
+
+.galeria__miniaturas button[aria-pressed='true'],
+.galeria__miniaturas button:hover {
+  border-color: var(--ink);
+  opacity: 1;
+}
+
+.galeria__miniaturas img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.produto__compra {
+  position: sticky;
+  top: calc(var(--header-h) + 28px);
+  display: grid;
+  gap: 18px;
+  padding-top: clamp(0px, 2vw, 24px);
+}
+
+.produto__compra .eyebrow {
+  margin: 0;
+}
+
+.produto__compra h1 {
+  font-size: clamp(2.5rem, 4.2vw, 4rem);
+}
+
+.produto__medida {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.produto__descricao {
+  max-width: 52ch;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.comprar {
+  display: grid;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.comprar__linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.comprar__botao {
+  flex: 1 1 220px;
+  min-height: 52px;
+}
+
+.comprar__estimado {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.comprar__estimado b {
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.comprar__aviso {
+  color: var(--marca);
+  font-size: 0.88rem;
+}
+
+.produto__como {
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.produto__como b,
+.produto .aviso b {
+  color: var(--ink);
+}
+
+.produto .aviso {
+  flex-direction: column;
+  gap: 12px;
+}
+
+.relacionados {
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 1100px) {
+  .grade-de-produtos {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .diretorio__linha {
+    grid-template-columns: 40px minmax(0, 1fr) 96px 18px;
+  }
+
+  .diretorio__descricao,
+  .diretorio__contagem {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .grade-de-produtos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 14px;
+  }
+
+  /* No celular o cartão leva só "Adicionar": a quantidade se ajusta na sacola. */
+  .produto-cartao__acao .quantidade {
+    display: none;
+  }
+
+  .produto-cartao__adicionar {
+    flex-basis: 100%;
+    min-height: 46px;
+  }
+
+  .produto-cartao h3 {
+    font-size: 1.08rem;
+  }
+
+  .preco__valor {
+    font-size: 1.15rem;
+  }
+
+  .destaque-vermelho {
+    padding: 0;
+  }
+
+  .destaque-vermelho .wrap {
+    width: 100%;
+  }
+
+  .destaque-vermelho__grade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .destaque-vermelho__foto {
+    aspect-ratio: 4 / 3;
+  }
+
+  .destaque-vermelho__texto {
+    padding: 48px 20px 56px;
+  }
+
+  .diretorio__linha {
+    grid-template-columns: 30px minmax(0, 1fr) 84px;
+    gap: 14px;
+    padding: 14px 0;
+  }
+
+  .diretorio__linha > svg {
+    display: none;
+  }
+
+  .diretorio__nome {
+    font-size: 1.6rem;
+  }
+
+  .como-funciona ol {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .topo-de-categoria__grade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .topo-de-categoria__foto {
+    display: none;
+  }
+
+  .produto__grade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .produto__compra {
+    position: static;
+    padding-top: 0;
+  }
+
+  .galeria {
+    margin-inline: calc(var(--gutter) * -1);
+  }
+
+  .galeria__miniaturas {
+    padding-inline: var(--gutter);
+  }
+
+  .comprar__linha .quantidade {
+    flex: 1 1 100%;
+    grid-template-columns: 56px 1fr 56px;
+  }
+}

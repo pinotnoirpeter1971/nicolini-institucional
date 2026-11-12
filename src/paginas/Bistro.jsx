@@ -2,12 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Layout, Arrow } from '../components/Layout';
 import { GaleriaBistro } from '../components/GaleriaBistro';
-import { Chevron } from '../components/Icons';
+import { Arrow, Chevron } from '../components/Icons';
 import { Reveal } from '../components/Reveal';
 import { casa } from '../data/casa';
-import { bistro, navBistro, pratos } from '../data/bistro';
+import { bistro, pratos } from '../data/bistro';
 import { useParalaxe } from '../hooks/useParalaxe';
 
 const reservaWhats = `https://wa.me/${bistro.whatsapp.link}?text=${encodeURIComponent(
@@ -41,7 +40,6 @@ function Hero() {
   return (
     <section
       className={`hero hero--bistro ${pronto ? 'esta-pronto' : ''}`}
-      data-header-hero
       ref={secao}
     >
       <div className="hero__media">
@@ -82,7 +80,7 @@ export default function Bistro() {
   const { endereco } = casa;
 
   return (
-    <Layout overlay tema="bistro" nav={navBistro} ancorasLocais>
+    <>
       <Hero />
 
       <section id="o-bistro" className="band band--paper section">
@@ -287,6 +285,6 @@ export default function Bistro() {
           </a>
         </div>
       </section>
-    </Layout>
+    </>
   );
 }

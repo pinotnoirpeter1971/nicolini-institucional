@@ -1,79 +1,236 @@
-/* Moldura: rodapé. Recorte das linhas 926–1003 do antigo src/styles.css; a ordem de importação está em app/layout.tsx. */
-/* Footer ----------------------------------------------------------------- */
+/* Moldura: o rodapé do e-commerce, em cinco colunas, com os dados do site no ar. Componente em src/moldura/Rodape.tsx; a ordem de importação está em app/layout.tsx. */
 
-.footer {
+.rodape {
   --tint: var(--marca-tint);
   --hair: var(--line-dark);
-  padding: clamp(62px, 8vw, 98px) 0 27px;
+  padding: clamp(56px, 7vw, 88px) 0 28px;
   color: var(--paper);
   background: var(--ink);
 }
 
-.footer__grid {
+.rodape__topo {
   display: grid;
-  grid-template-columns: minmax(0, 1.18fr) minmax(210px, 0.76fr) minmax(140px, 0.42fr);
-  gap: clamp(35px, 6vw, 108px);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) auto;
+  align-items: center;
+  gap: 28px;
+  padding-bottom: clamp(32px, 4vw, 48px);
+  border-bottom: 1px solid var(--hair);
 }
 
-.footer__mark {
+.rodape__marca {
   margin-right: -0.21em;
   font-family: var(--logo);
   font-size: clamp(1.55rem, 2.25vw, 1.9rem);
-  font-weight: 400;
   letter-spacing: 0.21em;
   line-height: 1;
 }
 
-.footer__brand > p:last-child {
-  max-width: 27ch;
-  margin-top: 18px;
-  color: var(--muted-dark);
-  font-size: 0.9rem;
-  line-height: 1.6;
+.rodape__frase {
+  max-width: 26ch;
+  color: #cfc8bd;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
 }
 
-.footer .eyebrow {
+.rodape__voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #cfc8bd;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 200ms var(--ease);
+}
+
+.rodape__voltar svg {
+  width: 13px;
+  height: 13px;
   color: var(--marca-tint);
 }
 
-.footer__address address {
-  color: #dad4cb;
-  font-size: 0.88rem;
-  font-style: normal;
-  line-height: 1.75;
+.rodape__voltar:hover {
+  color: var(--white);
 }
 
-.footer__nav {
+.rodape__colunas {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 0.8fr);
+  gap: clamp(28px, 4vw, 64px);
+  padding: clamp(36px, 4.5vw, 56px) 0;
+}
+
+.rodape__colunas section {
   display: grid;
   align-content: start;
-  gap: 7px;
+  gap: 9px;
 }
 
-.footer__nav .eyebrow {
+.rodape .eyebrow {
   margin-bottom: 6px;
-}
-
-.footer__nav a {
-  width: fit-content;
-  color: #dad4cb;
-  font-size: 0.86rem;
-  transition: color 220ms var(--ease);
-}
-
-.footer__nav a:hover {
   color: var(--marca-tint);
 }
 
-.footer__legal {
+.rodape__colunas a,
+.rodape__colunas address {
+  width: fit-content;
+  color: #dad4cb;
+  font-size: 0.92rem;
+  font-style: normal;
+  line-height: 1.6;
+  transition: color 200ms var(--ease);
+}
+
+.rodape__colunas a:hover {
+  color: var(--marca-tint);
+}
+
+.rodape__rota {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.rodape__rota svg {
+  width: 12px;
+  height: 12px;
+}
+
+.rodape__horarios {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.rodape__horarios > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 0.92rem;
+}
+
+.rodape__horarios dt {
+  color: var(--muted-dark);
+}
+
+.rodape__horarios dd {
+  margin: 0;
+  color: #dad4cb;
+}
+
+.rodape__horarios .is-fechado dd {
+  color: var(--muted-dark);
+}
+
+.rodape .redes {
+  margin-top: 0;
+}
+
+.rodape .redes a {
+  border-color: var(--line-dark);
+  color: #dad4cb;
+}
+
+.rodape__legal {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 9px 24px;
-  margin-top: clamp(45px, 6vw, 70px);
   padding-top: 22px;
   border-top: 1px solid var(--hair);
-  color: #817b72;
-  font-size: 0.73rem;
+  color: #8c857b;
+  font-size: 0.75rem;
   line-height: 1.5;
 }
 
+/* Guardados: newsletter e selos de pagamento. */
+.newsletter {
+  padding: clamp(48px, 6vw, 80px) 0;
+  margin-bottom: clamp(48px, 6vw, 80px);
+  color: var(--white);
+  background: var(--marca);
+}
+
+.newsletter__linha {
+  display: grid;
+  grid-template-columns: 1fr minmax(260px, 0.6fr);
+  align-items: end;
+  gap: 32px;
+}
+
+.newsletter .eyebrow,
+.newsletter em {
+  color: var(--white);
+}
+
+.newsletter label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.newsletter input {
+  width: 100%;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+  color: var(--white);
+  background: transparent;
+}
+
+.rodape__pagamentos ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rodape__pagamentos li {
+  padding: 3px 8px;
+  border: 1px solid var(--line-dark);
+  color: #dad4cb;
+}
+
+@media (max-width: 1100px) {
+  .rodape__colunas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .rodape__topo {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .rodape__frase {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .rodape__colunas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 20px;
+  }
+
+  /* Contato, endereço e horários em linha cheia; o índice e as redes dividem a última. */
+  .rodape__colunas section:nth-child(-n + 3) {
+    grid-column: 1 / -1;
+  }
+
+  .rodape__horarios {
+    max-width: 320px;
+  }
+
+  .newsletter__linha {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

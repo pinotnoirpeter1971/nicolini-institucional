@@ -1,0 +1,747 @@
+/* Sacola (painel e página) e recibo do pedido. Área nova (design, 12/11/2026); a ordem de importação está em app/layout.tsx. */
+
+/* Na sacola e no recibo o WhatsApp é o do pedido: o botão flutuante sai. */
+body:has(.sacola-pagina) .whatsapp-fab,
+body:has(.recibo) .whatsapp-fab {
+  display: none;
+}
+
+/* Total estimado. */
+.total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.total span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.total strong {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.total--grande strong {
+  font-size: clamp(1.9rem, 2.6vw, 2.3rem);
+}
+
+.total__nota {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+/* Linhas da sacola. */
+.linhas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.linha__foto {
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--fundo-foto);
+}
+
+.linha__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.linha__foto .sem-foto {
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.linha__texto {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.linha__marca {
+  display: block;
+  color: var(--marca);
+  font-size: 0.69rem;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.linha__nome {
+  font-family: var(--serif);
+  font-size: 1.12rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.linha__nome a:hover {
+  color: var(--marca);
+}
+
+.linha__medida {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.linha__problema,
+.linha__mudou {
+  justify-self: start;
+  margin-top: 4px;
+  color: var(--marca);
+  font-size: 0.84rem;
+  font-weight: 550;
+  line-height: 1.45;
+}
+
+.linha__mudou {
+  padding: 3px 8px;
+  background: #fbf1ee;
+}
+
+.linha__controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 10px;
+}
+
+.linha__controles .quantidade {
+  height: 38px;
+  grid-template-columns: 36px minmax(54px, auto) 36px;
+}
+
+.linha__quantidade {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.linha__remover {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font-size: 0.84rem;
+}
+
+.linha__remover svg {
+  width: 12px;
+  height: 12px;
+}
+
+.linha__remover:hover {
+  color: var(--marca);
+}
+
+.linha__valor {
+  font-family: var(--serif);
+  font-size: 1.12rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.linha__aprox {
+  color: var(--muted);
+}
+
+.linha.is-bloqueada .linha__foto {
+  opacity: 0.5;
+}
+
+.linha.is-bloqueada .linha__nome,
+.linha.is-bloqueada .linha__valor {
+  color: var(--muted);
+}
+
+.linha--carregando {
+  min-height: 108px;
+}
+
+.linha__esqueleto {
+  display: block;
+  width: 70%;
+  height: 14px;
+  margin-top: 6px;
+  background: linear-gradient(90deg, var(--soft) 0%, #f3f1ec 50%, var(--soft) 100%);
+  background-size: 200% 100%;
+  animation: esqueleto 1.2s linear infinite;
+}
+
+.linha__esqueleto--curto {
+  width: 40%;
+}
+
+@keyframes esqueleto {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Painel lateral da sacola. */
+.painel {
+  position: fixed;
+  z-index: 80;
+  inset: 0;
+}
+
+.painel__fundo {
+  position: absolute;
+  inset: 0;
+  background: rgba(22, 21, 20, 0.42);
+  animation: painel-fundo 260ms var(--ease) both;
+}
+
+@keyframes painel-fundo {
+  from {
+    opacity: 0;
+  }
+}
+
+.painel__caixa {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(460px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  box-shadow: -16px 0 48px rgba(22, 21, 20, 0.14);
+  outline: none;
+  animation: painel-entra 380ms var(--ease) both;
+}
+
+@keyframes painel-entra {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+.painel__cabeca {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 24px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.painel__cabeca .eyebrow {
+  margin-bottom: 8px;
+}
+
+.painel__cabeca h2 {
+  font-size: 2rem;
+}
+
+.painel__cabeca h2 span {
+  margin-left: 6px;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.86rem;
+  letter-spacing: 0;
+}
+
+.painel__fechar {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  margin: -8px -10px 0 0;
+  padding: 0;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+}
+
+.painel__fechar svg {
+  width: 20px;
+  height: 20px;
+}
+
+.painel__corpo {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px 24px;
+  overscroll-behavior: contain;
+}
+
+.painel__corpo > .aviso {
+  margin-top: 18px;
+}
+
+.painel__pe {
+  display: grid;
+  gap: 12px;
+  padding: 18px 24px calc(18px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--white);
+}
+
+.painel__continuar {
+  justify-self: center;
+  color: var(--muted);
+}
+
+/* Página da sacola. */
+.sacola-pagina {
+  padding-bottom: clamp(72px, 8vw, 120px);
+}
+
+.sacola-pagina__cabeca {
+  padding: clamp(28px, 4vw, 48px) 0 clamp(24px, 3vw, 40px);
+}
+
+.sacola-pagina__cabeca h1 {
+  font-size: clamp(2.8rem, 5.6vw, 5rem);
+}
+
+.sacola-pagina__grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.75fr);
+  align-items: start;
+  gap: clamp(32px, 5vw, 80px);
+}
+
+.sacola-pagina__avisos {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+  outline: none;
+}
+
+.linhas--pagina {
+  border-top: 1px solid var(--ink);
+}
+
+.linhas--pagina .linha {
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  gap: 20px;
+  padding: 22px 0;
+}
+
+.linhas--pagina .linha__nome {
+  font-size: 1.3rem;
+}
+
+.sacola-pagina__bloqueio {
+  margin-top: 16px;
+  color: var(--marca);
+  font-size: 0.9rem;
+}
+
+.resumo {
+  position: sticky;
+  top: calc(var(--header-h) + 24px);
+  display: grid;
+  gap: 16px;
+  padding: clamp(22px, 2.4vw, 32px);
+  background: var(--white);
+}
+
+.resumo .eyebrow {
+  margin: 0;
+}
+
+.resumo__aviso-da-casa {
+  padding: 12px 14px;
+  background: var(--soft);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.resumo__campos {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  margin: 4px 0 0;
+  padding: 16px 0 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.campo {
+  display: grid;
+  gap: 6px;
+}
+
+.campo label {
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.campo label span {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* 16px no campo: o iPhone não dá zoom ao tocar. */
+.campo input,
+.campo textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  color: var(--ink);
+  background: var(--paper);
+  font-size: 1rem;
+  line-height: 1.4;
+  transition: border-color 200ms var(--ease), background 200ms var(--ease);
+}
+
+.campo textarea {
+  resize: vertical;
+}
+
+.campo input:focus,
+.campo textarea:focus {
+  border-color: var(--ink);
+  outline: none;
+  background: var(--white);
+}
+
+.campo.is-erro input,
+.campo.is-erro textarea {
+  border-color: var(--marca);
+}
+
+.campo__erro {
+  color: var(--marca);
+  font-size: 0.84rem;
+}
+
+.campo__conta {
+  justify-self: end;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.resumo__privacidade,
+.resumo__depois {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.resumo__privacidade a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.resumo__enviar {
+  min-height: 56px;
+  font-size: 1rem;
+}
+
+.resumo__continuar {
+  justify-self: start;
+}
+
+.barra-de-envio {
+  display: none;
+}
+
+/* Recibo. */
+.recibo {
+  padding: clamp(32px, 5vw, 72px) 0 clamp(72px, 8vw, 120px);
+}
+
+.recibo__carregando {
+  color: var(--muted);
+}
+
+.recibo__grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.85fr);
+  align-items: start;
+  gap: clamp(32px, 6vw, 96px);
+}
+
+.recibo__principal {
+  display: grid;
+  justify-items: start;
+  gap: 20px;
+}
+
+.recibo__principal .eyebrow {
+  margin: 0;
+}
+
+.recibo h1 {
+  max-width: 14ch;
+  font-size: clamp(2.8rem, 5.4vw, 4.8rem);
+}
+
+.recibo__situacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.recibo__situacao span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.recibo__situacao--new span {
+  background: var(--marca);
+  box-shadow: 0 0 0 4px rgba(173, 60, 51, 0.16);
+}
+
+.recibo__situacao--in_progress span {
+  background: #b7862f;
+}
+
+.recibo__situacao--done span {
+  background: #3f7a4f;
+}
+
+.recibo__whatsapp {
+  max-width: 440px;
+}
+
+.recibo__nota {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.recibo__itens {
+  display: grid;
+  gap: 16px;
+  padding: clamp(22px, 2.4vw, 32px);
+  background: var(--white);
+}
+
+.recibo__itens .eyebrow {
+  margin: 0;
+}
+
+.recibo__itens ul {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--ink);
+  list-style: none;
+}
+
+.recibo__itens li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.recibo__itens li > div {
+  display: grid;
+  gap: 2px;
+}
+
+.recibo__nome {
+  font-family: var(--serif);
+  font-size: 1.08rem;
+  line-height: 1.25;
+}
+
+.recibo__qtd {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.recibo__itens li > b {
+  font-family: var(--serif);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.recibo__dados {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.recibo__dados dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.recibo__dados dd {
+  margin: 2px 0 0;
+}
+
+.recibo__equipe {
+  margin-top: clamp(40px, 6vw, 72px);
+  font-size: 0.78rem;
+}
+
+.recibo__equipe a {
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.do-aparelho {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  max-width: 560px;
+  margin-top: clamp(48px, 6vw, 72px);
+}
+
+.do-aparelho ul {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.do-aparelho a {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--serif);
+  font-size: 1.1rem;
+}
+
+.do-aparelho a span {
+  margin-left: auto;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.84rem;
+}
+
+.do-aparelho a svg {
+  width: 14px;
+  height: 14px;
+  color: var(--marca);
+}
+
+.do-aparelho__nota {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 980px) {
+  .sacola-pagina__grade,
+  .recibo__grade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .resumo {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  .linhas--pagina .linha {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .linhas--pagina .linha__valor {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+    margin-top: -6px;
+  }
+
+  .linhas--pagina .linha__nome {
+    font-size: 1.12rem;
+  }
+
+  .resumo {
+    margin-inline: calc(var(--gutter) * -1);
+    padding: 24px var(--gutter);
+  }
+
+  .resumo__depois,
+  .resumo__continuar {
+    display: none;
+  }
+
+  /* O total e o envio sempre à mão no celular. */
+  .barra-de-envio {
+    position: fixed;
+    z-index: 40;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: var(--white);
+    box-shadow: 0 -8px 24px rgba(22, 21, 20, 0.06);
+  }
+
+  .barra-de-envio div {
+    display: grid;
+    line-height: 1.2;
+  }
+
+  .barra-de-envio span {
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  .barra-de-envio strong {
+    font-family: var(--serif);
+    font-size: 1.35rem;
+    font-weight: 500;
+  }
+
+  .barra-de-envio .botao {
+    min-height: 50px;
+    justify-content: center;
+  }
+
+  .sacola-pagina:has(.barra-de-envio) {
+    padding-bottom: 120px;
+  }
+
+  .sacola-pagina:has(.barra-de-envio) ~ .rodape,
+  main:has(.barra-de-envio) + .rodape {
+    padding-bottom: 110px;
+  }
+
+  .recibo__whatsapp {
+    max-width: none;
+  }
+}
