@@ -3,22 +3,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
-  RestaurantsOrderError,
-  orderRefusalLines,
-  type OrderCurrentLineData,
-  type OrderRejectedItem,
-  type PublicOrderConfigData,
-} from '../engine/sdk-0.7.0/index.js';
+import { RestaurantsOrderError, type PublicOrderConfigData } from '../engine/sdk-0.7.0/index.js';
 import { configDePedidos, enviarPedido } from '../engine/navegador';
-import { dinheiro, gramas } from '../engine/formato';
+import { dinheiro } from '../engine/formato';
 import { casa } from '../data/casa';
 import { modulos } from '../menu-do-site';
 import { Alerta, Arrow } from '../components/Icons';
 import { Migalhas } from '../ui/Migalhas';
-import { limites } from '../ui/Quantidade';
-import { esvaziar, gravarObservacao, lerObservacao, substituir, type LinhaGuardada } from './armazem';
+import { esvaziar, gravarObservacao, lerObservacao, substituir } from './armazem';
 import { esquecerTentativa, lembrarPedido, tentativaPara } from './aparelho';
+import { assinaturaDoEnvio } from './envio';
+import { aplicarRecusa as aplicarRecusaPura } from './recusa';
 import { LinhaDaSacola } from './LinhaDaSacola';
 import { useLinhasDaSacola, type Linha } from './linhas';
 import { FRASE_DO_ESTIMADO } from './PainelDaSacola';
@@ -35,23 +30,7 @@ type Mudancas = {
   sairam: Array<{ nome: string; motivo: string }>;
   totalAntes: number;
 };
-type Falha = { tipo: 'pausada' | 'limite' | 'falha'; minutos?: number };
-
-const MOTIVO: Record<OrderRejectedItem['why'], string> = {
-  gone: 'saiu do site',
-  unavailable: 'ficou indisponível',
-  no_price: 'ficou sob consulta',
-  quantity: 'a quantidade mudou de regra',
-};
-
-/* Quantidade dentro da regra atual (passo, mínimo e teto), a mais próxima da pedida. */
-function ajustar(q: number, regra: Pick<OrderRejectedItem, 'saleMode' | 'stepGrams' | 'minGrams'>) {
-  const { passo, minimo, maximo } = limites({ saleMode: regra.saleMode ?? 'unit', stepGrams: regra.stepGrams ?? null, minGrams: regra.minGrams ?? null });
-  return Math.min(maximo, Math.max(minimo, Math.round(q / passo) * passo));
-}
-
-const precoDaLinha = (l: { saleMode: 'unit' | 'weight'; unitPriceCents: number }) =>
-  l.saleMode === 'weight' ? `${dinheiro(l.unitPriceCents)} o quilo` : dinheiro(l.unitPriceCents);
+type Falha = { tipo: 'pausada' | 'limite' | 'validacao' | 'falha'; minutos?: number };
 
 export function PaginaDaSacola() {
   const router = useRouter();
@@ -110,32 +89,9 @@ export function PaginaDaSacola() {
   }
 
   function aplicarRecusa(err: RestaurantsOrderError, antes: Linha[], totalAntes: number) {
-    const det = orderRefusalLines(err);
-    if (!det) return false;
-    const porLinha: Record<string, string> = {};
-    const sairam: Mudancas['sairam'] = [];
-    const atuais: OrderCurrentLineData[] = [...det.lines];
-    const guardadas: LinhaGuardada[] = det.lines.map((l) => ({ id: l.productId, q: l.quantity }));
-    for (const r of det.rejected ?? []) {
-      const velha = antes.find((l) => l.id === r.productId);
-      const nomeDoItem = velha?.produto?.name ?? 'Um item';
-      if (r.why === 'quantity' && r.saleMode && r.unitPriceCents !== undefined && velha) {
-        const q = ajustar(velha.q, r);
-        guardadas.push({ id: r.productId, q });
-        atuais.push({
-          productId: r.productId, name: nomeDoItem, brand: velha.produto?.brand ?? null, saleMode: r.saleMode, sizeLabel: velha.produto?.sizeLabel ?? null,
-          stepGrams: r.stepGrams ?? null, minGrams: r.minGrams ?? null, unitPriceCents: r.unitPriceCents, quantity: q, lineTotalCents: 0,
-        });
-        porLinha[r.productId] = `Quantidade ajustada para ${r.saleMode === 'weight' ? gramas(q) : q}: ${r.message}`;
-      } else {
-        sairam.push({ nome: nomeDoItem, motivo: MOTIVO[r.why] });
-      }
-    }
-    for (const l of det.lines) {
-      const velha = antes.find((x) => x.id === l.productId);
-      if (velha?.produto?.priceCents != null && velha.produto.priceCents !== l.unitPriceCents)
-        porLinha[l.productId] = `Preço mudou: de ${precoDaLinha({ saleMode: l.saleMode, unitPriceCents: velha.produto.priceCents })} para ${precoDaLinha(l)}.`;
-    }
+    const r = aplicarRecusaPura(err, antes);
+    if (!r) return false;
+    const { atuais, guardadas, porLinha, sairam } = r;
     s.aplicarLinhasAtuais(atuais);
     /* Mantém a ordem em que o cliente montou a sacola. */
     const ordem = new Map(antes.map((l, i) => [l.id, i]));
@@ -159,10 +115,10 @@ export function PaginaDaSacola() {
     /* Chave e token nascem juntos e ficam guardados ANTES de chamar o Engine.
      * Valem para este corpo exato: mudou a sacola, o nome, a observação ou o
      * total mostrado (uma recusa que trocou o preço), nascem outros. */
-    const assinatura = JSON.stringify([itens, customerName, note, totalAntes]);
-    const { idempotencyKey, token } = tentativaPara(assinatura);
     setEstado('enviando');
     try {
+      const assinatura = await assinaturaDoEnvio(itens, customerName, note, totalAntes);
+      const { idempotencyKey, token } = tentativaPara(assinatura);
       const recibo = await enviarPedido({ idempotencyKey, token, customerName, note, items: itens, expectedTotalCents: totalAntes });
       lembrarPedido({ numero: recibo.number, token, data: recibo.createdAt });
       esquecerTentativa();
@@ -185,6 +141,7 @@ export function PaginaDaSacola() {
           esquecerTentativa();
           setFalha({ tipo: 'falha' });
         } else if (err.reason === 'not_accepting') setFalha({ tipo: 'pausada' });
+        else if (err.code === 'VALIDATION' || err.status === 400) setFalha({ tipo: 'validacao' });
         else if (err.status === 429) setFalha({ tipo: 'limite', minutos: err.retryAfterSeconds ? Math.max(1, Math.ceil(err.retryAfterSeconds / 60)) : undefined });
         else setFalha({ tipo: 'falha' });
       } else setFalha({ tipo: 'falha' });
@@ -272,6 +229,11 @@ export function PaginaDaSacola() {
                         {falha.tipo === 'limite' && (
                           <>
                             <b>Muitos pedidos saíram daqui em pouco tempo.</b> Tente de novo {falha.minutos ? `em ${falha.minutos} ${falha.minutos === 1 ? 'minuto' : 'minutos'}` : 'mais tarde'}, ou fale com a loja.
+                          </>
+                        )}
+                        {falha.tipo === 'validacao' && (
+                          <>
+                            <b>O pedido não passou na conferência.</b> Confira o nome e a observação. Se continuar assim, fale com a loja.
                           </>
                         )}
                         {falha.tipo === 'falha' && (

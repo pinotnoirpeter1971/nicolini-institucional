@@ -30,13 +30,6 @@ import { casaNoEngine, engineUrl } from '../site';
 
 type Simulado = typeof import('./simulado/navegador');
 
-async function api(): Promise<Simulado> {
-  /* A condição precisa estar escrita aqui (e não vir de outro módulo) para o
-   * build de produção, que a troca por `false`, cortar o import simulado. */
-  if (process.env.NODE_ENV === 'development') return import('./simulado/navegador');
-  throw new Error('Módulo do Engine apagado neste build: ligar a fonte é a Etapa 3 (src/engine/navegador.ts).');
-}
-
 /* O simulado, só no `next dev` sem `NEXT_PUBLIC_SITE_DADOS=engine`; senão `null` e vale o SDK. */
 async function simulado(): Promise<Simulado | null> {
   if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_SITE_DADOS !== 'engine') return import('./simulado/navegador');

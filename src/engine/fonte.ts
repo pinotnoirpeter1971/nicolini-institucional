@@ -40,13 +40,6 @@ import { casaNoEngine, engineUrl, laboratorio } from '../site';
 export type Cenario = { vazio?: boolean };
 type Simulado = typeof import('./simulado/servidor');
 
-async function api(): Promise<Simulado> {
-  /* A condição precisa estar escrita aqui (e não vir de outro módulo) para o
-   * build de produção, que a troca por `false`, cortar o import simulado. */
-  if (process.env.NODE_ENV === 'development') return import('./simulado/servidor');
-  throw new Error('Módulo do Engine apagado neste build: ligar a fonte é a Etapa 3 (src/engine/fonte.ts).');
-}
-
 const base = { apiBaseUrl: engineUrl, restaurantKey: casaNoEngine };
 
 /** O `?simular=` do laboratório. No build de produção nem lê o endereço (a página continua estática). */
@@ -70,6 +63,30 @@ async function simulado(): Promise<Simulado | null> {
 
 const TEMPO_LIMITE_MS = 5000;
 const sinal = () => AbortSignal.timeout(TEMPO_LIMITE_MS);
+
+/* A falha do Engine fica guardada por alguns segundos (SPEC-SITE §3.3): com ele fora do ar, página vencida ou
+ * slug inventado não geram uma chamada nova a cada visita. Erro 4xx não conta (é resposta, não falha). */
+const FALHA_GUARDADA_MS = 15_000;
+let falhaGuardada: { erro: unknown; ate: number } | null = null;
+async function noEngine<T>(ler: () => Promise<T>): Promise<T> {
+  if (falhaGuardada && Date.now() < falhaGuardada.ate) throw falhaGuardada.erro;
+  try {
+    return await ler();
+  } catch (erro) {
+    if (!(erro instanceof RestaurantsPublicError && erro.status >= 400 && erro.status < 500)) falhaGuardada = { erro, ate: Date.now() + FALHA_GUARDADA_MS };
+    throw erro;
+  }
+}
+
+/* No build, uma leitura que falha vale como "sem este conteúdo": o deploy não cai e a revalidação corrige. */
+async function ouVazioNoBuild<T>(ler: () => Promise<T>, vazio: T): Promise<T> {
+  try {
+    return await ler();
+  } catch (erro) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') return vazio;
+    throw erro;
+  }
+}
 
 /* Módulo desligado ou casa inexistente: o Engine responde 404. */
 async function ou404<T>(leitura: Promise<T>): Promise<T | null> {
@@ -98,12 +115,12 @@ const chaveDoCache = [engineUrl, casaNoEngine];
 
 /* Uma chamada por minuto, para todas as páginas e visitantes. */
 const categoriasEmCache = unstable_cache(
-  () => ou404(fetchPublicProductCategories({ ...base, signal: sinal() })),
+  () => ou404(noEngine(() => fetchPublicProductCategories({ ...base, signal: sinal() }))),
   ['produtos-categorias', ...chaveDoCache],
   { revalidate: 60 },
 );
 const indiceEmCache = unstable_cache(
-  () => ou404(fetchPublicProductIndex({ ...base, signal: sinal() })),
+  () => ou404(noEngine(() => fetchPublicProductIndex({ ...base, signal: sinal() }))),
   ['produtos-indice', ...chaveDoCache],
   { revalidate: 60 },
 );
@@ -123,7 +140,7 @@ export async function produtos(
   if (s) return s.fetchPublicProducts({ ...base, ...filtro }, cenario);
   /* O `?simular=vazio` só chega aqui no laboratório (em produção `cenario` é sempre vazio). */
   if (cenario?.vazio) return { items: [], nextCursor: null };
-  return fetchPublicProducts({ ...base, ...filtro, signal: sinal() });
+  return ouVazioNoBuild(() => noEngine(() => fetchPublicProducts({ ...base, ...filtro, signal: sinal() })), { items: [], nextCursor: null });
 }
 
 /* O índice é a porta do 404 barato: slug que não está nele não chega ao Engine. */
@@ -137,7 +154,7 @@ export const produto = cache(async (slug: string): Promise<PublicProductData | n
   const s = await simulado();
   if (s) return s.fetchPublicProduct({ ...base, slug });
   if (!(await indiceDeProdutos()).some((p) => p.slug === slug)) return null;
-  return fetchPublicProduct({ ...base, slug, signal: sinal() });
+  return ouVazioNoBuild(() => noEngine(() => fetchPublicProduct({ ...base, slug, signal: sinal() })), null);
 });
 
 /* ── Blog e eventos ───────────────────────────────────────────────────────── */
@@ -152,8 +169,8 @@ const emBuild = process.env.NEXT_PHASE === 'phase-production-build';
 const doBlog = () => ({ ...base, signal: sinal() });
 
 /* O `null` do 404 também é guardado: com o Blog desligado, endereço inventado não vira chamada nova ao Engine. */
-const indiceGuardado = unstable_cache(() => ou404(fetchBlogIndex(doBlog())), ['blog-indice', engineUrl, casaNoEngine], { revalidate: GUARDA_S });
-const categoriasGuardadas = unstable_cache(() => ou404(fetchBlogCategories(doBlog())), ['blog-categorias', engineUrl, casaNoEngine], {
+const indiceGuardado = unstable_cache(() => ou404(noEngine(() => fetchBlogIndex(doBlog()))), ['blog-indice', engineUrl, casaNoEngine], { revalidate: GUARDA_S });
+const categoriasGuardadas = unstable_cache(() => ou404(noEngine(() => fetchBlogCategories(doBlog()))), ['blog-categorias', engineUrl, casaNoEngine], {
   revalidate: GUARDA_S,
 });
 
@@ -175,8 +192,8 @@ export const indiceDoBlog = cache(() => noBuildSemEngine(indiceGuardado));
 export const categoriasDoBlog = cache(() => noBuildSemEngine(categoriasGuardadas));
 
 export async function materias(filtro: { kind: BlogPostKind; category?: string; when?: 'upcoming' | 'past'; cursor?: string; limit?: number }): Promise<BlogPostsPage> {
-  return fetchBlogPosts({ ...doBlog(), ...filtro });
+  return ouVazioNoBuild(() => noEngine(() => fetchBlogPosts({ ...doBlog(), ...filtro })), { items: [], nextCursor: null });
 }
 
 /** A matéria inteira (uma chamada por renderização, mesmo lida pelos metadados e pela página). */
-export const materia = cache(async (slug: string): Promise<BlogPostData | null> => fetchBlogPost({ ...doBlog(), slug }));
+export const materia = cache(async (slug: string): Promise<BlogPostData | null> => ouVazioNoBuild(() => noEngine(() => fetchBlogPost({ ...doBlog(), slug })), null));

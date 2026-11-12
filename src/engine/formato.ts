@@ -79,3 +79,14 @@ export function dataEHora(iso: string, fuso = 'America/Sao_Paulo') {
     minute: '2-digit',
   }).format(new Date(iso));
 }
+
+type Regra = { saleMode: 'unit' | 'weight'; stepGrams: number | null; minGrams: number | null };
+
+/** O passo, o mínimo e o máximo de uma quantidade, nas regras do pedido. */
+export function limites(regra: Regra) {
+  if (regra.saleMode === 'weight') {
+    const passo = regra.stepGrams ?? 100;
+    return { passo, minimo: regra.minGrams ?? passo, maximo: 20_000 };
+  }
+  return { passo: 1, minimo: 1, maximo: 99 };
+}

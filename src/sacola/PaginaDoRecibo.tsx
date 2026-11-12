@@ -6,7 +6,7 @@ import { orderTokenFromHash, type PublicOrderReceiptData } from '../engine/sdk-0
 import { lerRecibo } from '../engine/navegador';
 import { dataEHora, dataPorExtenso, dinheiro, gramas } from '../engine/formato';
 import { casa } from '../data/casa';
-import { laboratorio } from '../site';
+import { engineUrl, laboratorio } from '../site';
 import { Alerta, Arrow, WhatsappGlyph } from '../components/Icons';
 import { esquecerPedidos, pedidosDoAparelho, type PedidoDoAparelho } from './aparelho';
 
@@ -24,6 +24,17 @@ const SITUACAO: Record<PublicOrderReceiptData['status'], { rotulo: string; titul
   done: { rotulo: 'Concluído', titulo: ['Pedido', 'concluído.'] },
   cancelled: { rotulo: 'Cancelado', titulo: ['Pedido', 'cancelado.'] },
 };
+
+/* Link vindo do Engine só vira href se passar pela lista de começos permitidos (SPEC-SITE §9). */
+const COMECOS_DO_WHATSAPP = ['https://wa.me/', 'https://api.whatsapp.com/'];
+const linkDoWhatsapp = (url: string | null | undefined) => (url && COMECOS_DO_WHATSAPP.some((c) => url.startsWith(c)) ? url : null);
+function linkDoPainel(url: string | null | undefined) {
+  try {
+    return url && new URL(url).origin === new URL(engineUrl).origin ? url : null;
+  } catch {
+    return null;
+  }
+}
 
 type Estado = { tipo: 'carregando' } | { tipo: 'recibo'; recibo: PublicOrderReceiptData } | { tipo: 'nao-encontrado' } | { tipo: 'erro' };
 
@@ -96,7 +107,8 @@ export function PaginaDoRecibo() {
    * o teste não sair do site. */
   const recibo = estado.tipo === 'recibo' ? estado.recibo : null;
   useEffect(() => {
-    if (!recibo?.whatsappUrl || !token) return;
+    const zap = linkDoWhatsapp(recibo?.whatsappUrl);
+    if (!zap || !token) return;
     let recem: string | null = null;
     try {
       recem = sessionStorage.getItem('nicolini:recem-enviado');
@@ -106,7 +118,7 @@ export function PaginaDoRecibo() {
     }
     if (recem !== token) return;
     setTentouAbrir(true);
-    if (!laboratorio) window.location.assign(recibo.whatsappUrl);
+    if (!laboratorio) window.location.assign(zap);
   }, [recibo, token]);
 
   const tentarDeNovo = useCallback(() => setTentativa((t) => t + 1), []);
@@ -159,6 +171,8 @@ export function PaginaDoRecibo() {
   const r = estado.recibo;
   const sit = SITUACAO[r.status];
   const novo = r.status === 'new';
+  const zap = linkDoWhatsapp(r.whatsappUrl);
+  const painel = linkDoPainel(r.panelUrl);
   return (
     <section className={`recibo wrap ${novo ? 'recibo--novo' : ''}`}>
       <div className="recibo__grade">
@@ -185,15 +199,19 @@ export function PaginaDoRecibo() {
             </div>
           )}
 
-          {r.whatsappUrl && (
-            <a className="botao botao--whatsapp botao--largo recibo__whatsapp" href={r.whatsappUrl}>
+          {zap ? (
+            <a className="botao botao--whatsapp botao--largo recibo__whatsapp" href={zap}>
               <WhatsappGlyph /> Enviar pelo WhatsApp
+            </a>
+          ) : (
+            <a className="botao botao--escuro botao--largo" href={`https://wa.me/${casa.whatsapp.link}`} target="_blank" rel="noreferrer">
+              Falar com a loja <Arrow direction="upRight" />
             </a>
           )}
           {tentouAbrir && laboratorio && (
             <p className="recibo__nota">Laboratório: aqui o site tentaria abrir o WhatsApp sozinho.</p>
           )}
-          {!novo && r.whatsappUrl && <p className="recibo__nota">Pode enviar de novo a qualquer momento: é a mesma mensagem.</p>}
+          {!novo && zap && <p className="recibo__nota">Pode enviar de novo a qualquer momento: é a mesma mensagem.</p>}
         </div>
 
         <div className="recibo__itens">
@@ -241,11 +259,13 @@ export function PaginaDoRecibo() {
 
       <PedidosDoAparelho atual={token ?? undefined} />
 
-      <p className="recibo__equipe">
-        <a href={r.panelUrl} rel="nofollow">
-          Equipe: abrir no painel
-        </a>
-      </p>
+      {painel && (
+        <p className="recibo__equipe">
+          <a href={painel} rel="nofollow">
+            Equipe: abrir no painel
+          </a>
+        </p>
+      )}
     </section>
   );
 }

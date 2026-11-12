@@ -84,7 +84,7 @@ if (!config.accepting) {
   conferir('envio recusado com not_accepting (409), sem número nem linhas', erro?.status === 409 && erro.reason === 'not_accepting' && !orderRefusalLines(erro), erro ? `${erro.status} ${erro.reason}` : 'foi aceito');
   conferir('o recibo desse envio não existe', (await lookupPublicOrder({ ...base, token: tentativa.token })) === null);
   conferir('token desconhecido: não encontrado', (await lookupPublicOrder({ ...base, token: createOrderToken() })) === null);
-  console.log('\n(Casa pausada: o envio de ponta a ponta roda com a casa retomada.)');
+  console.log('\nponta a ponta: NOT_RUN (casa pausada)');
 } else {
   console.log(`\nCasa recebendo (${casa}): pedido de ponta a ponta`);
   /* Uma sacola como a do site: um produto por unidade e um por peso, relidos pelos ids (sem cache). */

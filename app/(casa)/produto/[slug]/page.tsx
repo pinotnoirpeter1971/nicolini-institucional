@@ -7,14 +7,14 @@ import { dadosEstruturadosDoProduto } from '../../../../src/ui/DadosEstruturados
 type Props = { params: Promise<{ slug: string }> };
 
 /*
- * Guardada por 60 s. Os produtos do índice nascem no build; os demais, na
+ * Guardada por 60 s. Os 20 primeiros do índice nascem no build; os demais, na
  * primeira visita, mas `lerProduto` só vai ao Engine se o slug estiver no
  * índice (guardado e compartilhado): endereço inventado é 404 sem chamada nova.
  */
 export const revalidate = 60;
 
 export async function generateStaticParams() {
-  return (await indiceDeProdutos()).map((p) => ({ slug: p.slug }));
+  return (await indiceDeProdutos()).slice(0, 20).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: Props) {

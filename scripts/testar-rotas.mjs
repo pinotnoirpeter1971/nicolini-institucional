@@ -387,7 +387,7 @@ try {
   conferir('/ sem o bloco da tábua de frios (oferta não confirmada)', !/tabua-de-frios|destaque-vermelho|sob medida/.test(homeNova.corpo));
 
   /* O simulado não pode estar no pacote: nem no JavaScript do navegador nem no do servidor. */
-  const marcas = ['dados-simulados-do-laboratorio-nicolini', '5a1a0000-0000-4000-8000', 'Cinco Jotas', 'Noite de queijos franceses', 'nicolini:laboratorio:'];
+  const marcas = ['dados-simulados-do-laboratorio-nicolini', '5a1a0000-0000-4000-8000', 'Cinco Jotas', 'Caseificio Bertinelli', 'nicolini:laboratorio:'];
   const achados = [];
   const varrer = (dir) => {
     for (const item of readdirSync(dir, { withFileTypes: true })) {

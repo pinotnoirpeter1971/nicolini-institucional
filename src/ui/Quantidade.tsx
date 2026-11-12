@@ -1,18 +1,11 @@
 'use client';
 
-import { gramas } from '../engine/formato';
+import { gramas, limites } from '../engine/formato';
 import { Minus, Plus } from '../components/Icons';
 
-type Regra = { saleMode: 'unit' | 'weight'; stepGrams: number | null; minGrams: number | null };
+export { limites };
 
-/** O passo, o mínimo e o máximo de uma quantidade, nas regras do pedido. */
-export function limites(regra: Regra) {
-  if (regra.saleMode === 'weight') {
-    const passo = regra.stepGrams ?? 100;
-    return { passo, minimo: regra.minGrams ?? passo, maximo: 20_000 };
-  }
-  return { passo: 1, minimo: 1, maximo: 99 };
-}
+type Regra = Parameters<typeof limites>[0];
 
 /*
  * O seletor de quantidade do e-commerce: menos, o valor, mais. Por peso anda no
