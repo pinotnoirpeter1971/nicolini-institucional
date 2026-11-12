@@ -1,30 +1,36 @@
 import { notFound, permanentRedirect } from 'next/navigation';
+import { descricaoDaMateria } from '../../../../src/ui/descricao';
 import { metadadosDaPagina } from '../../../../src/metadados';
-import { modulos } from '../../../../src/menu-do-site';
 import { indiceDoBlog, materia as lerMateria, materias } from '../../../../src/engine/fonte';
 import { PaginaDaMateria } from '../../../../src/paginas/Blog';
 
 type Props = { params: Promise<{ slug: string }> };
 
-/* Só os slugs do índice (o 404 barato do SPEC-SITE §3.3); com o módulo apagado, nenhum. */
-export const dynamicParams = false;
+/* Guardada por 60 s. Matéria nova nasce na primeira visita (as mais recentes já saem prontas do build);
+ * slug fora do índice (guardado) é 404 sem chamar o Engine (SPEC-SITE §3.3). */
+export const revalidate = 60;
 
 export async function generateStaticParams() {
-  if (!modulos.blog) return [];
-  return (await indiceDoBlog()).map((m) => ({ slug: m.slug }));
+  return ((await indiceDoBlog()) ?? [])
+    .filter((m) => m.kind === 'article')
+    .slice(0, 20)
+    .map((m) => ({ slug: m.slug }));
+}
+
+async function noAr(slug: string) {
+  const indice = await indiceDoBlog();
+  return indice?.some((m) => m.slug === slug) ? lerMateria(slug) : null;
 }
 
 export async function generateMetadata({ params }: Props) {
-  if (!modulos.blog) return {};
-  const m = await lerMateria((await params).slug);
+  const m = await noAr((await params).slug);
   if (!m || m.kind !== 'article') return {};
   const capa = m.cover?.photo;
-  return metadadosDaPagina({ caminho: `/blog/${m.slug}`, titulo: m.title, descricao: m.excerpt, imagem: capa && capa.kind === 'image' ? capa : null });
+  return metadadosDaPagina({ caminho: `/blog/${m.slug}`, titulo: m.title, descricao: descricaoDaMateria(m), imagem: capa && capa.kind === 'image' ? capa : null });
 }
 
 export default async function Pagina({ params }: Props) {
-  if (!modulos.blog) notFound();
-  const m = await lerMateria((await params).slug);
+  const m = await noAr((await params).slug);
   if (!m) notFound();
   /* Evento aberto pela rota do blog vai para a rota certa (SPEC-SITE §2). */
   if (m.kind === 'event') permanentRedirect(`/eventos/${m.slug}`);

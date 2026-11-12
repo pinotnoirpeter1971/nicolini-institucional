@@ -3,8 +3,9 @@
  * mais" das listas (SPEC-SITE §3.2 e §3.5: o navegador fala direto com o
  * Engine, para o limite por IP valer por visitante).
  *
- * Hoje: no laboratório responde com os dados simulados; no build de produção os
- * módulos estão apagados e nada chama estas funções. ETAPA 3: trocar o ramo de
+ * O "ver mais" do Blog já fala com o Engine pelo SDK. O resto (produtos, sacola
+ * e pedido) hoje: no laboratório responde com os dados simulados; no build de
+ * produção os módulos estão apagados e nada chama estas funções. ETAPA 3: trocar o ramo de
  * produção de `api()` pelo SDK (`./sdk-0.7.0/index.js`, mesmas funções).
  */
 import type {
@@ -16,6 +17,7 @@ import type {
   PublicProductCardData,
   PublicProductPageData,
 } from './sdk-0.7.0/index.js';
+import { fetchBlogPosts } from './sdk-0.7.0/index.js';
 import { casaNoEngine, engineUrl } from '../site';
 
 type Simulado = typeof import('./simulado/navegador');
@@ -34,7 +36,7 @@ export async function maisProdutos(filtro: { category?: string; featured?: boole
 }
 
 export async function maisMaterias(filtro: { kind: BlogPostKind; category?: string; when?: 'upcoming' | 'past'; cursor: string; limit?: number }): Promise<BlogPostsPage> {
-  return (await api()).fetchBlogPosts({ ...base, ...filtro });
+  return fetchBlogPosts({ ...base, ...filtro });
 }
 
 /** Os produtos da sacola, com o preço de agora (sem cache). Id ausente: saiu do site. */

@@ -6,6 +6,7 @@ import { siteUrl } from '../site';
 import { Arrow } from '../components/Icons';
 import { Reveal } from '../components/Reveal';
 import { Blocos } from '../ui/Blocos';
+import { DadosEstruturados } from '../ui/DadosEstruturados';
 import { CartaoDeEvento, CartaoDeMateria } from '../ui/CartaoDeMateria';
 import { Foto } from '../ui/Foto';
 import { Migalhas } from '../ui/Migalhas';
@@ -156,6 +157,7 @@ export function PaginaDaMateria({ materia, outras }: { materia: BlogPostData; ou
   const caminho = `/blog/${materia.slug}`;
   return (
     <>
+      <DadosEstruturados materia={materia} />
       <article className="materia-pagina">
         <header className="materia__cabeca wrap">
           <Migalhas
@@ -277,6 +279,7 @@ export function PaginaDoEvento({ evento, passado, outros }: { evento: BlogPostDa
   const conversa = `https://wa.me/${casa.whatsapp.link}?text=${encodeURIComponent(`Olá! Quero saber do evento ${evento.title}.`)}`;
   return (
     <>
+      <DadosEstruturados materia={evento} />
       <article className="materia-pagina">
         <header className="materia__cabeca wrap">
           <Migalhas itens={[{ rotulo: 'Eventos', href: '/eventos' }, { rotulo: evento.title }]} />

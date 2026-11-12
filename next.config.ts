@@ -62,6 +62,8 @@ const nextConfig: NextConfig = {
   /* A pasta acima (Site Nicolini) tem um package.json de workspaces que não é
    * deste repositório; a raiz do projeto é esta pasta. */
   turbopack: { root: process.cwd() },
+  /* Os testes de build (scripts/testar-blog.mjs) usam outra pasta, para não pisar no .next. */
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   skipTrailingSlashRedirect: true,
   /* Laboratório (next dev) aberto por 127.0.0.1 e pelo celular no Wi-Fi: sem
    * isto o Next recusa os recursos de desenvolvimento a essas origens e a
