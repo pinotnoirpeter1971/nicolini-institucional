@@ -132,7 +132,7 @@ export default function Home({ destaques = [], recentes = [] }) {
             <div>
               <p className="eyebrow">Nossos produtos</p>
               <h2>
-                A Nicolini tem tudo que você <em>busca.</em>
+                A casa tem muitos <em>caminhos.</em>
               </h2>
             </div>
             {modulos.produtos && (
