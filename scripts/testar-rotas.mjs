@@ -330,36 +330,63 @@ try {
   }
 
   /*
-   * Design de 12/11/2026: no build de produção, os módulos apagados em
-   * src/menu-do-site.ts ficam fora do menu e do rodapé, sem bloco na home, e
-   * nada do simulado entra no pacote. Blog, Eventos e Produtos respondem ou não
-   * conforme o módulo no Engine (provado em testar-catalogo e testar-blog);
-   * aqui, só os endereços do simulado, que nunca podem abrir, e as páginas que
-   * o site trava sozinho (sacola, recibo e política).
+   * Estado de 12/11/2026 (demonstração de Encomendas, pedido de Pedro): em
+   * src/menu-do-site.ts, Produtos, Eventos, Pedidos (sacola e recibo) e a
+   * política estão acesos; o Blog segue fora do menu (o bloco da home aparece
+   * quando o Engine tem matéria no ar). Blog, Eventos e Produtos respondem ou
+   * não conforme o módulo no Engine (provado em testar-catalogo e
+   * testar-blog); aqui, os endereços do simulado, que nunca podem abrir, e as
+   * páginas que o site acende sozinho. Se um módulo voltar a apagar, estas
+   * verificações voltam a esperar 404.
    */
-  console.log('\nMódulos apagados no build de produção (nada simulado vai a público)');
-  for (const caminho of [
-    '/produto/parmigiano-reggiano-24-meses',
-    '/blog/jamon-de-bellota',
-    '/eventos/nicolini-e-rustichella',
-    '/sacola',
-    '/pedido',
-    '/politica-de-privacidade',
-  ]) {
+  console.log('\nNada simulado vai a público; sacola, recibo e política acesos');
+  for (const caminho of ['/produto/parmigiano-reggiano-24-meses', '/blog/jamon-de-bellota', '/eventos/nicolini-e-rustichella']) {
     const r = await pedir(caminho);
     conferir(`${caminho} → 404 com a página do site`, r.status === 404 && r.corpo.includes('Página não encontrada'), `veio ${r.status}`);
   }
+  for (const caminho of ['/sacola', '/pedido', '/politica-de-privacidade']) await pagina(caminho);
   const pedido = await pedir('/pedido');
   conferir('/pedido Referrer-Policy: no-referrer', pedido.headers['referrer-policy'] === 'no-referrer', pedido.headers['referrer-policy']);
+  const sacola = await pedir('/sacola');
+  conferir('/sacola noindex', /<meta name="robots" content="noindex/.test(sacola.corpo));
 
-  /* Eventos está aceso no menu desde 12/11/2026; a página segue o Blog do Engine (sem Engine no teste: 404 acima). */
-  const apagados = ['/produtos', '/blog', '/sacola', '/pedido', '/politica-de-privacidade'];
+  /*
+   * A busca provisória (12/11/2026): /busca é estática e filtra no navegador o
+   * catálogo de /busca/catalogo.json, guardado por 60 s. Nenhuma das três
+   * roda função a cada visita: o manifesto do build prova isso sem depender do
+   * Engine (com ele fora do ar no build, as páginas nascem 404 e seguem guardadas).
+   */
+  console.log('\nBusca provisória e /produtos guardadas (nenhuma roda função por visita)');
+  const prerender = JSON.parse(readFileSync(join(raiz, '.next', 'prerender-manifest.json'), 'utf8')).routes;
+  for (const [rota, segundos] of [['/produtos', 60], ['/busca/catalogo.json', 60], ['/busca', false]]) {
+    const r = prerender[rota];
+    conferir(`${rota} pronta no build (revalida: ${segundos === false ? 'nunca' : `${segundos} s`})`, Boolean(r) && r.initialRevalidateSeconds === segundos, JSON.stringify(r && r.initialRevalidateSeconds));
+  }
+  const guardada = (r) => !/private|no-store/.test(r.headers['cache-control'] || '');
+  for (const caminho of ['/produtos', '/produtos?busca=queijo', '/busca?q=queijo']) {
+    const r = await pedir(caminho);
+    conferir(`${caminho} guardada (sem private/no-store)`, guardada(r), `${r.status} ${r.headers['cache-control']}`);
+  }
+  const busca = await pedir('/busca?q=termo-de-teste-xq7');
+  conferir('/busca → 200 noindex, sem o termo no HTML (o filtro é no navegador)', busca.status === 200 && /<meta name="robots" content="noindex, follow"/.test(busca.corpo) && !busca.corpo.includes('termo-de-teste-xq7'), `veio ${busca.status}`);
+  const catalogo = await pedir('/busca/catalogo.json');
+  let itens = null;
+  try {
+    itens = JSON.parse(catalogo.corpo).itens;
+  } catch {}
+  conferir(
+    '/busca/catalogo.json → 200 com a lista e o nome da categoria (ou 404 com Produtos desligado)',
+    (catalogo.status === 200 && Array.isArray(itens) && itens.every((p) => p.slug && 'categoryName' in p)) || catalogo.status === 404,
+    `veio ${catalogo.status}`,
+  );
+
   for (const caminho of ['/', '/a-loja', '/bistro', '/rustichella', '/nao-existe']) {
     const r = await pedir(caminho);
     const links = [...r.corpo.matchAll(/href="(\/[^"#?]*)/g)].map((m) => m[1]);
-    const proibidos = links.filter((l) => apagados.some((a) => l === a || l.startsWith(`${a}/`)) || l.startsWith('/produto/'));
-    conferir(`${caminho} sem link para módulo apagado`, proibidos.length === 0, proibidos.join(' '));
-    conferir(`${caminho} sem a sacola no header`, !r.corpo.includes('cabecalho__sacola'));
+    const header = (r.corpo.match(/<header\b[\s\S]*?<\/header>/) || [''])[0];
+    const blogNoHeader = [...header.matchAll(/href="(\/blog[^"#?]*)/g)].map((m) => m[1]);
+    conferir(`${caminho} sem o Blog no header (módulo fora do menu)`, blogNoHeader.length === 0, blogNoHeader.join(' '));
+    conferir(`${caminho} com a sacola no header`, header.includes('cabecalho__sacola'));
     /*
      * Decisão de Pedro (12/11/2026): as peças do header do e-commerce ficam à
      * vista, mas travadas. Todas desativadas, nenhuma leva a página que não
@@ -367,21 +394,21 @@ try {
      */
     const travadas = [...r.corpo.matchAll(/<button\b[^>]*class="(faixa-de-anuncio__cep|cabecalho__cep|cabecalho__icone|cabecalho__travado)"[^>]*>/g)];
     const soltas = travadas.filter((m) => !m[0].includes('aria-disabled="true"')).map((m) => m[1]);
-    /* Busca e Departamentos destravados (12/11/2026; a busca é provisória): form GET para /produtos e botão que abre as categorias. */
-    const busca = r.corpo.match(/<form\b[^>]*role="search"[^>]*>/g) ?? [];
+    /* Busca e Departamentos destravados (12/11/2026; a busca é provisória): form GET para /busca e botão que abre as categorias. */
+    const formBusca = r.corpo.match(/<form\b[^>]*role="search"[^>]*>/g) ?? [];
     conferir(
-      `${caminho} com faixa, CEP, conta e curtidos travados; busca (GET /produtos) e Departamentos ativos`,
-      travadas.length === 6 && soltas.length === 0 && busca.length === 1 && busca[0].includes('action="/produtos"') && /<button\b[^>]*class="cabecalho__departamentos"[^>]*aria-expanded="false"/.test(r.corpo),
-      `${travadas.length} botões, soltos: ${soltas.join(' ') || 'nenhum'}, busca: ${busca.join(' ')}`,
+      `${caminho} com faixa, CEP, conta e curtidos travados; busca (GET /busca) e Departamentos ativos`,
+      travadas.length === 6 && soltas.length === 0 && formBusca.length === 1 && formBusca[0].includes('action="/busca"') && /<button\b[^>]*class="cabecalho__departamentos"[^>]*aria-expanded="false"/.test(r.corpo),
+      `${travadas.length} botões, soltos: ${soltas.join(' ') || 'nenhum'}, busca: ${formBusca.join(' ')}`,
     );
-    const semPagina = links.filter((l) => /^\/(busca|buscar|conta|minha-conta|curtidos|favoritos|departamentos|cep|checkout|entrar)(\/|$)/.test(l));
+    const semPagina = links.filter((l) => /^\/(buscar|conta|minha-conta|curtidos|favoritos|departamentos|cep|checkout|entrar)(\/|$)/.test(l));
     conferir(`${caminho} sem link para página que não existe`, semPagina.length === 0 && !/<form\b(?![^>]*role="search")/.test(r.corpo), semPagina.join(' '));
     conferir(`${caminho} sem newsletter, selos de pagamento nem promessa de entrega`, !/newsletter|rodape__pagamentos|Entrega grátis/.test(r.corpo));
     conferir(`${caminho} sem o laboratório`, !/laboratorio|dados simulados/i.test(r.corpo));
     conferir(`${caminho} com o header novo (Eventos, Bistrô e Loja física)`, r.corpo.includes('class="cabecalho') && links.includes('/eventos') && links.includes('/bistro') && links.includes('/a-loja'));
   }
+  /* O destaque de produtos e o bloco do Blog da home dependem do que o Engine tem no ar (testar-catalogo e testar-blog). */
   const homeNova = await pedir('/');
-  conferir('/ sem o destaque de produtos e sem o bloco do Blog', !/selecao-da-semana|id="blog"/.test(homeNova.corpo));
   /* O bloco da tábua de frios, o mesmo do e-commerce, confirmado por Pedro em 12/11/2026 (conteudoAConfirmar em src/menu-do-site.ts). */
   conferir('/ com o bloco da tábua de frios e o WhatsApp da casa', /id="tabua-de-frios"/.test(homeNova.corpo) && homeNova.corpo.includes('https://wa.me/5554999592314?text='));
 

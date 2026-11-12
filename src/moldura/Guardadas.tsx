@@ -25,12 +25,13 @@ export function FaixaDeAnuncio() {
 }
 
 /* PROVISÓRIO (demonstração, 12/11/2026; Pedro desfaz depois): formulário GET que leva a
- * /produtos?busca=<termo>; a página filtra por nome e marca. Sem rede aqui, sem dado guardado. */
+ * /busca?q=<termo> (app/(casa)/busca/page.tsx), que filtra por nome e marca. Sem rede aqui,
+ * sem dado guardado. Rota própria para /produtos seguir guardada por 60 s. */
 export function CampoDeBusca() {
   return (
-    <form className="cabecalho__busca" role="search" action="/produtos" method="get">
+    <form className="cabecalho__busca" role="search" action="/busca" method="get">
       <Busca />
-      <input type="search" name="busca" placeholder="Busque produtos, marcas e origens" aria-label="Buscar produtos" autoComplete="off" required />
+      <input type="search" name="q" placeholder="Busque produtos, marcas e origens" aria-label="Buscar produtos" autoComplete="off" required />
     </form>
   );
 }

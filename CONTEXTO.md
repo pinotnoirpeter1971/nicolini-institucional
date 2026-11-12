@@ -218,6 +218,15 @@ atendimento), `/pedido#rec1b0zzzzzzzzzz` (não encontrado).
    o menu escuro do e-commerce, com "Curtidos" e "Minha conta" travados.
    Newsletter e selos de pagamento, fora do header, seguem apagados. Pedro
    decide depois o que cada peça faz (cada uma pede spec).
+   **Na demonstração de 12/11/2026 (pedido de Pedro)** Departamentos e a busca
+   foram destravados. A busca é **provisória**: leva a `/busca?q=`, página
+   estática e noindex (`app/(casa)/busca/page.tsx`) que filtra no navegador
+   (`src/paginas/Busca.tsx`) o catálogo de `/busca/catalogo.json`, guardado por
+   60 s (`catalogoParaBusca`, em `src/engine/fonte.ts`). Cada palavra é
+   procurada no nome, na marca e na categoria, sem acento. Nenhuma pesquisa
+   roda função nem chama o Engine. Na primeira versão a busca morava em
+   `/produtos?busca=`: ler o endereço ali tirava `/produtos` do cache, e cada
+   visita e cada pesquisa rodavam uma função. Pedro decide o destino da busca.
 2. Texto da faixa: "Empório e Bistrô em Caxias do Sul", no lugar do
    "Entrega grátis em Caxias do Sul" do protótipo (promessa que a casa não
    fez). Pedro escolhe a mensagem.

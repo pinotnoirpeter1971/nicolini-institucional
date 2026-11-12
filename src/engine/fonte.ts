@@ -19,6 +19,7 @@ import type {
   BlogPostData,
   BlogPostKind,
   BlogPostsPage,
+  PublicProductCardData,
   PublicProductCategoryData,
   PublicProductData,
   PublicProductIndexEntry,
@@ -142,6 +143,32 @@ export async function produtos(
   if (cenario?.vazio) return { items: [], nextCursor: null };
   return ouVazioNoBuild(() => noEngine(() => fetchPublicProducts({ ...base, ...filtro, signal: sinal() })), { items: [], nextCursor: null });
 }
+
+/*
+ * PROVISÓRIO (busca do header, demonstração de 12/11/2026; Pedro desfaz depois): o catálogo inteiro,
+ * lido do Engine no máximo uma vez por minuto e compartilhado. A busca filtra esta cópia, então um
+ * termo novo não vira chamada ao Engine. Até 10 páginas de 48 (480 produtos); acima disso a busca
+ * pede um endpoint próprio no Engine.
+ */
+const CATALOGO_PAGINAS_MAX = 10;
+const catalogoEmCache = unstable_cache(
+  async (): Promise<PublicProductCardData[]> => {
+    const itens: PublicProductCardData[] = [];
+    let cursor: string | null = null;
+    for (let i = 0; i < CATALOGO_PAGINAS_MAX; i++) {
+      const pagina: PublicProductPageData = await produtos({ limit: 48, cursor });
+      itens.push(...pagina.items);
+      if (!pagina.nextCursor) break;
+      cursor = pagina.nextCursor;
+    }
+    return itens;
+  },
+  ['produtos-catalogo-busca', ...chaveDoCache],
+  { revalidate: 60 },
+);
+
+/** Todos os produtos no ar, para a busca provisória do header (guardados por 60 s). */
+export const catalogoParaBusca = cache(() => catalogoEmCache());
 
 /* O índice é a porta do 404 barato: slug que não está nele não chega ao Engine. */
 export const indiceDeProdutos = cache(async (): Promise<PublicProductIndexEntry[]> => {
