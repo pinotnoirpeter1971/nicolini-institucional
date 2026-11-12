@@ -5,6 +5,7 @@ import { CasaFotos } from '../components/CasaFotos';
 import { Reveal } from '../components/Reveal';
 import { casa } from '../data/casa';
 import { bistro } from '../data/bistro';
+import { useParalaxe } from '../hooks/useParalaxe';
 import {
   aberturaFotos,
   creditoFotos,
@@ -46,10 +47,9 @@ function Espiga({ className }) {
 }
 
 /*
- * O hero do evento nao repete a paralaxe do bistro. La o assunto e a casa e o
- * movimento sugere que a camera anda pelo salao; aqui o assunto e um campo
- * parado ao fim da tarde, e o mesmo gesto so daria inquietacao a uma foto que
- * vive de calma.
+ * O hero do evento usa a mesma paralaxe contida do bistro: o campo se desloca
+ * um pouco sob a tipografia, dando profundidade sem transformar a foto em
+ * efeito. A moldura extra e a CSS evitam que o movimento descubra as bordas.
  *
  * O que se mantem e a ordem de entrada: a foto pinta, as marcas acendem, os
  * links vem por ultimo. Quem libera tudo e o `onLoad`, nao um atraso fixo —
@@ -58,15 +58,21 @@ function Espiga({ className }) {
  * evento ja passou antes deste efeito rodar.
  */
 function Hero() {
+  const secao = useRef(null);
   const foto = useRef(null);
   const [pronto, setPronto] = useState(false);
+  useParalaxe(secao);
 
   useEffect(() => {
     if (foto.current?.complete) setPronto(true);
   }, []);
 
   return (
-    <section className={`hero hero--evento ${pronto ? 'esta-pronto' : ''}`} data-header-hero>
+    <section
+      className={`hero hero--evento ${pronto ? 'esta-pronto' : ''}`}
+      data-header-hero
+      ref={secao}
+    >
       <div className="hero__media">
         <img
           ref={foto}
@@ -312,17 +318,14 @@ export default function Rustichella() {
         </Reveal>
       </section>
 
-      {/* Os convidados entram como uma apresentacao curta, seguida pelos dois
-          retratos na medida de retrato. A descricao e provisoria ate a casa
-          aprovar a apresentacao editorial definitiva. */}
+      {/* Os convidados entram so com o titulo e as duas fichas. A frase de
+          apresentacao que havia aqui saiu a pedido do cliente: repetia o que a
+          abertura e a legenda da sangria, logo acima, ja dizem. Quem apresenta
+          cada um agora e o paragrafo da propria ficha. */}
       <section className="band band--paper section convidados">
         <div className="wrap">
           <Reveal className="convidados__head">
             <h2>Os convidados</h2>
-            <p>
-              Da Itália para Caxias do Sul, a liderança da Rustichella d’Abruzzo e seu
-              Chef Ambassador chegam ao Bistrô Nicolini para três noites dedicadas às massas.
-            </p>
           </Reveal>
 
           <div className="delegacao">
@@ -345,8 +348,18 @@ export default function Rustichella() {
                     <img src={pessoa.foto} alt={pessoa.alt} loading="lazy" />
                   )}
                 </figure>
-                <h3>{pessoa.nome}</h3>
-                <p className="pessoa__papel">{pessoa.papel}</p>
+                {/* Cabeca e texto em blocos separados: no celular a cabeca
+                    fica ao lado do retrato e o paragrafo desce para a largura
+                    toda, sem mudar a ordem de leitura. */}
+                <div className="pessoa__cabeca">
+                  <p className="pessoa__papel">
+                    {pessoa.papel}
+                    {pessoa.casa && <span className="pessoa__casa">{pessoa.casa}</span>}
+                  </p>
+                  <h3>{pessoa.nome}</h3>
+                  {pessoa.legenda && <p className="pessoa__legenda">{pessoa.legenda}</p>}
+                </div>
+                {pessoa.texto && <p className="pessoa__texto">{comEnfase(pessoa.texto)}</p>}
               </Reveal>
             ))}
           </div>

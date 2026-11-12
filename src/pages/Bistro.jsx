@@ -6,48 +6,11 @@ import { Chevron } from '../components/Icons';
 import { Reveal } from '../components/Reveal';
 import { casa } from '../data/casa';
 import { bistro, navBistro, pratos } from '../data/bistro';
+import { useParalaxe } from '../hooks/useParalaxe';
 
 const reservaWhats = `https://wa.me/${bistro.whatsapp.link}?text=${encodeURIComponent(
   'Olá! Gostaria de reservar uma mesa no Bistrô Nicolini.',
 )}`;
-
-/*
- * Paralaxe: o fundo sobe a uma fracao da rolagem enquanto o hero esta em cena.
- * O curso e limitado a folga que `.hero--bistro .hero__media` reserva em cima e
- * embaixo, entao a foto nunca descobre a borda. Fica em rAF pelo mesmo motivo
- * dos outros listeners da casa — ler `scrollY` a cada evento forca layout.
- */
-function useParalaxe(referencia) {
-  useEffect(() => {
-    const el = referencia.current;
-    if (!el) return undefined;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
-
-    let frame = 0;
-
-    const atualizar = () => {
-      frame = 0;
-      const altura = el.offsetHeight;
-      /* Passado o hero o valor congela: continuar somando so gastaria pintura
-       * numa faixa que ja saiu da tela. */
-      const avanco = Math.min(window.scrollY, altura);
-      el.style.setProperty('--paralaxe', `${(avanco * 0.12).toFixed(1)}px`);
-    };
-
-    const agendar = () => {
-      if (!frame) frame = window.requestAnimationFrame(atualizar);
-    };
-
-    atualizar();
-    window.addEventListener('scroll', agendar, { passive: true });
-    window.addEventListener('resize', agendar);
-    return () => {
-      window.removeEventListener('scroll', agendar);
-      window.removeEventListener('resize', agendar);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, [referencia]);
-}
 
 /*
  * O header continua sendo o da Nicolini, entao quem anuncia a casa e a marca do

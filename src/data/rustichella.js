@@ -286,9 +286,16 @@ export const tira = [
  * sobrenome nem cargo confirmados e saiu por decisao do cliente. Se voltar, a
  * grade acomoda — mas `.delegacao` esta calibrada para dois retratos.
  *
- * Sem nota de apresentacao: a secao virou so os dois retratos com nome e cargo,
- * a pedido do cliente ("nenhum texto e necessario aqui"). Quem eles sao ja e
- * dito no texto da abertura e na legenda da sangria, logo acima.
+ * `papel` e `casa` sao separados de proposito: o cargo vai numa linha e a casa
+ * na outra, para as duas fichas terem a mesma altura de cabeca. Com
+ * "Proprietaria, Rustichella d'Abruzzo" numa linha so, uma quebrava em duas e a
+ * outra nao, e os nomes ficavam desalinhados lado a lado.
+ *
+ * Cada um ganhou `legenda` (uma linha, em italico, ao lado do nome) e `texto`
+ * (um paragrafo curto de apresentacao), a pedido do cliente em 23/09/2026: so
+ * nome e cargo nao diziam por que essas duas pessoas atravessam o oceano para
+ * cozinhar aqui. Os dois campos estao em lorem ipsum ate os textos chegarem —
+ * NAO publicar assim.
  *
  * Os dois retratos foram trocados em setembro pelos oficiais enviados pelo
  * cliente. Os anteriores vinham de veiculos de terceiros, com marca d'agua, e
@@ -298,16 +305,24 @@ export const delegacao = [
   {
     id: 'stefania',
     nome: 'Stefania Peduzzi',
-    papel: 'Proprietária, Rustichella d’Abruzzo',
+    papel: 'Proprietária',
+    casa: evento.convidada,
     foto: '/media/rustichella/retrato-stefania.jpg',
     alt: 'Retrato de Stefania Peduzzi segurando uma embalagem da Rustichella d’Abruzzo',
+    legenda: 'Lorem ipsum dolor sit amet, consectetur adipiscing.', // MOCKUP
+    texto:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus, posuere velit aliquet. Curabitur blandit tempus porttitor. Donec ullamcorper nulla non metus auctor fringilla, vestibulum id ligula porta felis euismod semper.', // MOCKUP
   },
   {
     id: 'emmanuel',
     nome: 'Emmanuel Di Liddo',
     papel: 'Chef Ambassador',
+    casa: evento.convidada,
     foto: '/media/rustichella/retrato-emmanuel.jpg',
     alt: 'Retrato do chef Emmanuel Di Liddo de dólmã e avental brancos',
+    legenda: 'Sed posuere consectetur est at lobortis magna.', // MOCKUP
+    texto:
+      'Maecenas faucibus mollis interdum. Nullam quis risus eget urna mollis ornare vel eu leo. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur, etiam porta sem malesuada magna mollis euismod.', // MOCKUP
   },
 ];
 
