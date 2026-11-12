@@ -211,7 +211,9 @@ atendimento), `/pedido#rec1b0zzzzzzzzzz` (não encontrado).
 5. Home: a abertura do site no ar (vídeo e textos, sem botão, como hoje),
    ocupando o resto da primeira tela abaixo do header. O bloco vermelho da
    tábua de frios (brief §7) usa o texto do protótipo e "Fale com a casa" no
-   WhatsApp: **confirmar a oferta com a casa**. As duas matérias de exemplo do
+   WhatsApp; como a casa não confirmou a oferta, fica **só no laboratório**
+   (`conteudoAConfirmar.tabuaDeFrios` em `src/menu-do-site.ts`; confirmada,
+   vira `true`). As duas matérias de exemplo do
    Blog da home saíram (não tinham página); o Blog volta com o módulo, com
    matérias reais. Contato e horários foram para o rodapé; o mapa fica em
    `/a-loja`.

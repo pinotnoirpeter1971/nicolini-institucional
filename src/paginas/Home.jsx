@@ -4,7 +4,7 @@ import { Balcoes } from '../components/Balcoes';
 import { CasaFotos } from '../components/CasaFotos';
 import { Reveal } from '../components/Reveal';
 import { casa } from '../data/casa';
-import { modulos } from '../menu-do-site';
+import { conteudoAConfirmar, modulos } from '../menu-do-site';
 import { CartaoDeProduto } from '../ui/CartaoDeProduto';
 import { CapaNoCartao, enderecoDaMateria } from '../ui/CartaoDeMateria';
 
@@ -173,7 +173,7 @@ export default function Home({ destaques = [], recentes = [] }) {
         </section>
       )}
 
-      <TabuaDeFrios />
+      {conteudoAConfirmar.tabuaDeFrios && <TabuaDeFrios />}
 
       {recentes.length > 0 && (
         <section id="blog" className="band band--soft section section--blog">

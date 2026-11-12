@@ -53,6 +53,16 @@ export const pecasDeLoja = {
  */
 export const textoDaFaixa = 'Empório e Bistrô em Caxias do Sul';
 
+/*
+ * Conteúdo que espera confirmação da casa. Mesma regra dos módulos: aceso no
+ * laboratório, apagado no build de produção até a casa confirmar (nada
+ * fictício vai a público). Confirmado, troque para `true`.
+ */
+export const conteudoAConfirmar = {
+  /** O bloco vermelho da home (tábua de frios): texto e oferta vêm do protótipo do e-commerce. */
+  tabuaDeFrios: laboratorio,
+};
+
 export type ItemDoMenu = { rotulo: string; href: string; aceso: boolean };
 
 /* As categorias na linha de baixo do header, como no e-commerce. São

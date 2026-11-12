@@ -383,7 +383,8 @@ try {
   }
   const homeNova = await pedir('/');
   conferir('/ sem o destaque de produtos e sem o bloco do Blog', !/selecao-da-semana|id="blog"/.test(homeNova.corpo));
-  conferir('/ com o bloco vermelho da tábua de frios', homeNova.corpo.includes('tabua-de-frios'));
+  /* O bloco da tábua de frios é oferta do protótipo que a casa não confirmou (conteudoAConfirmar em src/menu-do-site.ts). */
+  conferir('/ sem o bloco da tábua de frios (oferta não confirmada)', !/tabua-de-frios|destaque-vermelho|sob medida/.test(homeNova.corpo));
 
   /* O simulado não pode estar no pacote: nem no JavaScript do navegador nem no do servidor. */
   const marcas = ['dados-simulados-do-laboratorio-nicolini', '5a1a0000-0000-4000-8000', 'Cinco Jotas', 'Noite de queijos franceses', 'nicolini:laboratorio:'];
