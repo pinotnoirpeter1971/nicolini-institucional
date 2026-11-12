@@ -296,3 +296,43 @@ export function PaginaDoProduto({ produto, relacionados }: { produto: PublicProd
     </>
   );
 }
+
+/* PROVISÓRIO (demonstração, 12/11/2026): resultado da busca do header. Pedro desfaz depois. */
+export function PaginaDeBusca({ termo, itens }: { termo: string; itens: PublicProductCardData[] }) {
+  return (
+    <>
+      <section className="topo-de-pagina topo-de-pagina--suave">
+        <div className="wrap">
+          <Migalhas itens={[{ rotulo: 'Início', href: '/' }, { rotulo: 'Produtos', href: '/produtos' }, { rotulo: 'Busca' }]} />
+          <h1>Busca</h1>
+        </div>
+      </section>
+      <section className="catalogo wrap" aria-label="Resultado da busca">
+        <p className="catalogo__contagem" role="status">
+          {itens.length} {itens.length === 1 ? 'resultado' : 'resultados'} para &lsquo;{termo}&rsquo;
+        </p>
+        {itens.length ? (
+          <div className="grade-de-produtos">
+            {itens.map((p) => (
+              <CartaoDeProduto key={p.id} produto={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="vazio">
+            <h2>
+              Nada por aqui
+              <br />
+              com <em>esse nome.</em>
+            </h2>
+            <p>Confira a grafia ou tente uma palavra mais curta. Também dá para navegar pelas categorias.</p>
+            <div className="acoes">
+              <Link className="botao botao--escuro" href="/produtos">
+                Ver todas as categorias <Arrow />
+              </Link>
+            </div>
+          </div>
+        )}
+      </section>
+    </>
+  );
+}

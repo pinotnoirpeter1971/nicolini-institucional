@@ -37,15 +37,18 @@ export const modulos = {
  * o que cada uma faz; acender a função de qualquer uma pede spec próprio.
  *
  * - 'travada': aparece, desativada (as do header);
+ * - 'ativa': funciona (megaMenu e, provisoriamente, a busca);
  * - 'apagada': não é desenhada (as de fora do header).
  */
 export const pecasDeLoja = {
   faixaDeAnuncio: 'travada',
-  busca: 'travada',
+  /* PROVISÓRIO (demonstração, 12/11/2026): a busca vale 'ativa' e leva a /produtos?busca=. Pedro desfaz depois. */
+  busca: 'ativa',
   cep: 'travada',
   conta: 'travada',
   curtidos: 'travada',
-  megaMenu: 'travada',
+  /* Destravado em 12/11/2026 (pedido de Pedro): abre a lista das categorias de Produtos. */
+  megaMenu: 'ativa',
   newsletter: 'apagada',
   selosDePagamento: 'apagada',
 } as const;
