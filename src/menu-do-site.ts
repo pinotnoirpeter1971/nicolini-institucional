@@ -12,7 +12,7 @@ import { laboratorio } from './site';
  */
 export const modulos = {
   /** /produtos, /produtos/[categoria], /produto/[slug], as categorias no header e o destaque da home. */
-  produtos: laboratorio,
+  produtos: true,
   /** /blog, /blog/categoria/[slug], /blog/[slug] e o bloco Blog da home. */
   blog: laboratorio,
   /**
@@ -22,9 +22,9 @@ export const modulos = {
    */
   eventos: true,
   /** A sacola (ícone, painel e /sacola) e o recibo (/pedido). Pede `produtos`. */
-  pedidos: laboratorio,
+  pedidos: true,
   /** /politica-de-privacidade. Texto ainda não aprovado: acende com Pedidos. */
-  privacidade: laboratorio,
+  privacidade: true,
 };
 
 /*
