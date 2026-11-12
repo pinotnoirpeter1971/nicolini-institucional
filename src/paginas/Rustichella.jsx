@@ -267,6 +267,7 @@ export default function Rustichella() {
               alt={evento.convidada}
               width="900"
               height="514"
+              loading="lazy"
             />
             <h2>
               Uma das grandes

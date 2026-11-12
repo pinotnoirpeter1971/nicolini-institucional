@@ -1,12 +1,3 @@
-> **Histórico de 21/09/2026 — Reservas R2 publicadas e validadas.** Código `5527fa3`, deployment
-> `dpl_8LHm4g1U7XVpdxHKhcJ9YEPixYW6`. Aprovação humana/300 pessoas, horários exatos,
-> datas bloqueadas e link privado com recuperação. Engine e banco atualizados;
-> 6 testes de produção PASS. Nicolini manual/19:30/21:00/e-mail oculto, online
-> fechado até configurar dias reais. Mesas opcionais no manual. Sino validado;
-> push em dispositivo real ainda não comprovado. Release em worktree limpo:
-> Rustichella/WhatsApp publicados e alterações concorrentes locais preservados.
-> Evidências e operação em `Capilano Engines/restaurantes/docs/STATUS.md`.
-
 # Contexto — Site da Nicolini (institucional)
 
 ## Estado em 11/11/2026 — vale sobre o histórico abaixo
@@ -38,13 +29,24 @@
 | `/bistro/reservas` | 307 → `/menu/#/reserva` |
 | `/bistro/menu` | 307 → `/menu/` |
 | `/bistro/rustichella` | 308 → `/rustichella` |
-| qualquer página com barra final (exceto `/menu/`) | 308 → sem a barra (nenhuma página com dois endereços) |
+| `/rustichella.html` (impresso, bio) | 308 → `/rustichella` |
+| `/index.html` | 308 → `/` |
+| `/Rustichella`, `/Bistro`, `/A-Loja`, `/Menu` (qualquer outra caixa) | 308 → o endereço em minúsculas (`/menu/` com a barra) |
+| qualquer página com barra final (exceto `/menu/`) | 308 → sem a barra (nenhuma página com dois endereços). Caminho que começa com `//` ou `/\` não casa: seria redirect para fora do site |
 | endereço inexistente | 404 de verdade (`app/not-found.tsx`); antes caía na home |
 
 O redirect automático de barra do Next está desligado
 (`skipTrailingSlashRedirect`) e o site faz os seus em `redirects()`, que na
 Vercel viram regra de roteamento, não função. `public/menu` não se edita para
-"consertar" barra.
+"consertar" barra. As regras são sensíveis à caixa
+(`experimental.caseSensitiveRoutes`): sem isso o Next as casa sem diferenciar
+maiúsculas, e `/Rustichella → /rustichella` viraria laço.
+
+**Teste do contrato:** `npm test --workspaces=false` (build + teste) ou, com
+build pronto, `npm run test:rotas --workspaces=false`
+(`scripts/testar-rotas.mjs`, Node puro). Sobe `next start` numa porta livre,
+confere esta tabela, os cabeçalhos, o `robots.txt` e o `sitemap.xml`, e
+encerra. Mudou um endereço, mude a tabela e o teste juntos.
 
 ### Cabeçalhos e indexação
 
@@ -53,15 +55,36 @@ Vercel viram regra de roteamento, não função. `public/menu` não se edita par
 - Em build de produção (prévia, produção, `next start`):
   `Content-Security-Policy: frame-ancestors 'self'
   https://capilano-restaurant-engines.vercel.app
-  https://restaurantes.capilanocreative.com` (o visualizador de sites do painel
-  do Engine). No laboratório (`next dev`) não há restrição de quadros.
+  https://gestao.capilanocreative.com http://127.0.0.1:3200
+  http://localhost:3200 http://127.0.0.1:3299 http://localhost:3299`: o
+  visualizador de sites do painel do Engine (endereço atual, o futuro
+  `gestao.`, decisão de Pedro, e os laboratórios do painel, que embutem as
+  prévias). No laboratório (`next dev`) não há restrição de quadros.
+- Laboratório fora de `localhost`: `allowedDevOrigins` libera `127.0.0.1` e as
+  faixas de rede local (`192.168.*.*`, `10.*.*.*`, `172.16–31.*.*`). Sem isso o
+  `next dev` recusa os recursos de desenvolvimento e a página não hidrata no
+  celular pelo Wi-Fi. O `next dev` recarrega sozinho quando o `next.config.ts`
+  muda.
 - Chave única `NEXT_PUBLIC_SITE_INDEXAVEL` (padrão: ligada, como sempre foi).
+  Aceita só ausente, `true`, `1`, `false` ou `0`; outro valor derruba o build.
   Desligada: `<meta name="robots" content="noindex">` em todas as páginas e
   `X-Robots-Tag: noindex` em todas as respostas. O `robots.txt` nunca bloqueia
   a leitura; ligado, aponta o `sitemap.xml` (hoje só as quatro páginas fixas).
 - Canônico em cada página, a partir de `NEXT_PUBLIC_SITE_URL`.
 - O layout raiz **não chama o Engine** (SPEC-SITE §1.6). O header ainda é o de
   antes; o redesenho é a próxima trilha (design).
+
+### Publicação da migração
+
+- Sobem junto com a migração as mudanças de CSS, paralaxe e fichas dos
+  convidados da Rustichella que já estavam na branch antes dela (commits
+  `0d15290` e `6ed4c87`; o texto de exemplo ficou guardado em
+  `nicolini/guardado-11-11` e não sobe).
+- O `vercel.json` desta branch fixa `"framework": "nextjs"`. **Não troque o
+  preset do projeto na Vercel** (hoje Vite) enquanto existirem as branches
+  `claude/menu-v2` e `claude/menu-staging`: elas são Vite, sem `framework` no
+  `vercel.json`, e passariam a falhar.
+- As prévias do projeto exigem login da Vercel (proteção de deployment).
 
 ### CSS por área (`src/styles/`)
 
@@ -96,6 +119,10 @@ latin-ext, licença OFL ao lado). Nenhuma das quatro páginas pede nada a
 do Google e o app `/menu/` (fora desta troca).
 
 ## Histórico
+
+**21/09/2026 — Reservas R2 publicadas e validadas** (código `5527fa3`,
+deployment `dpl_8LHm4g1U7XVpdxHKhcJ9YEPixYW6`). Evidências e operação em
+`Capilano Engines/restaurantes/docs/STATUS.md`.
 
 **13/10/2026 — Skin de reservas publicada:** código
 `ae7509ac3d47c3cd18b48408e7ce5d1ed102e0ab`, deployment
@@ -208,10 +235,14 @@ Um único projeto (Next desde 11/11/2026; antes React/Vite) com quatro frentes:
 
 ## Conteúdo e fotografia
 
-Textos, endereço, horários, telefone e CNPJ são **mockup**. Muitas fotos vieram do
-acervo do e-commerce e servem como referência de enquadramento, não como arte
-final. Substituir tudo antes de publicar. O item "Blog" do menu leva a uma seção
-da home; ainda não existe como rota própria (o blog de verdade vem pelo plano do site).
+O site está no ar com estes textos e fotos. Endereço, CNPJ e razão social vêm
+de registros públicos; horários, telefone e WhatsApp do Bistrô seguem
+marcados como provisórios em `src/data/`. Pedro edita no ar, e a troca do
+conteúdo fixo pela entrega da casa do Engine não é desta frente. Na landing
+`/rustichella`, o que ainda é provisório está marcado `// MOCKUP` e `CONFIRMAR`
+em `src/data/rustichella.js` (preço "R$ 000", nota de pagamento, modo de
+serviço, horário de chegada). O item "Blog" do menu leva a uma seção da home;
+ainda não existe como rota própria (o blog de verdade vem pelo plano do site).
 
 **Atualização editorial (21/09/2026):** o primeiro parágrafo abaixo do título em
 `/rustichella` e `/bistro/rustichella` foi atualizado para o texto aprovado pelo

@@ -14,11 +14,10 @@ export const metadata: Metadata = {
 
 export default function NaoEncontrada() {
   return (
-    /* Props explícitas: o TypeScript infere os tipos dos componentes JSX sem os padrões. */
-    <Layout tema={undefined} nav={undefined}>
+    <Layout>
       <section className="band band--paper page-top">
         <div className="wrap">
-          <Reveal className={undefined}>
+          <Reveal>
             <p className="eyebrow">Página não encontrada</p>
             <h1>
               Este endereço

@@ -88,13 +88,15 @@ export function CasaFotos({
     <figure className={`casa__figure ${className}`}>
       <div className="casa-fotos__quadro">
         <div className="casa-fotos" ref={trilho} role="group" aria-label={rotulo}>
-          {fotos.map((foto, posicao) => (
+          {fotos.map((foto) => (
             <img
               key={foto.src}
               src={foto.src}
               alt={foto.alt}
-              /* A primeira abre a secao; as outras so quando o trilho anda. */
-              loading={posicao === 0 ? 'eager' : 'lazy'}
+              /* Todas adiadas: o trilho nunca esta na primeira dobra (na home
+               * vem depois do hero), e foto adiada nao entra na pre-carga do
+               * servidor. O navegador busca a primeira ao se aproximar. */
+              loading="lazy"
               style={foto.foco ? { objectPosition: foto.foco } : undefined}
               draggable="false"
             />

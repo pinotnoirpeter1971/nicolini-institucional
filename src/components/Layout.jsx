@@ -289,7 +289,9 @@ function WhatsappFab() {
  * por isso a classe fica em volta dos tres e nao so do `main`. O resto do
  * sistema (tipografia, grade, componentes) nao muda: ver `.tema--bistro`.
  */
-export function Layout({ overlay = false, tema, nav, ancorasLocais = false, children }) {
+/* `tema` e `nav` sao opcionais; o padrao explicito deixa isso claro tambem
+ * para o TypeScript, que infere os tipos deste arquivo JSX. */
+export function Layout({ overlay = false, tema = undefined, nav = undefined, ancorasLocais = false, children }) {
   const pathname = usePathname();
 
   /* O Next nao expoe o hash como estado de rota; ele e lido na hora, a cada

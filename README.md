@@ -22,22 +22,27 @@ O plano em andamento (blog, eventos, produtos e pedido sem pagamento) está em
 
 Tudo a partir desta pasta. A pasta de cima (`Site Nicolini/`) tem um
 `package.json` de workspaces que **não** é deste repositório; por isso o
-`--workspaces=false` na instalação (a Vercel instala só esta pasta).
+`--workspaces=false` em todo comando npm (a Vercel instala só esta pasta e não precisa dele).
 
 ```bash
-npm ci --workspaces=false      # instala pelo package-lock.json
-npm run dev                    # laboratório: next dev em 0.0.0.0:5183 (abre na rede)
-npm run build                  # next build: as páginas saem estáticas
-npm run start                  # next start em 5183, para conferir o build
+npm ci --workspaces=false              # instala pelo package-lock.json
+npm run dev --workspaces=false         # laboratório: next dev em 0.0.0.0:5183 (abre na rede)
+npm run build --workspaces=false       # next build: as páginas saem estáticas
+npm test --workspaces=false            # build + teste do contrato de endereços
+npm run test:rotas --workspaces=false  # só o teste, sobre o build que já existe
+npm run start --workspaces=false       # next start em 5183, para conferir o build
 ```
 
-Use `./node_modules/.bin/next …` (e não `npx next`) se precisar de outra porta:
-o `npx` tenta ler os workspaces da pasta de cima e falha.
+Sem `--workspaces=false`, o npm desta pasta lê os workspaces de `Site Nicolini/`
+e falha (os worktrees `institucional-menu-*` repetem o nome do pacote). Para
+outra porta, use `./node_modules/.bin/next …` (o `npx` tem o mesmo problema).
+Só um `next dev` roda por pasta: o laboratório da 5183 ocupa este checkout.
 
 ## Onde fica cada coisa
 
 | O quê | Onde |
 | --- | --- |
+| Teste do contrato de endereços | `scripts/testar-rotas.mjs` |
 | Rotas | `app/` (`page.tsx`, `a-loja/`, `bistro/`, `rustichella/`, `not-found.tsx`, `robots.ts`, `sitemap.ts`) |
 | Layout raiz, metadados globais e ordem do CSS | `app/layout.tsx` |
 | Metadados por página (título, descrição, imagem, canônico) | `src/metadados.ts` |
@@ -56,5 +61,5 @@ Todas têm padrão no código; nenhuma é obrigatória.
 | Variável | Padrão | Para quê |
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | `https://www.emporionicolini.com.br` | Origem pública: canônico, sitemap, imagens de compartilhamento |
-| `NEXT_PUBLIC_SITE_INDEXAVEL` | ligada | Chave única de indexação. `false` ou `0` põe `noindex` em tudo; o `robots.txt` nunca bloqueia |
+| `NEXT_PUBLIC_SITE_INDEXAVEL` | ligada | Chave única de indexação. `false` ou `0` põe `noindex` em tudo; o `robots.txt` nunca bloqueia. Só aceita ausente, `true`, `1`, `false`, `0`: outro valor derruba o build |
 | `NEXT_PUBLIC_ENGINE_URL` | `https://capilano-restaurant-engines.vercel.app` | Destino do repasse `/menu-engine/...` |

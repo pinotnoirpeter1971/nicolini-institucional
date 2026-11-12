@@ -7,7 +7,7 @@ import { useEffect, useRef } from 'react';
  * O threshold e zero com margem negativa embaixo para que blocos mais altos
  * que a tela tambem apareçam — threshold alto nunca dispara nesses casos.
  */
-export function Reveal({ as: Tag = 'div', delay = 0, className, children, ...rest }) {
+export function Reveal({ as: Tag = 'div', delay = 0, className = undefined, children, ...rest }) {
   const ref = useRef(null);
 
   useEffect(() => {

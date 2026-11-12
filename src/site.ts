@@ -4,18 +4,27 @@
  *
  * - NEXT_PUBLIC_SITE_URL: origem pública, base dos endereços canônicos, do
  *   sitemap e das imagens de compartilhamento.
- * - NEXT_PUBLIC_SITE_INDEXAVEL: a chave única de indexação. Ligada (padrão),
- *   o site é indexável e o robots.txt aponta o sitemap. Desligada ("false" ou
- *   "0"), todas as páginas levam noindex; o robots.txt continua liberando a
- *   leitura, para o buscador conseguir ler o noindex.
+ * - NEXT_PUBLIC_SITE_INDEXAVEL: a chave única de indexação. Ausente, "true" ou
+ *   "1": indexável (o padrão, como sempre foi), e o robots.txt aponta o sitemap.
+ *   "false" ou "0": todas as páginas levam noindex; o robots.txt continua
+ *   liberando a leitura, para o buscador conseguir ler o noindex. Qualquer
+ *   outro valor derruba o build: um erro de digitação não pode deixar o site
+ *   indexável (ou fora do Google) por engano.
  * - NEXT_PUBLIC_ENGINE_URL: endereço do Restaurants Engine, para onde o
  *   /menu-engine/... é repassado. Vai trocar com a mudança de domínio do Engine.
  */
 export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.emporionicolini.com.br').replace(/\/+$/, '');
 
-export const indexavel = !['false', '0', 'nao', 'não', 'off'].includes(
-  (process.env.NEXT_PUBLIC_SITE_INDEXAVEL || '').trim().toLowerCase(),
-);
+function lerChaveDeIndexacao(valor: string | undefined): boolean {
+  const v = (valor ?? '').trim();
+  if (v === '' || v === 'true' || v === '1') return true;
+  if (v === 'false' || v === '0') return false;
+  throw new Error(
+    `NEXT_PUBLIC_SITE_INDEXAVEL="${v}" não é um valor conhecido. Use "true" ou "1" (indexável), "false" ou "0" (noindex), ou deixe a variável vazia (indexável).`,
+  );
+}
+
+export const indexavel = lerChaveDeIndexacao(process.env.NEXT_PUBLIC_SITE_INDEXAVEL);
 
 export const engineUrl = (process.env.NEXT_PUBLIC_ENGINE_URL || 'https://capilano-restaurant-engines.vercel.app').replace(/\/+$/, '');
 
