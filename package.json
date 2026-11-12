@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start --port 5183",
     "test:rotas": "node scripts/testar-rotas.mjs",
-    "test": "next build && node scripts/testar-rotas.mjs"
+    "test:catalogo": "node scripts/testar-catalogo.mjs",
+    "test": "next build && node scripts/testar-rotas.mjs && node scripts/testar-catalogo.mjs"
   },
   "dependencies": {
     "next": "16.4.3",

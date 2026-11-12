@@ -2,12 +2,18 @@
  * A camada única entre as páginas e o Engine, no servidor (SPEC-SITE §3.1).
  * Nenhuma página chama o Engine por conta própria: passa por aqui.
  *
- * Hoje: no laboratório (`next dev`), responde com os dados simulados; no build
- * de produção os módulos estão apagados (src/menu-do-site.ts) e as páginas dão
- * 404 antes de chegar aqui. ETAPA 3: trocar o ramo de produção de `api()` pelo
- * SDK (`./sdk-0.7.0/index.js`, mesmas funções e tipos), com o índice para o
- * 404 barato e o tempo limite do SPEC-SITE §3.3. As páginas não mudam.
+ * Produtos (Etapa 3, catálogo): lê do Engine pelo SDK, com tempo limite, o
+ * índice e as categorias guardados por 60 s e compartilhados (404 barato,
+ * SPEC-SITE §3.3). Só o laboratório (`next dev`) responde com dados simulados,
+ * e só se `NEXT_PUBLIC_SITE_DADOS` não for `engine` (com `engine`, o `next dev`
+ * lê o Engine de verdade, como o build). Módulo desligado (404 do Engine) vira
+ * `null`/lista vazia: a página dá 404.
+ *
+ * Blog e eventos seguem como estavam (`api()`, simulado no laboratório); a
+ * trilha deles troca o ramo de produção.
  */
+import { unstable_cache } from 'next/cache';
+import { cache } from 'react';
 import type {
   BlogCategoryData,
   BlogIndexEntry,
@@ -18,6 +24,13 @@ import type {
   PublicProductData,
   PublicProductIndexEntry,
   PublicProductPageData,
+} from './sdk-0.7.0/index.js';
+import {
+  RestaurantsPublicError,
+  fetchPublicProduct,
+  fetchPublicProductCategories,
+  fetchPublicProductIndex,
+  fetchPublicProducts,
 } from './sdk-0.7.0/index.js';
 import { casaNoEngine, engineUrl, laboratorio } from '../site';
 
@@ -45,24 +58,84 @@ export async function cenarioDoLaboratorio(searchParams: Promise<Record<string, 
 /** Itens por página na grade da categoria; o resto entra pelo "ver mais". */
 export const PRODUTOS_POR_PAGINA = 12;
 
-export async function categoriasDeProdutos(): Promise<PublicProductCategoryData[]> {
-  return (await api()).fetchPublicProductCategories(base);
+/* No laboratório com dados simulados (o padrão do `next dev`). A condição
+ * precisa estar escrita aqui para o build de produção cortar o import. */
+async function simulado(): Promise<Simulado | null> {
+  if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_SITE_DADOS !== 'engine') return import('./simulado/servidor');
+  return null;
+}
+
+const TEMPO_LIMITE_MS = 5000;
+const sinal = () => AbortSignal.timeout(TEMPO_LIMITE_MS);
+
+/* Módulo desligado ou casa inexistente: o Engine responde 404. */
+async function ou404<T>(leitura: Promise<T>): Promise<T | null> {
+  try {
+    return await leitura;
+  } catch (erro) {
+    if (erro instanceof RestaurantsPublicError && erro.status === 404) return null;
+    throw erro;
+  }
+}
+
+/* O build não depende do Engine (SPEC-SITE §3.3): se ele não responder durante
+ * o build, a página nasce como "módulo desligado" e se refaz na primeira
+ * visita depois de 60 s. Em execução o erro sobe: a página mantém a última
+ * versão boa e o erro não é guardado. */
+async function tolerandoOBuild<T>(leitura: Promise<T | null>): Promise<T | null> {
+  try {
+    return await leitura;
+  } catch (erro) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') return null;
+    throw erro;
+  }
+}
+
+const chaveDoCache = [engineUrl, casaNoEngine];
+
+/* Uma chamada por minuto, para todas as páginas e visitantes. */
+const categoriasEmCache = unstable_cache(
+  () => ou404(fetchPublicProductCategories({ ...base, signal: sinal() })),
+  ['produtos-categorias', ...chaveDoCache],
+  { revalidate: 60 },
+);
+const indiceEmCache = unstable_cache(
+  () => ou404(fetchPublicProductIndex({ ...base, signal: sinal() })),
+  ['produtos-indice', ...chaveDoCache],
+  { revalidate: 60 },
+);
+
+/** As categorias com produto no ar, ou `null` se o módulo Produtos está desligado. */
+export async function categoriasDeProdutos(): Promise<PublicProductCategoryData[] | null> {
+  const s = await simulado();
+  if (s) return s.fetchPublicProductCategories(base);
+  return tolerandoOBuild(categoriasEmCache());
 }
 
 export async function produtos(
   filtro: { category?: string; featured?: boolean; cursor?: string | null; limit?: number },
   cenario?: Cenario,
 ): Promise<PublicProductPageData> {
-  return (await api()).fetchPublicProducts({ ...base, ...filtro }, cenario);
+  const s = await simulado();
+  if (s) return s.fetchPublicProducts({ ...base, ...filtro }, cenario);
+  /* O `?simular=vazio` só chega aqui no laboratório (em produção `cenario` é sempre vazio). */
+  if (cenario?.vazio) return { items: [], nextCursor: null };
+  return fetchPublicProducts({ ...base, ...filtro, signal: sinal() });
 }
 
-export async function produto(slug: string): Promise<PublicProductData | null> {
-  return (await api()).fetchPublicProduct({ ...base, slug });
-}
+/* O índice é a porta do 404 barato: slug que não está nele não chega ao Engine. */
+export const indiceDeProdutos = cache(async (): Promise<PublicProductIndexEntry[]> => {
+  const s = await simulado();
+  if (s) return s.fetchPublicProductIndex(base);
+  return (await tolerandoOBuild(indiceEmCache())) ?? [];
+});
 
-export async function indiceDeProdutos(): Promise<PublicProductIndexEntry[]> {
-  return (await api()).fetchPublicProductIndex(base);
-}
+export const produto = cache(async (slug: string): Promise<PublicProductData | null> => {
+  const s = await simulado();
+  if (s) return s.fetchPublicProduct({ ...base, slug });
+  if (!(await indiceDeProdutos()).some((p) => p.slug === slug)) return null;
+  return fetchPublicProduct({ ...base, slug, signal: sinal() });
+});
 
 /* ── Blog e eventos ───────────────────────────────────────────────────────── */
 

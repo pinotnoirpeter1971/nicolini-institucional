@@ -1,21 +1,23 @@
 import { notFound } from 'next/navigation';
 import { metadadosDaPagina } from '../../../../src/metadados';
-import { modulos } from '../../../../src/menu-do-site';
 import { indiceDeProdutos, produto as lerProduto, produtos } from '../../../../src/engine/fonte';
 import { PaginaDoProduto } from '../../../../src/paginas/Produtos';
+import { dadosEstruturadosDoProduto } from '../../../../src/ui/DadosEstruturados';
 
 type Props = { params: Promise<{ slug: string }> };
 
-/* Ver a categoria: mesma regra (404 estático com o módulo apagado). */
-export const dynamicParams = false;
+/*
+ * Guardada por 60 s. Os produtos do índice nascem no build; os demais, na
+ * primeira visita, mas `lerProduto` só vai ao Engine se o slug estiver no
+ * índice (guardado e compartilhado): endereço inventado é 404 sem chamada nova.
+ */
+export const revalidate = 60;
 
 export async function generateStaticParams() {
-  if (!modulos.produtos) return [];
   return (await indiceDeProdutos()).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: Props) {
-  if (!modulos.produtos) return {};
   const p = await lerProduto((await params).slug);
   if (!p) return {};
   const foto = p.photos[0];
@@ -28,9 +30,13 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function Pagina({ params }: Props) {
-  if (!modulos.produtos) notFound();
   const p = await lerProduto((await params).slug);
   if (!p) notFound();
   const vizinhos = await produtos({ category: p.categorySlug, limit: 5 });
-  return <PaginaDoProduto produto={p} relacionados={vizinhos.items.filter((x) => x.id !== p.id).slice(0, 4)} />;
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: dadosEstruturadosDoProduto(p) }} />
+      <PaginaDoProduto produto={p} relacionados={vizinhos.items.filter((x) => x.id !== p.id).slice(0, 4)} />
+    </>
+  );
 }

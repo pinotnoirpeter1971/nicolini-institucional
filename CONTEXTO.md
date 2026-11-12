@@ -24,6 +24,14 @@
   build de produção os módulos estão apagados: o site no ar continua com as
   quatro páginas. Detalhes, escolhas e aceite na seção
   [Design do site](#design-do-site-etapa-2-12112026).
+- **Catálogo ligado ao Engine (Etapa 3, trilha `nicolini/site-catalogo`):**
+  Produtos, categoria e produto leem do Engine pelo SDK (`src/engine/fonte.ts`),
+  guardados por 60 s (ISR), com índice e categorias em cache compartilhado (404
+  barato). Módulo desligado no Engine: as páginas dão 404 e o sitemap não traz
+  produtos, sem deploy. O item no menu continua configuração (`modulos.produtos`
+  em `src/menu-do-site.ts`) e acende na ativação. `NEXT_PUBLIC_SITE_DADOS=engine`
+  faz o `next dev` ler o Engine em vez do simulado. Teste: `npm run test:catalogo`
+  (precisa do staging em `ENGINE_STAGING`, padrão `http://127.0.0.1:3280`).
 - Como rodar, onde fica cada coisa e as variáveis públicas: [`README.md`](README.md).
 
 ### Rotas e o que não pode quebrar (`next.config.ts`)

@@ -16,6 +16,7 @@ import type {
   PublicProductCardData,
   PublicProductPageData,
 } from './sdk-0.7.0/index.js';
+import { fetchPublicProducts } from './sdk-0.7.0/index.js';
 import { casaNoEngine, engineUrl } from '../site';
 
 type Simulado = typeof import('./simulado/navegador');
@@ -30,7 +31,9 @@ async function api(): Promise<Simulado> {
 const base = { apiBaseUrl: engineUrl, restaurantKey: casaNoEngine };
 
 export async function maisProdutos(filtro: { category?: string; featured?: boolean; cursor: string; limit?: number }): Promise<PublicProductPageData> {
-  return (await api()).fetchPublicProducts({ ...base, ...filtro });
+  /* Dados simulados só no `next dev` (padrão); em produção, direto no Engine. */
+  if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_SITE_DADOS !== 'engine') return (await api()).fetchPublicProducts({ ...base, ...filtro });
+  return fetchPublicProducts({ ...base, ...filtro });
 }
 
 export async function maisMaterias(filtro: { kind: BlogPostKind; category?: string; when?: 'upcoming' | 'past'; cursor: string; limit?: number }): Promise<BlogPostsPage> {

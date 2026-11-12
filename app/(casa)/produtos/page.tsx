@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation';
 import { metadadosDaPagina } from '../../../src/metadados';
-import { modulos } from '../../../src/menu-do-site';
 import { categoriasDeProdutos, produtos } from '../../../src/engine/fonte';
 import { PaginaDeProdutos } from '../../../src/paginas/Produtos';
 
-/* Módulo apagado (hoje, em produção): 404 já no build, sem chamada nenhuma.
- * ETAPA 3: `export const revalidate = 60` ao ligar ao Engine. */
+/* Página guardada por 60 s (SPEC-SITE §3.2). Módulo desligado: o Engine
+ * responde 404 e a página repassa. */
+export const revalidate = 60;
+
 export const metadata = metadadosDaPagina({
   caminho: '/produtos',
   titulo: 'Produtos',
@@ -13,7 +14,8 @@ export const metadata = metadadosDaPagina({
 });
 
 export default async function Pagina() {
-  if (!modulos.produtos) notFound();
-  const [categorias, destaques] = await Promise.all([categoriasDeProdutos(), produtos({ featured: true, limit: 8 })]);
+  const categorias = await categoriasDeProdutos();
+  if (!categorias) notFound();
+  const destaques = categorias.length ? await produtos({ featured: true, limit: 8 }) : { items: [] };
   return <PaginaDeProdutos categorias={categorias} destaques={destaques.items} />;
 }
