@@ -30,19 +30,28 @@ const quemPodeEmbutir = [
 ];
 
 /*
- * Os quatro endereços fixos e o /menu/ com outra caixa (/Rustichella, como
- * sai digitado no impresso e na bio) redirecionam para o endereço certo. Exige
- * rotas sensíveis à caixa (experimental.caseSensitiveRoutes, abaixo): sem
- * isso o Next casa as regras sem diferenciar maiúsculas e /rustichella
- * redirecionaria para si mesmo.
+ * Endereços com outra caixa (/Rustichella, como sai digitado no impresso e na
+ * bio). Na Vercel as regras daqui casam SEM diferenciar maiúsculas (o
+ * caseSensitiveRoutes do Next não chega ao roteamento de lá), mas os arquivos
+ * estáticos diferenciam. Um redirect /Rustichella → /rustichella casaria
+ * também o próprio /rustichella e daria laço. Por isso:
+ * - as páginas fixas recebem um rewrite para a própria página em minúsculas
+ *   (afterFiles: só vale quando o endereço exato não existe; a página já tem
+ *   canônico em minúsculas);
+ * - /menu (sem barra), em qualquer caixa, redireciona para /menu/;
+ * - /MENU/ e afins não podem redirecionar para /menu/ (laço no casamento sem
+ *   caixa): servem o app por rewrite, e os arquivos dele (./css, ./js) também.
+ * As classes [Rr]… fazem cada regra casar igual nos dois casamentos (com e sem
+ * diferença de caixa). O teste (scripts/testar-rotas.mjs) simula os dois sobre
+ * o routes-manifest.
  */
-function semDiferencaDeCaixa(trecho: string) {
+function qualquerCaixa(trecho: string) {
   return [...trecho].map((c) => (/[a-z]/.test(c) ? `[${c.toUpperCase()}${c}]` : c)).join('');
 }
-const caixaErrada = (pagina: string, destino: string) => ({
-  source: `/:pagina((?!${pagina}/?$)${semDiferencaDeCaixa(pagina)})`,
-  destination: destino,
-  permanent: true,
+const MENU = qualquerCaixa('menu');
+const mesmaPagina = (pagina: string) => ({
+  source: `/:pagina(${qualquerCaixa(pagina)})`,
+  destination: `/${pagina}`,
 });
 
 /* Só em build de produção (prévia e produção na Vercel, next start). No
@@ -54,7 +63,6 @@ const nextConfig: NextConfig = {
    * deste repositório; a raiz do projeto é esta pasta. */
   turbopack: { root: process.cwd() },
   skipTrailingSlashRedirect: true,
-  experimental: { caseSensitiveRoutes: true },
   /* Laboratório (next dev) aberto por 127.0.0.1 e pelo celular no Wi-Fi: sem
    * isto o Next recusa os recursos de desenvolvimento a essas origens e a
    * página não hidrata (o menu não abre). Só o nome do host conta; `*` vale
@@ -74,35 +82,38 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       /* O Next aceita barra opcional no fim de toda regra; a espiada (?!/)
-       * impede esta de casar com o próprio /menu/. */
-      { source: '/:menu(menu(?!/))', destination: '/menu/', permanent: true },
+       * impede esta de casar com o próprio /menu/ (em qualquer caixa). */
+      { source: `/:menu(${MENU}(?!/))`, destination: '/menu/', permanent: true },
       { source: '/bistro/reservas', destination: '/menu/#/reserva', permanent: false },
       { source: '/bistro/menu', destination: '/menu/', permanent: false },
       { source: '/bistro/rustichella', destination: '/rustichella', permanent: true },
       /* Endereços que circulam fora do site. */
       { source: '/rustichella.html', destination: '/rustichella', permanent: true },
       { source: '/index.html', destination: '/', permanent: true },
-      caixaErrada('rustichella', '/rustichella'),
-      caixaErrada('bistro', '/bistro'),
-      caixaErrada('a-loja', '/a-loja'),
-      caixaErrada('menu', '/menu/'),
-      /* Barra final: só /menu/ fica com ela. O primeiro caractere do trecho
-       * não pode ser / nem \ : com //exemplo.com/ o destino viraria
-       * //exemplo.com, um redirect para fora do site. */
-      { source: '/:caminho((?!menu/?$)[^/\\\\].*)/', destination: '/:caminho', permanent: true },
+      /* Barra final: só /menu/ (em qualquer caixa) fica com ela. O primeiro
+       * caractere do trecho não pode ser / nem \ : com //exemplo.com/ o
+       * destino viraria //exemplo.com, um redirect para fora do site. */
+      { source: `/:caminho((?!${MENU}/?$)[^/\\\\].*)/`, destination: '/:caminho', permanent: true },
     ];
   },
 
   async rewrites() {
     return {
       beforeFiles: [
-        { source: '/menu/', destination: '/menu/index.html' },
+        { source: `/:menu(${MENU})/`, destination: '/menu/index.html' },
         {
           source: '/menu-engine/api/v1/public/restaurants/nicolini',
           destination: `${engineUrl}/api/v1/public/restaurants/nicolini`,
         },
       ],
-      afterFiles: [],
+      /* Só quando o endereço exato não é página nem arquivo: o caminho em
+       * minúsculas nunca passa por aqui. */
+      afterFiles: [
+        mesmaPagina('rustichella'),
+        mesmaPagina('bistro'),
+        mesmaPagina('a-loja'),
+        { source: `/:menu(${MENU})/:arquivo+`, destination: '/menu/:arquivo+' },
+      ],
       fallback: [],
     };
   },

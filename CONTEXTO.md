@@ -31,21 +31,33 @@
 | `/bistro/rustichella` | 308 → `/rustichella` |
 | `/rustichella.html` (impresso, bio) | 308 → `/rustichella` |
 | `/index.html` | 308 → `/` |
-| `/Rustichella`, `/Bistro`, `/A-Loja`, `/Menu` (qualquer outra caixa) | 308 → o endereço em minúsculas (`/menu/` com a barra) |
+| `/Rustichella`, `/RUSTICHELLA`, `/Bistro`, `/A-Loja` (qualquer outra caixa) | 200 com a própria página (rewrite para o endereço em minúsculas; o canônico é o em minúsculas). Com barra final, primeiro 308 → sem a barra |
+| `/Menu`, `/MENU` (sem barra, qualquer caixa) | 308 → `/menu/` |
+| `/Menu/`, `/MENU/` (com barra, outra caixa) | 200 com o app de `public/menu` e os arquivos dele (`/MENU/css/…` por rewrite), sem redirect: um redirect para `/menu/` daria laço na Vercel |
 | qualquer página com barra final (exceto `/menu/`) | 308 → sem a barra (nenhuma página com dois endereços). Caminho que começa com `//` ou `/\` não casa: seria redirect para fora do site |
 | endereço inexistente | 404 de verdade (`app/not-found.tsx`); antes caía na home |
 
 O redirect automático de barra do Next está desligado
 (`skipTrailingSlashRedirect`) e o site faz os seus em `redirects()`, que na
 Vercel viram regra de roteamento, não função. `public/menu` não se edita para
-"consertar" barra. As regras são sensíveis à caixa
-(`experimental.caseSensitiveRoutes`): sem isso o Next as casa sem diferenciar
-maiúsculas, e `/Rustichella → /rustichella` viraria laço.
+"consertar" barra.
+
+**Caixa (12/11/2026).** Na Vercel as regras do `next.config.ts` casam **sem
+diferenciar maiúsculas** (o `experimental.caseSensitiveRoutes` não chega ao
+roteamento de lá; por isso saiu), mas os arquivos estáticos diferenciam. Um
+redirect `/Rustichella → /rustichella` casaria também `/rustichella` e daria
+laço. Por isso as páginas fixas em outra caixa abrem por rewrite (`afterFiles`,
+só quando o endereço exato não existe) e cada regra é escrita com classes
+(`[Rr][Uu]…`) para casar igual com e sem diferença de caixa. O `next start`
+local também casa sem diferenciar, como a Vercel; o teste ainda simula os dois
+casamentos sobre o `routes-manifest.json`.
 
 **Teste do contrato:** `npm test --workspaces=false` (build + teste) ou, com
 build pronto, `npm run test:rotas --workspaces=false`
 (`scripts/testar-rotas.mjs`, Node puro). Sobe `next start` numa porta livre,
-confere esta tabela, os cabeçalhos, o `robots.txt` e o `sitemap.xml`, e
+confere esta tabela, os cabeçalhos, o `robots.txt` e o `sitemap.xml`, simula o
+roteamento da Vercel sobre o `routes-manifest.json` (com e sem diferença de
+caixa, acusando laço) e
 encerra. Mudou um endereço, mude a tabela e o teste juntos.
 
 ### Cabeçalhos e indexação

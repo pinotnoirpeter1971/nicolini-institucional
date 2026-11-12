@@ -10,7 +10,7 @@
  * é um 404 do site.
  */
 import { spawn } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { request } from 'node:http';
 import { createServer } from 'node:net';
 import { dirname, join } from 'node:path';
@@ -101,6 +101,134 @@ async function semRedirectAberto(caminho) {
 
 const meta = (html, re) => (html.match(re) || [])[1];
 
+/* Endereço em outra caixa que abre a página por rewrite: 200, sem redirect, com o canônico em minúsculas. */
+async function pagina_(caminho, canonicoEsperado) {
+  const r = await pedir(caminho);
+  const canonico = meta(r.corpo, /<link rel="canonical" href="([^"]+)"/) || '';
+  conferir(
+    `${caminho} → 200 com a página ${canonicoEsperado}`,
+    r.status === 200 && !r.headers.location && new URL(canonico || 'http://x/').pathname === canonicoEsperado,
+    `veio ${r.status} ${r.headers.location ?? ''} canônico ${canonico}`,
+  );
+}
+
+/*
+ * A Vercel casa as regras do routes-manifest SEM diferenciar maiúsculas, mas os
+ * arquivos estáticos (as páginas prontas e public/) diferenciam. O next start
+ * local não reproduz isso inteiro (no macOS o disco também não diferencia), então
+ * o roteamento é simulado aqui sobre o manifesto, com e sem a flag `i`:
+ * redirects (o primeiro que casa, seguido até o fim, acusando laço), depois os
+ * rewrites beforeFiles, os arquivos (com diferença de caixa) e os afterFiles.
+ */
+function simularRoteamento() {
+  const manifesto = JSON.parse(readFileSync(join(raiz, '.next', 'routes-manifest.json'), 'utf8'));
+  const { redirects, rewrites } = manifesto;
+  const antes = Array.isArray(rewrites) ? [] : rewrites.beforeFiles;
+  const depois = Array.isArray(rewrites) ? rewrites : rewrites.afterFiles;
+  const paginas = new Set(['/', '/a-loja', '/bistro', '/rustichella']);
+  const publicos = new Set();
+  const listar = (dir, prefixo) => {
+    for (const item of readdirSync(dir, { withFileTypes: true })) {
+      const caminho = `${prefixo}/${item.name}`;
+      if (item.isDirectory()) listar(join(dir, item.name), caminho);
+      else publicos.add(caminho);
+    }
+  };
+  listar(join(raiz, 'public'), '');
+  const existe = (c) => paginas.has(c) || publicos.has(c);
+
+  /* Troca :nome (e :nome+ / :nome*) do destino pelo grupo de mesmo número na fonte. */
+  const destino = (regra, m) => {
+    const nomes = [...regra.source.matchAll(/:([A-Za-z_]\w*)/g)].map((x) => x[1]);
+    return regra.destination.replace(/:([A-Za-z_]\w*)[+*?]?/g, (_, nome) => m[nomes.indexOf(nome) + 1] ?? '');
+  };
+  const casar = (regras, caminho, flags) => {
+    for (const regra of regras) {
+      if (regra.internal) continue;
+      const m = new RegExp(regra.regex, flags).exec(caminho);
+      if (m) return { regra, para: destino(regra, m) };
+    }
+    return null;
+  };
+
+  function resolver(caminho, flags) {
+    const vistos = [caminho];
+    let atual = caminho;
+    for (let i = 0; i < 8; i++) {
+      const r = casar(redirects, atual, flags);
+      if (!r) break;
+      const proximo = r.para.split('#')[0];
+      if (vistos.includes(proximo)) return { laco: [...vistos, proximo] };
+      vistos.push(proximo);
+      atual = proximo;
+    }
+    if (vistos.length > 4) return { laco: vistos };
+    let alvo = atual;
+    const a = casar(antes, alvo, flags);
+    if (a) alvo = a.para;
+    if (!existe(alvo)) {
+      const d = casar(depois, alvo, flags);
+      if (d) alvo = d.para;
+    }
+    return { redirects: vistos.slice(1), alvo, existe: existe(alvo) };
+  }
+
+  /* [endereço pedido, onde a barra de endereço termina, o que é servido] */
+  const casos = [
+    ['/', '/', '/'],
+    ['/rustichella', '/rustichella', '/rustichella'],
+    ['/Rustichella', '/Rustichella', '/rustichella'],
+    ['/RUSTICHELLA', '/RUSTICHELLA', '/rustichella'],
+    ['/RUSTICHELLA/', '/RUSTICHELLA', '/rustichella'],
+    ['/rustichella/', '/rustichella', '/rustichella'],
+    ['/bistro', '/bistro', '/bistro'],
+    ['/Bistro', '/Bistro', '/bistro'],
+    ['/BISTRO/', '/BISTRO', '/bistro'],
+    ['/a-loja', '/a-loja', '/a-loja'],
+    ['/A-Loja', '/A-Loja', '/a-loja'],
+    ['/A-LOJA', '/A-LOJA', '/a-loja'],
+    ['/menu', '/menu/', '/menu/index.html'],
+    ['/Menu', '/menu/', '/menu/index.html'],
+    ['/MENU', '/menu/', '/menu/index.html'],
+    ['/menu/', '/menu/', '/menu/index.html'],
+    ['/Menu/', '/Menu/', '/menu/index.html'],
+    ['/MENU/', '/MENU/', '/menu/index.html'],
+    ['/menu/css/app.css', '/menu/css/app.css', '/menu/css/app.css'],
+    ['/MENU/css/app.css', '/MENU/css/app.css', '/menu/css/app.css'],
+    ['/Menu/js/app.js', '/Menu/js/app.js', '/menu/js/app.js'],
+    ['/bistro/rustichella', '/rustichella', '/rustichella'],
+    ['/rustichella.html', '/rustichella', '/rustichella'],
+    ['/index.html', '/', '/'],
+  ];
+  /* Só no casamento sem caixa (o da Vercel) estas também acertam. */
+  const soSemCaixa = [
+    ['/Bistro/Rustichella', '/rustichella', '/rustichella'],
+    ['/Rustichella.html', '/rustichella', '/rustichella'],
+    ['/BISTRO/MENU', '/menu/', '/menu/index.html'],
+  ];
+  for (const flags of ['', 'i']) {
+    const nome = flags ? 'sem diferença de caixa' : 'com diferença de caixa';
+    for (const [pedido, barra, servido] of flags ? [...casos, ...soSemCaixa] : casos) {
+      const r = resolver(pedido, flags);
+      if (r.laco) {
+        conferir(`[${nome}] ${pedido} sem laço`, false, r.laco.join(' → '));
+        continue;
+      }
+      const fim = r.redirects.at(-1) ?? pedido;
+      conferir(
+        `[${nome}] ${pedido} → ${barra === pedido ? '' : `${barra}, `}serve ${servido}`,
+        fim === barra && r.alvo === servido && r.existe,
+        `terminou em ${fim} servindo ${r.alvo}${r.existe ? '' : ' (não existe)'}`,
+      );
+    }
+    /* Nenhum redirect volta a casar o próprio destino: destino fixo não redireciona de novo. */
+    for (const regra of redirects.filter((x) => !x.internal && !x.destination.includes(':'))) {
+      const alvo = regra.destination.split('#')[0];
+      conferir(`[${nome}] destino ${alvo} de ${regra.source} não redireciona`, !casar(redirects, alvo, flags));
+    }
+  }
+}
+
 try {
   await esperarNoAr();
   console.log(`next start em 127.0.0.1:${porta}\n`);
@@ -145,11 +273,21 @@ try {
   await redirect('/bistro/rustichella', 308, '/rustichella');
   await redirect('/rustichella.html', 308, '/rustichella');
   await redirect('/index.html', 308, '/');
-  await redirect('/Rustichella', 308, '/rustichella');
-  await redirect('/RUSTICHELLA/', 308, '/rustichella');
-  await redirect('/Bistro', 308, '/bistro');
-  await redirect('/A-Loja', 308, '/a-loja');
+
+  console.log('\nOutra caixa (o next start, como a Vercel, casa as regras sem diferenciar maiúsculas)');
+  for (const [caminho, pagina] of [['/Rustichella', '/rustichella'], ['/RUSTICHELLA', '/rustichella'], ['/Bistro', '/bistro'], ['/A-Loja', '/a-loja']]) {
+    await pagina_(caminho, pagina);
+  }
+  await redirect('/RUSTICHELLA/', 308, '/RUSTICHELLA');
   await redirect('/Menu', 308, '/menu/');
+  await redirect('/MENU', 308, '/menu/');
+  const menuCaixa = await pedir('/MENU/');
+  conferir('/MENU/ → 200 com o app, sem redirect', menuCaixa.status === 200 && !menuCaixa.headers.location && menuCaixa.corpo.includes('href="./css/app.css"'), `veio ${menuCaixa.status} ${menuCaixa.headers.location ?? ''}`);
+  const cssCaixa = await pedir('/MENU/css/app.css');
+  conferir('/MENU/css/app.css → 200 text/css', cssCaixa.status === 200 && /text\/css/.test(cssCaixa.headers['content-type'] || ''), `${cssCaixa.status}`);
+
+  console.log('\nRoteamento da Vercel simulado sobre o routes-manifest (com e sem diferença de caixa)');
+  simularRoteamento();
 
   console.log('\nBarra final (nenhuma página com dois endereços)');
   await redirect('/a-loja/', 308, '/a-loja');
