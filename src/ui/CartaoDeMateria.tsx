@@ -10,6 +10,15 @@ export function caminhoDaPaginaPropria(evento: BlogCardData['event']) {
   return caminho && /^\/(?![/\\])/.test(caminho) ? caminho : null;
 }
 
+/*
+ * Capa de reserva para evento com página própria e sem capa no Engine: a
+ * imagem de compartilhamento da própria página. A capa do painel, quando
+ * existir, tem precedência.
+ */
+const CAPAS_DAS_PAGINAS_PROPRIAS: Record<string, { src: string; largura: number; altura: number }> = {
+  '/rustichella': { src: '/media/rustichella/og-rustichella.jpg', largura: 1200, altura: 630 },
+};
+
 /** Para onde o cartão leva: a matéria, o evento ou, com página própria, direto a ela (DESIGN-BRIEF §9). */
 export function enderecoDaMateria(m: Pick<BlogCardData, 'kind' | 'slug' | 'event'>) {
   if (m.kind === 'event') return caminhoDaPaginaPropria(m.event) || `/eventos/${m.slug}`;
@@ -75,11 +84,17 @@ export function CartaoDeEvento({ evento, passado = false }: { evento: BlogCardDa
   const href = enderecoDaMateria(evento);
   const quando = evento.event!;
   const { dia, mes } = diaEMes(quando.startsOn);
-  const paginaPropria = Boolean(caminhoDaPaginaPropria(quando));
+  const propria = caminhoDaPaginaPropria(quando);
+  const paginaPropria = Boolean(propria);
+  const capaDeReserva = !evento.cover && propria ? CAPAS_DAS_PAGINAS_PROPRIAS[propria] : undefined;
   return (
     <article className={`evento-cartao ${passado ? 'is-passado' : ''}`}>
       <Link href={href} className="evento-cartao__capa" tabIndex={-1} aria-hidden="true">
-        <CapaNoCartao capa={evento.cover} sizes="(max-width: 760px) 100vw, 40vw" />
+        {capaDeReserva ? (
+          <img src={capaDeReserva.src} alt="" width={capaDeReserva.largura} height={capaDeReserva.altura} loading="lazy" decoding="async" />
+        ) : (
+          <CapaNoCartao capa={evento.cover} sizes="(max-width: 760px) 100vw, 40vw" />
+        )}
         <span className="evento-cartao__data" aria-hidden="true">
           <b>{dia}</b>
           {mes}

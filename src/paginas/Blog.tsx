@@ -218,42 +218,41 @@ export function PaginaDeEventos({
 }) {
   return (
     <>
-      <section className="topo-de-pagina topo-de-pagina--suave">
+      {/* Versão enxuta (pedido de Pedro, 12/11): cabeça curta e, sem evento marcado, uma linha no lugar da seção "Próximos". */}
+      <section className="topo-de-pagina topo-de-pagina--compacto">
         <div className="wrap">
           <Migalhas itens={[{ rotulo: 'Início', href: '/' }, { rotulo: 'Eventos' }]} />
-          <Reveal className="topo-de-pagina__texto">
-            <p className="eyebrow">Eventos Nicolini</p>
+          <div className="topo-de-pagina__texto">
             <h1>
-              Encontros em volta
-              <br />
-              da <em>mesa.</em>
+              Encontros em volta da <em>mesa.</em>
             </h1>
             <p>Jantares, degustações e visitas de produtores, no empório e no bistrô.</p>
-          </Reveal>
+            {!proximos.length && (
+              <p className="eventos__aviso">
+                Nenhum evento marcado agora. Acompanhe pelo{' '}
+                <a className="link" href={`https://instagram.com/${casa.instagram.replace('@', '')}`} target="_blank" rel="noreferrer">
+                  {casa.instagram} <Arrow direction="upRight" />
+                </a>
+              </p>
+            )}
+          </div>
         </div>
       </section>
 
-      <section className="eventos wrap" aria-labelledby="proximos">
-        <h2 className="eventos__titulo" id="proximos">
-          Próximos
-        </h2>
-        {proximos.length ? (
+      {proximos.length > 0 && (
+        <section className="eventos wrap" aria-labelledby="proximos">
+          <h2 className="eventos__titulo" id="proximos">
+            Próximos
+          </h2>
           <div className="grade-de-eventos">
             {proximos.map((e) => (
               <CartaoDeEvento key={e.id} evento={e} />
             ))}
           </div>
-        ) : (
-          <div className="eventos__vazio">
-            <p>Nenhum evento marcado agora. O próximo é anunciado aqui e no Instagram da casa.</p>
-            <a className="link" href={`https://instagram.com/${casa.instagram.replace('@', '')}`} target="_blank" rel="noreferrer">
-              {casa.instagram} <Arrow direction="upRight" />
-            </a>
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
-      <section className="eventos wrap" aria-labelledby="realizados">
+      <section className="eventos eventos--ultima wrap" aria-labelledby="realizados">
         <h2 className="eventos__titulo" id="realizados">
           Realizados
         </h2>
