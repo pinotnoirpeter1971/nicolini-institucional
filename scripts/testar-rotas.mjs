@@ -351,14 +351,16 @@ try {
   conferir('/sacola noindex', /<meta name="robots" content="noindex/.test(sacola.corpo));
 
   /*
-   * A busca provisória (12/11/2026): /busca é estática e filtra no navegador o
-   * catálogo de /busca/catalogo.json, guardado por 60 s. Nenhuma das três
-   * roda função a cada visita: o manifesto do build prova isso sem depender do
-   * Engine (com ele fora do ar no build, as páginas nascem 404 e seguem guardadas).
+   * A busca provisória (12/11/2026): /busca filtra no navegador o catálogo de
+   * /busca/catalogo.json, guardado por 60 s. Nenhuma página roda função a cada
+   * visita: o manifesto do build prova isso sem depender do Engine (com ele fora
+   * do ar no build, as páginas nascem 404 e seguem guardadas). Desde que o header
+   * lê as categorias do Engine (12/11/2026), toda página com a moldura se refaz a
+   * cada 60 s, como /produtos.
    */
-  console.log('\nBusca provisória e /produtos guardadas (nenhuma roda função por visita)');
+  console.log('\nPáginas guardadas (nenhuma roda função por visita)');
   const prerender = JSON.parse(readFileSync(join(raiz, '.next', 'prerender-manifest.json'), 'utf8')).routes;
-  for (const [rota, segundos] of [['/produtos', 60], ['/busca/catalogo.json', 60], ['/busca', false]]) {
+  for (const [rota, segundos] of [['/produtos', 60], ['/busca/catalogo.json', 60], ['/busca', 60], ['/a-loja', 60], ['/bistro', 60], ['/rustichella', 60], ['/sacola', 60], ['/pedido', 60]]) {
     const r = prerender[rota];
     conferir(`${rota} pronta no build (revalida: ${segundos === false ? 'nunca' : `${segundos} s`})`, Boolean(r) && r.initialRevalidateSeconds === segundos, JSON.stringify(r && r.initialRevalidateSeconds));
   }
@@ -398,7 +400,8 @@ try {
     const formBusca = r.corpo.match(/<form\b[^>]*role="search"[^>]*>/g) ?? [];
     conferir(
       `${caminho} com faixa, CEP, conta e curtidos travados; busca (GET /busca) e Departamentos ativos`,
-      travadas.length === 6 && soltas.length === 0 && formBusca.length === 1 && formBusca[0].includes('action="/busca"') && /<button\b[^>]*class="cabecalho__departamentos"[^>]*aria-expanded="false"/.test(r.corpo),
+      travadas.length === 6 && soltas.length === 0 && formBusca.length === 1 && formBusca[0].includes('action="/busca"') &&
+        (!header.includes('lista-de-departamentos') || /<button\b[^>]*class="cabecalho__departamentos"[^>]*aria-expanded="false"/.test(r.corpo)),
       `${travadas.length} botões, soltos: ${soltas.join(' ') || 'nenhum'}, busca: ${formBusca.join(' ')}`,
     );
     const semPagina = links.filter((l) => /^\/(buscar|conta|minha-conta|curtidos|favoritos|departamentos|cep|checkout|entrar)(\/|$)/.test(l));
@@ -406,6 +409,29 @@ try {
     conferir(`${caminho} sem newsletter, selos de pagamento nem promessa de entrega`, !/newsletter|rodape__pagamentos|Entrega grátis/.test(r.corpo));
     conferir(`${caminho} sem o laboratório`, !/laboratorio|dados simulados/i.test(r.corpo));
     conferir(`${caminho} com o header novo (Eventos, Bistrô e Loja física)`, r.corpo.includes('class="cabecalho') && links.includes('/eventos') && links.includes('/bistro') && links.includes('/a-loja'));
+  }
+  /*
+   * As categorias do header vêm do Engine (12/11/2026, pedido de Pedro): as mesmas de /produtos e na mesma ordem
+   * (as do painel com produto no ar); a linha mostra as 5 primeiras e Departamentos todas; nenhuma leva a 404.
+   * Sem categoria no ar (ou com o Engine fora durante o build) o header fica sem elas e sem Departamentos.
+   */
+  console.log('\nCategorias do header, do Engine');
+  const hrefsDe = (html) => [...html.matchAll(/href="(\/produtos\/[^"#?]+)"/g)].map((m) => m[1]);
+  const diretorio = ((await pedir('/produtos')).corpo.match(/<section class="diretorio[\s\S]*?<\/section>/) || [''])[0];
+  const doEngine = [...new Set(hrefsDe(diretorio))];
+  for (const caminho of ['/', '/a-loja', '/bistro', '/produtos', '/nao-existe']) {
+    const header = ((await pedir(caminho)).corpo.match(/<header\b[\s\S]*?<\/header>/) || [''])[0];
+    const naLista = hrefsDe((header.match(/<ul id="lista-de-departamentos"[\s\S]*?<\/ul>/) || [''])[0]);
+    const naLinha = [...header.matchAll(/<a\b[^>]*>/g)].map((m) => m[0]).filter((a) => /class="cabecalho__categoria\b/.test(a)).flatMap(hrefsDe);
+    conferir(
+      `${caminho}: header com as categorias de /produtos (${doEngine.length}), em ordem; a linha com as ${Math.min(doEngine.length, 5)} primeiras`,
+      naLista.join() === doEngine.join() && naLinha.join() === doEngine.slice(0, 5).join() && header.includes('cabecalho__departamentos') === doEngine.length > 0,
+      `lista: ${naLista.join(' ') || 'nenhuma'}; linha: ${naLinha.join(' ') || 'nenhuma'}; /produtos: ${doEngine.join(' ') || 'nenhuma'}`,
+    );
+  }
+  for (const href of doEngine) {
+    const r = await pedir(href);
+    conferir(`${href} (categoria do header) → 200`, r.status === 200, `veio ${r.status}`);
   }
   /* O destaque de produtos e o bloco do Blog da home dependem do que o Engine tem no ar (testar-catalogo e testar-blog). */
   const homeNova = await pedir('/');

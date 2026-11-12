@@ -112,7 +112,13 @@ encerra. Mudou um endereço, mude a tabela e o teste juntos.
 - O layout raiz **não chama o Engine** (SPEC-SITE §1.6): o menu vem de
   `src/menu-do-site.ts`. A moldura (header, rodapé, WhatsApp, painel da
   sacola) mora nos layouts de rota (`app/(casa)/layout.tsx`,
-  `app/bistro/layout.tsx`, `app/rustichella/layout.tsx`).
+  `app/bistro/layout.tsx`, `app/rustichella/layout.tsx`). **Exceção (12/11/2026,
+  pedido de Pedro):** as categorias do header (a linha de baixo, Departamentos e
+  o menu do celular) vêm do Engine, pela mesma leitura de `/produtos`, guardada
+  por 60 s e dividida por todas as páginas (`src/moldura/Moldura.tsx`). Por isso
+  toda página com a moldura se refaz a cada 60 s; nenhuma roda função por
+  visita (`testar-rotas` confere no manifesto). Engine fora: o header sai sem
+  categorias e sem Departamentos, e a página não cai.
 - Os módulos apagados não entram no sitemap (continua com as quatro páginas
   fixas). `/pedido` responde com `Referrer-Policy: no-referrer` (o token do
   recibo vai no `#`, que não sai do navegador, mas o cabeçalho fecha a porta).
@@ -230,10 +236,12 @@ atendimento), `/pedido#rec1b0zzzzzzzzzz` (não encontrado).
 2. Texto da faixa: "Empório e Bistrô em Caxias do Sul", no lugar do
    "Entrega grátis em Caxias do Sul" do protótipo (promessa que a casa não
    fez). Pedro escolhe a mensagem.
-3. As categorias da linha de baixo do header (Queijos, Charcutaria,
-   Conservas, Massas, Vinhos) são configuração do site, não do Engine; na
-   ativação precisam bater com os slugs reais. Com os módulos apagados, a
-   linha mostra Departamentos (travado), Bistrô e Loja física.
+3. As categorias do header vêm do Engine desde 12/11/2026 (antes eram uma
+   lista fixa que dava 404 nas que não existiam): as categorias com produto no
+   ar, na ordem do painel (Site → Produtos → Categorias). A linha de baixo
+   mostra as 5 primeiras (`CATEGORIAS_NA_LINHA`; nome longo encurta com
+   reticências); Departamentos e o menu do celular mostram todas. Sem
+   categoria no ar, a linha mostra só as páginas da casa e Loja física.
 4. Header preso ao rolar no desktop, com sombra; no celular rola com a página,
    como no e-commerce.
 5. Home: a abertura do site no ar (vídeo e textos, sem botão, como hoje),

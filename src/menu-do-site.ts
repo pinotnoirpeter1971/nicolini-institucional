@@ -2,8 +2,9 @@ import { laboratorio } from './site';
 
 /*
  * O menu do site e as peças que dependem de módulo do Engine. É configuração
- * do próprio site (SPEC D15, SPEC-SITE §1.6): o layout não pergunta nada ao
- * Engine. Ligar um módulo na ativação é trocar o valor dele aqui para `true`.
+ * do próprio site (SPEC D15, SPEC-SITE §1.6). Ligar um módulo na ativação é
+ * trocar o valor dele aqui para `true`. Exceção: as categorias de Produtos no
+ * header vêm do Engine (veja `CATEGORIAS_NA_LINHA`, abaixo).
  *
  * Hoje cada módulo vale `laboratorio`: aceso no `next dev` (com dados
  * simulados) e apagado no build de produção. Apagado quer dizer: o item some do
@@ -72,16 +73,20 @@ export const conteudoAConfirmar = {
 
 export type ItemDoMenu = { rotulo: string; href: string; aceso: boolean };
 
-/* As categorias na linha de baixo do header, como no e-commerce. São
- * configuração do site (o layout não chama o Engine): o slug precisa existir
- * em Produtos. Só aparecem com Produtos aceso. */
-export const categoriasNoMenu: ItemDoMenu[] = [
-  { rotulo: 'Queijos', href: '/produtos/queijos', aceso: modulos.produtos },
-  { rotulo: 'Charcutaria', href: '/produtos/charcutaria', aceso: modulos.produtos },
-  { rotulo: 'Conservas', href: '/produtos/conservas', aceso: modulos.produtos },
-  { rotulo: 'Massas', href: '/produtos/massas', aceso: modulos.produtos },
-  { rotulo: 'Vinhos', href: '/produtos/vinhos', aceso: modulos.produtos },
-];
+/*
+ * As categorias do header (a linha de baixo, Departamentos e o menu do celular)
+ * vêm do Engine desde 12/11/2026 (pedido de Pedro; antes eram uma lista fixa
+ * aqui). São as categorias com produto no ar, na ordem do painel (Site →
+ * Produtos → Categorias): criar, renomear, ordenar ou esvaziar uma categoria
+ * no painel muda o header em até 60 s, sem deploy. Categoria sem produto no ar
+ * não aparece (não há link para página vazia).
+ *
+ * A linha de baixo mostra as primeiras `CATEGORIAS_NA_LINHA` (a ordem do
+ * painel decide quais); Departamentos e o menu do celular mostram todas. A
+ * leitura é a mesma de /produtos, guardada por 60 s e dividida por todas as
+ * páginas (src/moldura/Moldura.tsx). Só aparecem com Produtos aceso.
+ */
+export const CATEGORIAS_NA_LINHA = 5;
 
 /* Depois das categorias: as páginas da casa (Eventos e Bistrô entram no header
  * do e-commerce, DESIGN-BRIEF §4). "Loja física" fica à direita. */

@@ -230,6 +230,15 @@
   transition: color 200ms var(--ease);
 }
 
+/* Categoria vem do Engine (nome até 60 letras): nome longo encurta com reticências, não empurra a linha. */
+.cabecalho__nav-linha > a.cabecalho__categoria {
+  display: block;
+  max-width: 190px;
+  overflow: hidden;
+  line-height: var(--cabecalho-nav);
+  text-overflow: ellipsis;
+}
+
 .cabecalho__nav-linha > a::after {
   position: absolute;
   bottom: 7px;

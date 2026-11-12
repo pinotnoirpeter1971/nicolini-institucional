@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { casa } from '../data/casa';
-import { categoriasNoMenu, itensAcesos, lojaFisica, menuPrincipal, modulos, pecasDeLoja, todosOsProdutos } from '../menu-do-site';
+import { CATEGORIAS_NA_LINHA, itensAcesos, lojaFisica, menuPrincipal, modulos, pecasDeLoja, todosOsProdutos, type ItemDoMenu } from '../menu-do-site';
 import { abrirPainel, useSacola } from '../sacola/armazem';
 import { Arrow, Fechar, Menu, Pin, Sacola } from '../components/Icons';
 import { BotaoCep, CampoDeBusca, IconeConta, IconeCurtidos } from './Guardadas';
@@ -13,7 +13,8 @@ import { BotaoCep, CampoDeBusca, IconeConta, IconeCurtidos } from './Guardadas';
  * O header do protótipo do e-commerce, como ele é (decisão de Pedro,
  * 12/11/2026): branco, preso no topo ao rolar, em duas linhas. Em cima o logo,
  * a busca, "Receba em", conta, curtidos e a sacola; embaixo "Departamentos", as
- * categorias, as páginas da casa e "Loja física" à direita. Busca, CEP, conta,
+ * categorias, as páginas da casa e "Loja física" à direita. As categorias vêm
+ * do Engine, pela moldura (src/menu-do-site.ts, `CATEGORIAS_NA_LINHA`). Busca, CEP, conta,
  * curtidos e o mega menu ficam à vista mas travados (src/menu-do-site.ts). No
  * celular: menu, logo e sacola, a busca embaixo, e o menu escuro do e-commerce.
  */
@@ -33,13 +34,13 @@ function ContadorDaSacola() {
   );
 }
 
-export function Cabecalho() {
+export function Cabecalho({ categorias }: { categorias: ItemDoMenu[] }) {
   const pathname = (usePathname() ?? '/').toLowerCase();
   const [rolado, setRolado] = useState(false);
   const [aberto, setAberto] = useState(false);
   const [deptos, setDeptos] = useState(false);
   const refDeptos = useRef<HTMLDivElement>(null);
-  const categorias = itensAcesos(categoriasNoMenu);
+  const naLinha = categorias.slice(0, CATEGORIAS_NA_LINHA);
   const paginas = itensAcesos(menuPrincipal);
   const ativo = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   const travada = (peca: keyof typeof pecasDeLoja) => pecasDeLoja[peca] === 'travada';
@@ -132,7 +133,7 @@ export function Cabecalho() {
               </ul>
             </div>
           )}
-          {categorias.map((item) => link(item))}
+          {naLinha.map((item) => link(item, 'cabecalho__categoria'))}
           {paginas.map((item) => link(item))}
           <Link href={lojaFisica.href} className={`cabecalho__loja ${ativo(lojaFisica.href) ? 'is-ativo' : ''}`} aria-current={ativo(lojaFisica.href) ? 'page' : undefined}>
             <Pin /> {lojaFisica.rotulo}
