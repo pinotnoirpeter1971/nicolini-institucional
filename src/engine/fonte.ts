@@ -2,21 +2,20 @@
  * A camada única entre as páginas e o Engine, no servidor (SPEC-SITE §3.1).
  * Nenhuma página chama o Engine por conta própria: passa por aqui.
  *
+ * Blog e eventos: lidos do Engine pelo SDK, no laboratório e em produção (o
+ * laboratório aponta para o staging por NEXT_PUBLIC_ENGINE_URL e
+ * NEXT_PUBLIC_ENGINE_CASA).
+ *
  * Produtos (Etapa 3, catálogo): lê do Engine pelo SDK, com tempo limite, o
  * índice e as categorias guardados por 60 s e compartilhados (404 barato,
  * SPEC-SITE §3.3). Só o laboratório (`next dev`) responde com dados simulados,
  * e só se `NEXT_PUBLIC_SITE_DADOS` não for `engine` (com `engine`, o `next dev`
  * lê o Engine de verdade, como o build). Módulo desligado (404 do Engine) vira
  * `null`/lista vazia: a página dá 404.
- *
- * Blog e eventos seguem como estavam (`api()`, simulado no laboratório); a
- * trilha deles troca o ramo de produção.
  */
 import { unstable_cache } from 'next/cache';
 import { cache } from 'react';
 import type {
-  BlogCategoryData,
-  BlogIndexEntry,
   BlogPostData,
   BlogPostKind,
   BlogPostsPage,
@@ -27,6 +26,10 @@ import type {
 } from './sdk-0.7.0/index.js';
 import {
   RestaurantsPublicError,
+  fetchBlogCategories,
+  fetchBlogIndex,
+  fetchBlogPost,
+  fetchBlogPosts,
   fetchPublicProduct,
   fetchPublicProductCategories,
   fetchPublicProductIndex,
@@ -142,21 +145,38 @@ export const produto = cache(async (slug: string): Promise<PublicProductData | n
 export const MATERIAS_NA_PRIMEIRA_PAGINA = 7;
 export const MATERIAS_POR_PAGINA = 6;
 
-export async function categoriasDoBlog(): Promise<BlogCategoryData[]> {
-  return (await api()).fetchBlogCategories(base);
+/* Por quanto tempo o servidor guarda o índice e as categorias do Blog. */
+const GUARDA_S = 60;
+const emBuild = process.env.NEXT_PHASE === 'phase-production-build';
+
+const doBlog = () => ({ ...base, signal: sinal() });
+
+/* O `null` do 404 também é guardado: com o Blog desligado, endereço inventado não vira chamada nova ao Engine. */
+const indiceGuardado = unstable_cache(() => ou404(fetchBlogIndex(doBlog())), ['blog-indice', engineUrl, casaNoEngine], { revalidate: GUARDA_S });
+const categoriasGuardadas = unstable_cache(() => ou404(fetchBlogCategories(doBlog())), ['blog-categorias', engineUrl, casaNoEngine], {
+  revalidate: GUARDA_S,
+});
+
+/* No build, o Engine fora do ar vale como Blog desligado: o build não depende dele (SPEC-SITE §3.3). A página
+ * nasce 404 e a revalidação a corrige; em execução, o erro sobe e o Next segue servindo a última versão boa. */
+async function noBuildSemEngine<T>(ler: () => Promise<T | null>): Promise<T | null> {
+  try {
+    return await ler();
+  } catch (erro) {
+    if (emBuild) return null;
+    throw erro;
+  }
 }
 
-export async function materias(
-  filtro: { kind: BlogPostKind; category?: string; when?: 'upcoming' | 'past'; cursor?: string; limit?: number },
-  cenario?: Cenario,
-): Promise<BlogPostsPage> {
-  return (await api()).fetchBlogPosts({ ...base, ...filtro }, cenario);
+/** Todas as matérias e eventos no ar. `null`: o Blog está desligado para a casa (a página repassa o 404). */
+export const indiceDoBlog = cache(() => noBuildSemEngine(indiceGuardado));
+
+/** As categorias com matéria no ar. `null`: Blog desligado. */
+export const categoriasDoBlog = cache(() => noBuildSemEngine(categoriasGuardadas));
+
+export async function materias(filtro: { kind: BlogPostKind; category?: string; when?: 'upcoming' | 'past'; cursor?: string; limit?: number }): Promise<BlogPostsPage> {
+  return fetchBlogPosts({ ...doBlog(), ...filtro });
 }
 
-export async function materia(slug: string): Promise<BlogPostData | null> {
-  return (await api()).fetchBlogPost({ ...base, slug });
-}
-
-export async function indiceDoBlog(): Promise<BlogIndexEntry[]> {
-  return (await api()).fetchBlogIndex(base);
-}
+/** A matéria inteira (uma chamada por renderização, mesmo lida pelos metadados e pela página). */
+export const materia = cache(async (slug: string): Promise<BlogPostData | null> => fetchBlogPost({ ...doBlog(), slug }));

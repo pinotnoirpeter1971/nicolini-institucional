@@ -1,10 +1,11 @@
 import { notFound } from 'next/navigation';
 import { metadadosDaPagina } from '../../../src/metadados';
-import { modulos } from '../../../src/menu-do-site';
-import { cenarioDoLaboratorio, materias } from '../../../src/engine/fonte';
+import { indiceDoBlog, materias } from '../../../src/engine/fonte';
 import { PaginaDeEventos } from '../../../src/paginas/Blog';
 
-/* Módulo apagado (hoje, em produção): 404 já no build. ETAPA 3: `revalidate = 60`. */
+/* Guardada por 60 s. Blog desligado no Engine: 404. */
+export const revalidate = 60;
+
 export const metadata = metadadosDaPagina({
   caminho: '/eventos',
   titulo: 'Eventos',
@@ -13,12 +14,11 @@ export const metadata = metadadosDaPagina({
 
 const REALIZADOS_POR_PAGINA = 6;
 
-export default async function Pagina({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  if (!modulos.eventos) notFound();
-  const cenario = await cenarioDoLaboratorio(searchParams);
+export default async function Pagina() {
+  if (!(await indiceDoBlog())) notFound();
   const [proximos, realizados] = await Promise.all([
-    materias({ kind: 'event', when: 'upcoming', limit: 12 }, cenario),
-    materias({ kind: 'event', when: 'past', limit: REALIZADOS_POR_PAGINA }, cenario),
+    materias({ kind: 'event', when: 'upcoming', limit: 12 }),
+    materias({ kind: 'event', when: 'past', limit: REALIZADOS_POR_PAGINA }),
   ]);
   return <PaginaDeEventos proximos={proximos.items} realizados={realizados.items} cursorRealizados={realizados.nextCursor} limite={REALIZADOS_POR_PAGINA} />;
 }

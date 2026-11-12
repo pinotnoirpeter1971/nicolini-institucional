@@ -3,11 +3,11 @@
  * mais" das listas (SPEC-SITE §3.2 e §3.5: o navegador fala direto com o
  * Engine, para o limite por IP valer por visitante).
  *
- * Produtos e Pedidos (Etapa 3): direto no Engine pelo SDK. Só o laboratório
- * (`next dev`) responde com os dados simulados, e só se `NEXT_PUBLIC_SITE_DADOS`
- * não for `engine`. No build de produção o módulo Pedidos está apagado
- * (`modulos.pedidos` em src/menu-do-site.ts) e nada chama estas funções até a
- * ativação. Blog segue no simulado (a trilha dele troca `maisMaterias`).
+ * O "ver mais" do Blog e os Produtos e Pedidos (Etapa 3): direto no Engine pelo
+ * SDK. Só o laboratório (`next dev`) responde com os dados simulados de
+ * Produtos e Pedidos, e só se `NEXT_PUBLIC_SITE_DADOS` não for `engine`. No
+ * build de produção o módulo Pedidos está apagado (`modulos.pedidos` em
+ * src/menu-do-site.ts) e nada chama estas funções até a ativação.
  */
 import type {
   BlogPostKind,
@@ -20,6 +20,7 @@ import type {
 } from './sdk-0.7.0/index.js';
 import {
   createPublicOrder,
+  fetchBlogPosts,
   fetchPublicOrderConfig,
   fetchPublicProducts,
   fetchPublicProductsByIds,
@@ -53,7 +54,7 @@ export async function maisProdutos(filtro: { category?: string; featured?: boole
 }
 
 export async function maisMaterias(filtro: { kind: BlogPostKind; category?: string; when?: 'upcoming' | 'past'; cursor: string; limit?: number }): Promise<BlogPostsPage> {
-  return (await api()).fetchBlogPosts({ ...base, ...filtro });
+  return fetchBlogPosts({ ...base, ...filtro });
 }
 
 /** Os produtos da sacola, com o preço de agora (sem cache). Id ausente: saiu do site. */

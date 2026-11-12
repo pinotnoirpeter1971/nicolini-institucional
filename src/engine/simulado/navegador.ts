@@ -23,7 +23,7 @@ import {
 import { configDePedidos, produtos } from './dados';
 import { cartao } from './servidor';
 
-export { fetchBlogPosts, fetchPublicProducts } from './servidor';
+export { fetchPublicProducts } from './servidor';
 
 type Base = { apiBaseUrl: string; restaurantKey: string; signal?: AbortSignal };
 

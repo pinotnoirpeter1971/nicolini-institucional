@@ -59,7 +59,7 @@ const mesmaPagina = (pagina: string) => ({
 const emProducao = process.env.NODE_ENV === 'production';
 
 const nextConfig: NextConfig = {
-  /* Só o teste do catálogo troca (scripts/testar-catalogo.mjs): outro build, sem pisar no .next. */
+  /* Só os testes de build trocam (scripts/testar-catalogo.mjs, testar-blog.mjs): outro build, sem pisar no .next. */
   distDir: process.env.NEXT_DIST_DIR || '.next',
   /* A pasta acima (Site Nicolini) tem um package.json de workspaces que não é
    * deste repositório; a raiz do projeto é esta pasta. */

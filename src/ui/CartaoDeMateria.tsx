@@ -4,9 +4,15 @@ import { dataPorExtenso, diaEMes, periodo } from '../engine/formato';
 import { Arrow, Play } from '../components/Icons';
 import { Foto } from './Foto';
 
+/** A página própria do evento (a Rustichella), só se for um caminho do próprio site: `//x` e `/\x` saem do site. */
+export function caminhoDaPaginaPropria(evento: BlogCardData['event']) {
+  const caminho = evento?.landingPath;
+  return caminho && /^\/(?![/\\])/.test(caminho) ? caminho : null;
+}
+
 /** Para onde o cartão leva: a matéria, o evento ou, com página própria, direto a ela (DESIGN-BRIEF §9). */
 export function enderecoDaMateria(m: Pick<BlogCardData, 'kind' | 'slug' | 'event'>) {
-  if (m.kind === 'event') return m.event?.landingPath || `/eventos/${m.slug}`;
+  if (m.kind === 'event') return caminhoDaPaginaPropria(m.event) || `/eventos/${m.slug}`;
   return `/blog/${m.slug}`;
 }
 
@@ -69,7 +75,7 @@ export function CartaoDeEvento({ evento, passado = false }: { evento: BlogCardDa
   const href = enderecoDaMateria(evento);
   const quando = evento.event!;
   const { dia, mes } = diaEMes(quando.startsOn);
-  const paginaPropria = Boolean(quando.landingPath);
+  const paginaPropria = Boolean(caminhoDaPaginaPropria(quando));
   return (
     <article className={`evento-cartao ${passado ? 'is-passado' : ''}`}>
       <Link href={href} className="evento-cartao__capa" tabIndex={-1} aria-hidden="true">
