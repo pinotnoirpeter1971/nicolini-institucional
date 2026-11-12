@@ -330,20 +330,17 @@ try {
   }
 
   /*
-   * Design de 12/11/2026: as páginas que dependem do Engine só existem no
-   * laboratório (next dev, dados simulados). No build de produção os módulos
-   * estão apagados em src/menu-do-site.ts: página 404, item fora do menu e do
-   * rodapé, nenhum bloco na home, e nada do simulado no pacote.
+   * Design de 12/11/2026: no build de produção, os módulos apagados em
+   * src/menu-do-site.ts ficam fora do menu e do rodapé, sem bloco na home, e
+   * nada do simulado entra no pacote. Blog, Eventos e Produtos respondem ou não
+   * conforme o módulo no Engine (provado em testar-catalogo e testar-blog);
+   * aqui, só os endereços do simulado, que nunca podem abrir, e as páginas que
+   * o site trava sozinho (sacola, recibo e política).
    */
   console.log('\nMódulos apagados no build de produção (nada simulado vai a público)');
   for (const caminho of [
-    '/produtos',
-    '/produtos/queijos',
     '/produto/parmigiano-reggiano-24-meses',
-    '/blog',
-    '/blog/categoria/receita-do-mes',
     '/blog/jamon-de-bellota',
-    '/eventos',
     '/eventos/nicolini-e-rustichella',
     '/sacola',
     '/pedido',
@@ -355,7 +352,8 @@ try {
   const pedido = await pedir('/pedido');
   conferir('/pedido Referrer-Policy: no-referrer', pedido.headers['referrer-policy'] === 'no-referrer', pedido.headers['referrer-policy']);
 
-  const apagados = ['/produtos', '/blog', '/eventos', '/sacola', '/pedido', '/politica-de-privacidade'];
+  /* Eventos está aceso no menu desde 12/11/2026; a página segue o Blog do Engine (sem Engine no teste: 404 acima). */
+  const apagados = ['/produtos', '/blog', '/sacola', '/pedido', '/politica-de-privacidade'];
   for (const caminho of ['/', '/a-loja', '/bistro', '/rustichella', '/nao-existe']) {
     const r = await pedir(caminho);
     const links = [...r.corpo.matchAll(/href="(\/[^"#?]*)/g)].map((m) => m[1]);
@@ -379,12 +377,12 @@ try {
     conferir(`${caminho} sem link para página que não existe`, semPagina.length === 0 && !/<form\b/.test(r.corpo), semPagina.join(' '));
     conferir(`${caminho} sem newsletter, selos de pagamento nem promessa de entrega`, !/newsletter|rodape__pagamentos|Entrega grátis/.test(r.corpo));
     conferir(`${caminho} sem o laboratório`, !/laboratorio|dados simulados/i.test(r.corpo));
-    conferir(`${caminho} com o header novo (Bistrô e Loja física)`, r.corpo.includes('class="cabecalho') && links.includes('/bistro') && links.includes('/a-loja'));
+    conferir(`${caminho} com o header novo (Eventos, Bistrô e Loja física)`, r.corpo.includes('class="cabecalho') && links.includes('/eventos') && links.includes('/bistro') && links.includes('/a-loja'));
   }
   const homeNova = await pedir('/');
   conferir('/ sem o destaque de produtos e sem o bloco do Blog', !/selecao-da-semana|id="blog"/.test(homeNova.corpo));
-  /* O bloco da tábua de frios é oferta do protótipo que a casa não confirmou (conteudoAConfirmar em src/menu-do-site.ts). */
-  conferir('/ sem o bloco da tábua de frios (oferta não confirmada)', !/tabua-de-frios|destaque-vermelho|sob medida/.test(homeNova.corpo));
+  /* O bloco da tábua de frios, o mesmo do e-commerce, confirmado por Pedro em 12/11/2026 (conteudoAConfirmar em src/menu-do-site.ts). */
+  conferir('/ com o bloco da tábua de frios e o WhatsApp da casa', /id="tabua-de-frios"/.test(homeNova.corpo) && homeNova.corpo.includes('https://wa.me/5554999592314?text='));
 
   /* O simulado não pode estar no pacote: nem no JavaScript do navegador nem no do servidor. */
   const marcas = ['dados-simulados-do-laboratorio-nicolini', '5a1a0000-0000-4000-8000', 'Cinco Jotas', 'Caseificio Bertinelli', 'nicolini:laboratorio:'];
@@ -411,7 +409,9 @@ try {
   const sitemap = await pedir('/sitemap.xml');
   const locs = [...sitemap.corpo.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
   conferir('sitemap.xml → 200 com as quatro páginas fixas', sitemap.status === 200 && ['/', '/a-loja', '/bistro', '/rustichella'].every((p) => locs.includes(p)), locs.join(' '));
-  conferir('sitemap.xml sem página de módulo apagado', locs.length === 4, locs.join(' '));
+  /* Blog, Eventos e Produtos entram conforme o Engine; as páginas que o site trava e o simulado, nunca. */
+  const proibidasNoSitemap = locs.filter((p) => /^\/(sacola|pedido|politica-de-privacidade)(\/|$)|parmigiano-reggiano-24-meses|jamon-de-bellota/.test(p));
+  conferir('sitemap.xml sem página travada nem simulada', proibidasNoSitemap.length === 0, locs.join(' '));
 } catch (erro) {
   falhas++;
   console.error(erro);

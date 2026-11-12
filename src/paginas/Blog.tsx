@@ -228,7 +228,7 @@ export function PaginaDeEventos({
               <br />
               da <em>mesa.</em>
             </h1>
-            <p>Jantares, degustações e visitas de produtores, no empório e no bistrô. Os próximos vêm primeiro; os que já aconteceram ficam guardados aqui.</p>
+            <p>Jantares, degustações e visitas de produtores, no empório e no bistrô.</p>
           </Reveal>
         </div>
       </section>

@@ -15,8 +15,12 @@ export const modulos = {
   produtos: laboratorio,
   /** /blog, /blog/categoria/[slug], /blog/[slug] e o bloco Blog da home. */
   blog: laboratorio,
-  /** /eventos e /eventos/[slug]. */
-  eventos: laboratorio,
+  /**
+   * O item "Eventos" no menu, ao lado do Bistrô. Aceso desde 12/11/2026 (pedido
+   * de Pedro): a Rustichella está publicada no Engine. As páginas /eventos e
+   * /eventos/[slug] respondem pelo Blog do Engine (404 com ele desligado).
+   */
+  eventos: true,
   /** A sacola (ícone, painel e /sacola) e o recibo (/pedido). Pede `produtos`. */
   pedidos: laboratorio,
   /** /politica-de-privacidade. Texto ainda não aprovado: acende com Pedidos. */
@@ -59,8 +63,8 @@ export const textoDaFaixa = 'Empório e Bistrô em Caxias do Sul';
  * fictício vai a público). Confirmado, troque para `true`.
  */
 export const conteudoAConfirmar = {
-  /** O bloco vermelho da home (tábua de frios): texto e oferta vêm do protótipo do e-commerce. */
-  tabuaDeFrios: laboratorio,
+  /** O bloco vermelho da home (tábua de frios), o mesmo do e-commerce. Confirmado por Pedro em 12/11/2026. */
+  tabuaDeFrios: true,
 };
 
 export type ItemDoMenu = { rotulo: string; href: string; aceso: boolean };

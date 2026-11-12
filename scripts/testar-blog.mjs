@@ -131,7 +131,8 @@ async function fase1() {
     }
     const home = await site.pedir('/');
     conferir('Blog desligado: home sem o bloco do Blog', home.status === 200 && !/id="blog"/.test(home.corpo));
-    conferir('Blog desligado: nenhuma página aponta para /blog ou /eventos', !links(home.corpo).some((l) => /^\/(blog|eventos)(\/|$)/.test(l)));
+    /* "Eventos" no menu é configuração do site (modulos.eventos, aceso em 12/11/2026), não do Engine. */
+    conferir('Blog desligado: nenhuma página aponta para /blog', !links(home.corpo).some((l) => /^\/blog(\/|$)/.test(l)));
     const mapa = await site.pedir('/sitemap.xml');
     conferir('Blog desligado: sitemap só com as quatro páginas fixas', locs(mapa.corpo).length === 4, locs(mapa.corpo).join(' '));
 
