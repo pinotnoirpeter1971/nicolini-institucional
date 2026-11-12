@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
 import { Layout, Arrow } from '../components/Layout';
 import { Chevron } from '../components/Icons';

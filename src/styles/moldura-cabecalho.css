@@ -1,0 +1,144 @@
+/* Moldura: cabeçalho e navegação. Recorte das linhas 264–406 do antigo src/styles.css; a ordem de importação está em app/layout.tsx. */
+/* Header ----------------------------------------------------------------- */
+
+.header {
+  --header-fg: var(--white);
+  --header-tint: rgba(255, 255, 255, 0.86);
+  position: fixed;
+  z-index: 60;
+  inset: 0 0 auto;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  color: var(--header-fg);
+  transition: height 280ms var(--ease), color 280ms var(--ease),
+    box-shadow 280ms var(--ease);
+}
+
+.header::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: var(--white);
+  content: '';
+  opacity: 0;
+  transition: opacity 280ms var(--ease);
+}
+
+.header.is-solid,
+.header.is-menu-open {
+  --header-fg: var(--ink);
+  --header-tint: var(--marca);
+  height: var(--header-h-solid);
+  box-shadow: 0 9px 30px rgba(25, 22, 18, 0.055);
+}
+
+.header.is-menu-open {
+  height: var(--header-h);
+}
+
+.header.is-solid::before,
+.header.is-menu-open::before {
+  opacity: 1;
+}
+
+.header__inner {
+  width: var(--wrap);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  margin-inline: auto;
+}
+
+.logo {
+  margin-right: -0.21em;
+  color: inherit;
+  font-family: var(--logo);
+  font-size: 25px;
+  font-weight: 400;
+  letter-spacing: 0.21em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(22px, 2.7vw, 38px);
+}
+
+.nav a {
+  position: relative;
+  padding: 5px 0;
+  color: inherit;
+  font-size: 0.82rem;
+  font-weight: 550;
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+  transition: color 240ms var(--ease);
+}
+
+.nav a::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: currentColor;
+  content: '';
+  opacity: 0;
+  transform: scaleX(0.55);
+  transform-origin: right;
+  transition: opacity 240ms var(--ease), transform 320ms var(--ease);
+}
+
+.nav a:hover,
+.nav a.is-active {
+  color: var(--header-tint);
+}
+
+.nav a:hover::after,
+.nav a.is-active::after {
+  opacity: 1;
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* O fio separa ancoras da home (esquerda) de paginas proprias (direita): sao
+ * dois tipos de link na mesma linha, e sem a pausa "Bistro" parece mais uma
+ * secao da home. */
+.nav__fio {
+  width: 1px;
+  height: 15px;
+  background: currentColor;
+  opacity: 0.28;
+}
+
+.nav-toggle {
+  display: none;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 1px;
+  margin: 5px auto;
+  background: currentColor;
+  transition: transform 240ms var(--ease);
+}
+
+.header.is-menu-open .nav-toggle span:first-child {
+  transform: translateY(3px) rotate(45deg);
+}
+
+.header.is-menu-open .nav-toggle span:last-child {
+  transform: translateY(-3px) rotate(-45deg);
+}
+

@@ -1,3 +1,5 @@
+'use client';
+
 import { useArrasto } from './Balcoes';
 import { galeria } from '../data/bistro';
 

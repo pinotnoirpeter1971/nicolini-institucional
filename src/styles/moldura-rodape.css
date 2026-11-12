@@ -1,0 +1,79 @@
+/* Moldura: rodapé. Recorte das linhas 926–1003 do antigo src/styles.css; a ordem de importação está em app/layout.tsx. */
+/* Footer ----------------------------------------------------------------- */
+
+.footer {
+  --tint: var(--marca-tint);
+  --hair: var(--line-dark);
+  padding: clamp(62px, 8vw, 98px) 0 27px;
+  color: var(--paper);
+  background: var(--ink);
+}
+
+.footer__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(210px, 0.76fr) minmax(140px, 0.42fr);
+  gap: clamp(35px, 6vw, 108px);
+}
+
+.footer__mark {
+  margin-right: -0.21em;
+  font-family: var(--logo);
+  font-size: clamp(1.55rem, 2.25vw, 1.9rem);
+  font-weight: 400;
+  letter-spacing: 0.21em;
+  line-height: 1;
+}
+
+.footer__brand > p:last-child {
+  max-width: 27ch;
+  margin-top: 18px;
+  color: var(--muted-dark);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.footer .eyebrow {
+  color: var(--marca-tint);
+}
+
+.footer__address address {
+  color: #dad4cb;
+  font-size: 0.88rem;
+  font-style: normal;
+  line-height: 1.75;
+}
+
+.footer__nav {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+}
+
+.footer__nav .eyebrow {
+  margin-bottom: 6px;
+}
+
+.footer__nav a {
+  width: fit-content;
+  color: #dad4cb;
+  font-size: 0.86rem;
+  transition: color 220ms var(--ease);
+}
+
+.footer__nav a:hover {
+  color: var(--marca-tint);
+}
+
+.footer__legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 9px 24px;
+  margin-top: clamp(45px, 6vw, 70px);
+  padding-top: 22px;
+  border-top: 1px solid var(--hair);
+  color: #817b72;
+  font-size: 0.73rem;
+  line-height: 1.5;
+}
+

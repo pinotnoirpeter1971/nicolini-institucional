@@ -1,0 +1,264 @@
+/* Base e tokens: variáveis, reset, tipografia, botões e utilitários comuns. Recorte das linhas 1–263 do antigo src/styles.css; a ordem de importação está em app/layout.tsx. */
+:root {
+  --ink: #161514;
+  --ink-soft: #24211e;
+  --paper: #f8f7f4;
+  --soft: #ebe8e1;
+  --white: #ffffff;
+  --red: #ad3c33;
+  --red-deep: #8d3028;
+  --red-tint: #dc7b70;
+  --red-cream: #f6d7d1;
+  /* Cor de marca em uma camada propria: tudo que e "a cor da casa" aponta para
+   * `--marca`, nunca para `--red` direto. E o que permite uma pagina inteira
+   * trocar de familia sem tocar em componente nenhum — ver `.tema--bistro`. */
+  --marca: var(--red);
+  --marca-deep: var(--red-deep);
+  --marca-tint: var(--red-tint);
+  --marca-cream: var(--red-cream);
+  --line: #ded9d0;
+  --line-dark: #3b3833;
+  --muted: #736d64;
+  --muted-dark: #aaa297;
+  --serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --sans: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  --logo: 'Times New Roman', Times, Georgia, serif;
+  --wrap: min(1240px, calc(100% - 56px));
+  /* Faixa mais larga que a medida de texto, para blocos que sao sobretudo
+   * fotografia — hoje so o trilho dos balcoes.
+   *
+   * O `max()` e o que impede a faixa de encostar na borda: ate ~1440px ela
+   * simplesmente acompanha o wrap padrao, e so abre mais larga a partir dai,
+   * quando existe folga de sobra. Sem ele a margem lateral virava 28px numa
+   * tela de 1440 enquanto o resto da pagina mantinha 100px. */
+  --wrap-wide: max(var(--wrap), min(1560px, calc(100% - 200px)));
+  /* E a mais estreita, para a abertura: margens maiores fazem "A casa" abrir
+   * intima e a faixa dos balcoes abrir larga logo depois. */
+  --wrap-casa: min(1080px, calc(100% - 128px));
+  --gutter: max(28px, calc((100vw - min(1240px, 100vw - 56px)) / 2));
+  --header-h: 92px;
+  --header-h-solid: 72px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --bg: var(--paper);
+  --fg: var(--ink);
+  --tint: var(--marca);
+  --dim: var(--muted);
+  --hair: var(--line);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: clip;
+  color: var(--ink);
+  background: var(--paper);
+  font: 400 16px/1.65 var(--sans);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  color: var(--white);
+  background: var(--marca);
+}
+
+:focus-visible {
+  outline: 2px solid var(--marca);
+  outline-offset: 4px;
+}
+
+.wrap {
+  width: var(--wrap);
+  margin-inline: auto;
+}
+
+section[id] {
+  scroll-margin-top: calc(var(--header-h-solid) + 18px);
+}
+
+.band {
+  color: var(--fg);
+  background: var(--bg);
+}
+
+.band--paper {
+  --bg: var(--paper);
+  --fg: var(--ink);
+  --tint: var(--marca);
+  --dim: var(--muted);
+  --hair: var(--line);
+}
+
+.band--soft {
+  --bg: var(--soft);
+  --fg: var(--ink);
+  --tint: var(--marca);
+  --dim: #706a61;
+  --hair: #d8d2c8;
+}
+
+.band--ink {
+  --bg: var(--ink);
+  --fg: var(--paper);
+  --tint: var(--marca-tint);
+  --dim: var(--muted-dark);
+  --hair: var(--line-dark);
+}
+
+h1,
+h2,
+h3,
+p,
+figure {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--serif);
+  font-weight: 500;
+  letter-spacing: -0.052em;
+  line-height: 0.99;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(3.45rem, 6.65vw, 6.65rem);
+}
+
+h2 {
+  font-size: clamp(2.75rem, 4.75vw, 5.1rem);
+}
+
+h3 {
+  font-size: clamp(1.65rem, 2.25vw, 2.35rem);
+  line-height: 1.06;
+}
+
+em {
+  color: var(--tint);
+  font-style: italic;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  color: var(--tint);
+  font-size: 0.69rem;
+  font-weight: 650;
+  letter-spacing: 0.15em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.prose {
+  display: grid;
+  gap: 1.12rem;
+  max-width: 34rem;
+  color: var(--dim);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.lede {
+  max-width: 37rem;
+  font-family: var(--serif);
+  font-size: clamp(1.25rem, 1.9vw, 1.55rem);
+  letter-spacing: -0.02em;
+  line-height: 1.45;
+}
+
+.link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 4px;
+  font-size: 0.86rem;
+  font-weight: 550;
+}
+
+.link::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: currentColor;
+  content: '';
+  transform-origin: left;
+  transition: transform 320ms var(--ease);
+}
+
+.link:hover::after {
+  transform: scaleX(0);
+  transform-origin: right;
+}
+
+.link svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 280ms var(--ease);
+}
+
+.link:hover svg {
+  transform: translateX(3px);
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+}
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 720ms var(--ease), transform 720ms var(--ease);
+  transition-delay: var(--d, 0ms);
+}
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+

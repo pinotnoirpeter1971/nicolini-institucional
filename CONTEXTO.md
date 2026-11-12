@@ -7,7 +7,95 @@
 > Rustichella/WhatsApp publicados e alterações concorrentes locais preservados.
 > Evidências e operação em `Capilano Engines/restaurantes/docs/STATUS.md`.
 
-# Contexto — Institucional Nicolini
+# Contexto — Site da Nicolini (institucional)
+
+## Estado em 11/11/2026 — vale sobre o histórico abaixo
+
+- **No ar:** `https://www.emporionicolini.com.br` (com `www`). O domínio
+  `nicolinigastronomia.com`, citado no histórico, não é o do site.
+- **Repositório:** GitHub `nicolini-institucional`, **público**. Nada de segredo
+  aqui; o site não tem segredo.
+- **Next.js (App Router), React 19**, desde a branch `nicolini/site-novo`
+  (antes Vite + React Router). Troca de casca, não reescrita: páginas,
+  componentes, dados, classes e valores de CSS, mídia e `/menu/` ficaram iguais.
+  As quatro páginas são estáticas (nenhuma função por visita).
+- **Escopo autorizado mudou:** o plano em
+  `Capilano Suite/plans/nicolini-site/` (SPEC, SPEC-SITE) autoriza blog,
+  eventos, catálogo de produtos e pedido enviado pelo WhatsApp, **sem
+  pagamento**, com dados e regras no Restaurants Engine. Pagamento, checkout,
+  estoque, frete e conta de cliente continuam fora.
+- **`/rustichella` fica no site** (o evento de outubro passou, mas a landing
+  vira um evento dentro de "Eventos"). `/bistro/rustichella` redireciona para ela.
+- Como rodar, onde fica cada coisa e as variáveis públicas: [`README.md`](README.md).
+
+### Rotas e o que não pode quebrar (`next.config.ts`)
+
+| Endereço | Resposta |
+| --- | --- |
+| `/menu/` | 200 com o app de `public/menu` (rewrite para `/menu/index.html`), **sem redirect**: o app usa `./css` e `./js` relativos |
+| `/menu` | 308 → `/menu/` |
+| `/menu-engine/api/v1/public/restaurants/nicolini` | repassado ao Engine (`NEXT_PUBLIC_ENGINE_URL`) |
+| `/bistro/reservas` | 307 → `/menu/#/reserva` |
+| `/bistro/menu` | 307 → `/menu/` |
+| `/bistro/rustichella` | 308 → `/rustichella` |
+| qualquer página com barra final (exceto `/menu/`) | 308 → sem a barra (nenhuma página com dois endereços) |
+| endereço inexistente | 404 de verdade (`app/not-found.tsx`); antes caía na home |
+
+O redirect automático de barra do Next está desligado
+(`skipTrailingSlashRedirect`) e o site faz os seus em `redirects()`, que na
+Vercel viram regra de roteamento, não função. `public/menu` não se edita para
+"consertar" barra.
+
+### Cabeçalhos e indexação
+
+- Em todas as respostas: `X-Content-Type-Options: nosniff` e
+  `Referrer-Policy: strict-origin-when-cross-origin`.
+- Em build de produção (prévia, produção, `next start`):
+  `Content-Security-Policy: frame-ancestors 'self'
+  https://capilano-restaurant-engines.vercel.app
+  https://restaurantes.capilanocreative.com` (o visualizador de sites do painel
+  do Engine). No laboratório (`next dev`) não há restrição de quadros.
+- Chave única `NEXT_PUBLIC_SITE_INDEXAVEL` (padrão: ligada, como sempre foi).
+  Desligada: `<meta name="robots" content="noindex">` em todas as páginas e
+  `X-Robots-Tag: noindex` em todas as respostas. O `robots.txt` nunca bloqueia
+  a leitura; ligado, aponta o `sitemap.xml` (hoje só as quatro páginas fixas).
+- Canônico em cada página, a partir de `NEXT_PUBLIC_SITE_URL`.
+- O layout raiz **não chama o Engine** (SPEC-SITE §1.6). O header ainda é o de
+  antes; o redesenho é a próxima trilha (design).
+
+### CSS por área (`src/styles/`)
+
+O antigo `src/styles.css` (2.894 linhas) foi recortado, sem mudar classe nem
+valor. Os arquivos são importados em `app/layout.tsx` **nesta ordem, que é a
+cascata** (a ordem do conteúdo no arquivo antigo). Cada um começa com uma
+linha de comentário que diz de quais linhas veio; sem ela, a concatenação na
+ordem abaixo é igual ao arquivo original.
+
+1. `fontes.css` — `@font-face` das fontes servidas pelo site (novo; não fazia parte do `styles.css`)
+2. `base.css` — tokens (`:root`), reset, tipografia, utilitários
+3. `moldura-cabecalho.css` — header e navegação
+4. `home.css` — hero, ritmo de seção, A casa, fotos da casa, balcões, blog (hero, ritmo, fotos e balcões também servem às outras páginas)
+5. `moldura-rodape.css` — rodapé
+6. `loja.css` — `/a-loja`
+7. `responsivo.css` — media queries e movimento reduzido de tudo acima
+8. `bistro.css` — tema `tema--bistro` e `/bistro`
+9. `moldura-whatsapp.css` — botão flutuante do WhatsApp
+10. `rustichella.css` — tema `tema--rustichella` e `/rustichella`
+
+Áreas novas entram **no fim**, cada uma com arquivo próprio, criado pela
+trilha que a fizer: `blog.css`, `produtos.css`, `pedido.css` (sacola e recibo).
+Assim as trilhas paralelas não editam o mesmo arquivo.
+
+### Fontes
+
+Instrument Sans (normal 400–700, itálico 400–600) e Playfair Display (normal e
+itálico 500–600), as mesmas famílias e faixas do antigo pedido ao Google, agora
+em `src/fonts/` (woff2 variáveis de `@fontsource-variable` 5.3.0, latin e
+latin-ext, licença OFL ao lado). Nenhuma das quatro páginas pede nada a
+`fonts.googleapis.com`/`fonts.gstatic.com`; quem ainda pede é o iframe do mapa
+do Google e o app `/menu/` (fora desta troca).
+
+## Histórico
 
 **13/10/2026 — Skin de reservas publicada:** código
 `ae7509ac3d47c3cd18b48408e7ce5d1ed102e0ab`, deployment
@@ -50,15 +138,18 @@ ao conectar, liberar somente as origens definitivas no CORS do engine.
 ## O que é
 
 Presença pública da **loja física** da Nicolini. É a experiência mais editorial e
-cinematográfica da marca — a casa, os balcões, o repertório e a visita — sem
-departamentos comerciais, busca, CEP, conta, carrinho ou checkout.
+cinematográfica da marca — a casa, os balcões, o repertório e a visita. Até
+11/11/2026 era só isso, sem departamentos comerciais, busca, CEP, conta,
+carrinho ou checkout; o plano do site acrescenta blog, eventos, produtos e
+pedido sem pagamento (ver o estado no topo).
 
-**Papel estratégico:** fica no ar **enquanto o e-commerce está em construção**.
-É o site que responde por "Nicolini" na internet hoje.
+**Papel estratégico:** é o site que responde por "Nicolini" na internet. O
+protótipo do e-commerce deixou de ser produto a construir: é a base do design
+do site novo (SPEC D21).
 
 **Versionamento/publicação (21/09/2026):** este app, incluindo o `/menu`
 integrado em `public/menu`, possui seu próprio Git local e o repositório GitHub
-privado `pinotnoirpeter1971/nicolini-institucional`. O alias publicado na Vercel
+`pinotnoirpeter1971/nicolini-institucional` (hoje **público**; ver o estado de 11/11 no topo). O alias publicado na Vercel
 é a referência operacional até que uma mudança seja validada e promovida.
 E-commerce e `apps/webapp-bistro` não entram no índice.
 
@@ -87,14 +178,14 @@ o candidato protegido por Vercel SSO.
 
 ## O que vive dentro deste app
 
-Um único projeto React/Vite com quatro frentes:
+Um único projeto (Next desde 11/11/2026; antes React/Vite) com quatro frentes:
 
 | Rota | O que é |
 |---|---|
 | `/` | **Home institucional:** hero em vídeo, "A casa", galeria decorativa, tarja de origem, cinco balcões, Blog Nicolini, encerramento de visita. |
 | `/a-loja` | Página utilitária: endereço, horários, contato, fotos, mapa. |
 | `/bistro` | **Site do Bistrô** — a *vitrine*: apresentação, ambiente, galeria, contato. Não confundir com o **web app** de cardápio/reservas (`apps/webapp-bistro`), que é outra coisa. |
-| `/rustichella` e `/bistro/rustichella` | **Landing do evento** jantar Bistrô Nicolini × Rustichella d'Abruzzo. Formato landing page. A URL curta `/rustichella` é de propósito: vai na bio do Instagram e no impresso. O evento tem data, preço e canal de reserva próprios e **sai do site depois de outubro**. |
+| `/rustichella` e `/bistro/rustichella` | **Landing do evento** jantar Bistrô Nicolini × Rustichella d'Abruzzo. Formato landing page. A URL curta `/rustichella` é de propósito: vai na bio do Instagram e no impresso. O evento tem data, preço e canal de reserva próprios. O evento passou, mas a landing **fica** no site (decisão de 11/11): vira um evento dentro de "Eventos". `/bistro/rustichella` redireciona para `/rustichella`. |
 
 ## Dados — cada fonte tem seu arquivo, de propósito
 
@@ -108,10 +199,11 @@ Um único projeto React/Vite com quatro frentes:
 
 ## Componentes e páginas
 
-- `src/pages/` — `Home.jsx`, `Loja.jsx`, `Bistro.jsx`, `Rustichella.jsx`.
+- `app/` — as rotas do Next; cada `page.tsx` só aponta para a página em `src/paginas/` e declara os metadados.
+- `src/paginas/` — `Home.jsx`, `Loja.jsx`, `Bistro.jsx`, `Rustichella.jsx` (a pasta saiu de `src/pages/` porque o Next trataria esse nome como roteador antigo).
 - `src/components/` — `Layout.jsx`, `Balcoes.jsx`, `CasaFotos.jsx`,
   `GaleriaBistro.jsx`, `Reveal.jsx`, `Icons.jsx`.
-- `src/styles.css` — inclui o tema `tema--bistro` (marrons quentes + creme).
+- `src/styles/` — CSS por área, inclusive os temas `tema--bistro` e `tema--rustichella` (ordem no topo deste arquivo).
 - `public/media/` — `bistro/`, `bistro/galeria/`, `blog/`, `loja/`, `rustichella/`.
 
 ## Conteúdo e fotografia
@@ -119,7 +211,7 @@ Um único projeto React/Vite com quatro frentes:
 Textos, endereço, horários, telefone e CNPJ são **mockup**. Muitas fotos vieram do
 acervo do e-commerce e servem como referência de enquadramento, não como arte
 final. Substituir tudo antes de publicar. O item "Blog" do menu leva a uma seção
-da home; ainda não existe como rota própria.
+da home; ainda não existe como rota própria (o blog de verdade vem pelo plano do site).
 
 **Atualização editorial (21/09/2026):** o primeiro parágrafo abaixo do título em
 `/rustichella` e `/bistro/rustichella` foi atualizado para o texto aprovado pelo
@@ -146,12 +238,12 @@ respeito a `prefers-reduced-motion`; texto, logos e links permanecem estáticos.
 
 ## Limites
 
-- Não introduzir venda, catálogo, busca ou checkout sem autorização explícita.
+- Catálogo e pedido sem pagamento estão autorizados pelo plano em
+  `Capilano Suite/plans/nicolini-site/` (11/11/2026), com dados e regras no
+  Engine. Pagamento, checkout e busca pública continuam fora.
 - Não redesenhar o e-commerce a partir daqui.
 
 ## Rodar
 
-```bash
-npm run dev:institucional   # http://localhost:5183
-npm run build:institucional
-```
+Ver [`README.md`](README.md): `npm ci --workspaces=false`, `npm run dev`
+(laboratório em 5183, aberto na rede), `npm run build`.

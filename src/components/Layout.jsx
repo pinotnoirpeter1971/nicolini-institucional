@@ -1,5 +1,8 @@
+'use client';
+
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { casa, navEmporio, redes, secoes } from '../data/casa';
 import { Arrow, IconeRede, WhatsappGlyph } from './Icons';
 
@@ -62,7 +65,7 @@ function useSecaoAtiva(ativo, ids) {
  * emporio — elas viram link para a home com o hash, em vez de rolagem local.
  */
 function Header({ overlay = false, nav = navEmporio, ancorasLocais = false }) {
-  const { pathname } = useLocation();
+  const pathname = usePathname();
   const [solid, setSolid] = useState(!overlay);
   const [menuAberto, setMenuAberto] = useState(false);
   /* O logo leva para a home; estando nela, rola para o topo em vez de navegar. */
@@ -114,7 +117,7 @@ function Header({ overlay = false, nav = navEmporio, ancorasLocais = false }) {
     >
       <div className="header__inner">
         <Link
-          to="/"
+          href="/"
           className="logo"
           onClick={(evento) => naHome && clicar(evento, 'topo')}
         >
@@ -149,7 +152,7 @@ function Header({ overlay = false, nav = navEmporio, ancorasLocais = false }) {
                 <Fragment key={item.to}>
                   {abreAsRotas && <span className="nav__fio" aria-hidden="true" />}
                   <Link
-                    to={item.to}
+                    href={item.to}
                     className={pathname === item.to ? 'is-active' : undefined}
                     aria-current={pathname === item.to ? 'page' : undefined}
                     onClick={() => setMenuAberto(false)}
@@ -171,7 +174,7 @@ function Header({ overlay = false, nav = navEmporio, ancorasLocais = false }) {
                 {item.rotulo}
               </a>
             ) : (
-              <Link key={item.id} to={`/#${item.id}`} onClick={() => setMenuAberto(false)}>
+              <Link key={item.id} href={`/#${item.id}`} onClick={() => setMenuAberto(false)}>
                 {item.rotulo}
               </Link>
             );
@@ -199,7 +202,7 @@ export function Redes({ comRotulo = false }) {
 
 function Footer() {
   const { endereco } = casa;
-  const { pathname } = useLocation();
+  const pathname = usePathname();
   const naHome = pathname === '/';
 
   return (
@@ -237,13 +240,13 @@ function Footer() {
                   {secao.rotulo}
                 </a>
               ) : (
-                <Link key={secao.id} to={`/#${secao.id}`}>
+                <Link key={secao.id} href={`/#${secao.id}`}>
                   {secao.rotulo}
                 </Link>
               ),
             )}
-            <Link to="/a-loja">A loja física</Link>
-            <Link to="/bistro">Bistrô Nicolini</Link>
+            <Link href="/a-loja">A loja física</Link>
+            <Link href="/bistro">Bistrô Nicolini</Link>
           </div>
         </div>
 
@@ -287,9 +290,12 @@ function WhatsappFab() {
  * sistema (tipografia, grade, componentes) nao muda: ver `.tema--bistro`.
  */
 export function Layout({ overlay = false, tema, nav, ancorasLocais = false, children }) {
-  const { pathname, hash } = useLocation();
+  const pathname = usePathname();
 
+  /* O Next nao expoe o hash como estado de rota; ele e lido na hora, a cada
+   * troca de pagina, como o React Router entregava. */
   useEffect(() => {
+    const { hash } = window.location;
     if (hash) {
       const alvo = document.querySelector(hash);
       if (alvo) {
@@ -298,7 +304,7 @@ export function Layout({ overlay = false, tema, nav, ancorasLocais = false, chil
       }
     }
     window.scrollTo({ top: 0, left: 0 });
-  }, [pathname, hash]);
+  }, [pathname]);
 
   return (
     <div className={tema ? `tema tema--${tema}` : undefined}>

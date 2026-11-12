@@ -1,5 +1,7 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Layout, Arrow } from '../components/Layout';
 import { GaleriaBistro } from '../components/GaleriaBistro';
 import { Chevron } from '../components/Icons';
@@ -196,7 +198,7 @@ export default function Bistro() {
               </p>
             </div>
             <div className="acoes" style={{ marginTop: 26 }}>
-              <Link className="link" to="/">
+              <Link className="link" href="/">
                 Conhecer o empório <Arrow />
               </Link>
             </div>

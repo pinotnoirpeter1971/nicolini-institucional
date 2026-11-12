@@ -1,0 +1,45 @@
+/* Moldura: botão flutuante do WhatsApp. Recorte das linhas 1756–1799 do antigo src/styles.css; a ordem de importação está em app/layout.tsx. */
+/* FAB de WhatsApp ------------------------------------------------------- */
+
+/*
+ * Fixo no canto inferior esquerdo, em toda a casa. O fundo aponta para
+ * `--marca` — vermelho no emporio, marrom quente no bistro — e vira o verde do
+ * WhatsApp no hover e no foco. O icone branco e a unica peca dentro.
+ */
+.whatsapp-fab {
+  position: fixed;
+  z-index: 45;
+  bottom: clamp(18px, 3.3vw, 30px);
+  left: clamp(18px, 3.3vw, 30px);
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  color: var(--white);
+  background: var(--marca);
+  box-shadow: 0 12px 30px rgba(25, 22, 18, 0.22);
+  transition: background 200ms var(--ease);
+}
+
+.whatsapp-fab svg {
+  width: 28px;
+  height: 28px;
+}
+
+.whatsapp-fab:hover,
+.whatsapp-fab:focus-visible {
+  background: #25d366;
+}
+
+@media (max-width: 760px) {
+  .whatsapp-fab {
+    width: 52px;
+    height: 52px;
+  }
+
+  .whatsapp-fab svg {
+    width: 26px;
+  }
+}
+

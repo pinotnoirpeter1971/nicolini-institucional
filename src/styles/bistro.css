@@ -1,0 +1,427 @@
+/* Bistrô: tema --bistro e página /bistro. Recorte das linhas 1330–1755 do antigo src/styles.css; a ordem de importação está em app/layout.tsx. */
+/* Bistro ------------------------------------------------------------------
+ *
+ * Mesma tipografia, mesma grade, mesmos componentes do emporio: o que muda e
+ * a familia de cor. O vermelho da casa sai e entra um marrom quente, que e a
+ * temperatura das fotos do salao. Como todo componente aponta para `--marca`,
+ * a troca acontece nestas quatro linhas e em mais nada.
+ */
+.tema--bistro {
+  --marca: #6b4f3a;
+  --marca-deep: #533b2a;
+  --marca-tint: #c9a680;
+  --marca-cream: #ece0d2;
+  /* O creme do bistro e um grau mais quente que o `--paper` do emporio: e o
+   * segundo eixo da diferenca, junto com a cor de marca. */
+  --paper: #f7f4ee;
+  --soft: #ece5da;
+  --line: #ddd5c7;
+}
+
+/* O marrom continua estruturando o Bistrô; o vermelho volta apenas quando a
+ * tipografia precisa assinar uma ideia. Assim o destaque conversa com a
+ * identidade Nicolini sem tingir a pagina toda. */
+.tema--bistro main em {
+  color: var(--red);
+}
+
+/* Hero ------------------------------------------------------------------- */
+
+/*
+ * Altura fixa em px, sem `vh` nenhum: o hero do bistro nao acompanha a altura
+ * da tela. Um valor preso a viewport fazia a faixa mudar de proporcao em cada
+ * monitor e quase sempre parava a um triz de completar a tela — e essa sobra
+ * de poucos pixels da secao seguinte era justamente o que ficava estranho.
+ *
+ * Os degraus abaixo mudam por LARGURA, nao por altura: e o retrato do celular
+ * que pede uma faixa menor, nao a altura do monitor.
+ */
+.hero--bistro {
+  min-height: 880px;
+  align-items: center;
+  text-align: center;
+}
+
+/*
+ * A moldura da foto e mais alta que o hero nos dois lados: e essa folga que a
+ * paralaxe consome ao subir, sem nunca descobrir a borda.
+ */
+.hero--bistro .hero__media {
+  top: -14%;
+  bottom: -14%;
+  transform: translate3d(0, var(--paralaxe, 0px), 0);
+  will-change: transform;
+}
+
+.hero--bistro .hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 56%;
+  filter: saturate(0.9) contrast(1.02) brightness(0.64);
+}
+
+/* O scrim do emporio escurece topo e base porque o texto de la fica embaixo.
+ * Aqui a marca fica no meio — que na foto do salao e justamente a faixa mais
+ * clara e mais ocupada —, entao entra um veu radial no centro. */
+.hero--bistro .hero__scrim {
+  background: radial-gradient(
+      ellipse 56% 48% at 50% 45%,
+      rgba(12, 11, 10, 0.56) 0%,
+      rgba(12, 11, 10, 0.32) 52%,
+      rgba(12, 11, 10, 0) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(12, 11, 10, 0.52) 0%,
+      rgba(12, 11, 10, 0.14) 26%,
+      rgba(12, 11, 10, 0) 46%
+    ),
+    linear-gradient(
+      to top,
+      rgba(12, 11, 10, 0.72) 0%,
+      rgba(12, 11, 10, 0.3) 26%,
+      rgba(12, 11, 10, 0) 62%
+    );
+}
+
+.hero--bistro .hero__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 0;
+}
+
+.hero__marca {
+  width: min(384px, 60vw);
+  height: auto;
+  opacity: 0;
+  /* Nasce um respiro maior e assenta: o zoom out e o que da a sensacao de a
+   * marca "surgir" em vez de so acender. */
+  transform: scale(1.085);
+  transition: opacity 1500ms var(--ease) 280ms,
+    transform 1900ms var(--ease) 280ms;
+  /*
+   * "ALTA GASTRONOMIA" e o filete abaixo do nome sao tracos muito finos, e
+   * sobre o brilho das tacas eles sumiam — parecia logo cortado. A sombra
+   * escurece so o entorno do traco, o que resolve sem precisar apagar a foto
+   * inteira por tras.
+   */
+  filter: drop-shadow(0 1px 2px rgba(12, 11, 10, 0.55))
+    drop-shadow(0 6px 28px rgba(12, 11, 10, 0.62));
+}
+
+/*
+ * Dois links, nao dois botoes: sobre a foto do salao um par de caixas solidas
+ * gritava mais que a propria marca. Sao os mesmos `.link` do resto do site —
+ * texto com um fio embaixo que recolhe no hover.
+ */
+.hero__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(26px, 3.6vw, 46px);
+  margin-top: clamp(26px, 3vw, 38px);
+  opacity: 0;
+  /* O atraso e maior que a duracao da marca de proposito: a ordem e foto,
+   * marca, e so entao os links. */
+  transition: opacity 1200ms var(--ease) 1450ms;
+}
+
+/* O logo entra depois da foto — quem libera os dois e o `onLoad` da imagem do
+ * hero, nao um tempo fixo: numa conexao lenta um atraso cego mostraria a marca
+ * sobre um retangulo vazio. */
+.hero--bistro.esta-pronto .hero__marca {
+  opacity: 1;
+  transform: none;
+}
+
+.hero--bistro.esta-pronto .hero__acoes {
+  opacity: 1;
+}
+
+.hero__acoes .link {
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+/* Sobre foto escura o botao solido de marca perde legibilidade; o contorno
+ * claro mantem o hero silencioso e ainda assim clicavel. */
+.button--contorno {
+  border-color: rgba(255, 255, 255, 0.7);
+  color: var(--white);
+  background: transparent;
+}
+
+.button--contorno:hover {
+  border-color: var(--white);
+  color: var(--ink);
+  background: var(--white);
+}
+
+/* Manifesto -------------------------------------------------------------- */
+
+.manifesto {
+  width: var(--wrap-casa);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  gap: clamp(38px, 6vw, 88px);
+  align-items: start;
+}
+
+.manifesto h2 {
+  margin: 0;
+}
+
+/* Galeria ---------------------------------------------------------------- */
+
+.secao--galeria {
+  padding-bottom: clamp(78px, 9vw, 128px);
+}
+
+/*
+ * O trilho dos balcoes cabe inteiro na tela e so rola no celular. Aqui o
+ * gesto lateral e o proprio assunto: a faixa passa da largura em qualquer
+ * tamanho, entao a rolagem e o arrasto valem sempre.
+ */
+.rail--galeria {
+  width: auto;
+  /* Largura fixa, e nao `minmax(0, ...)`: com minimo zero as colunas encolhem
+   * ate caber na tela e o trilho nunca transborda — ou seja, nunca rola. */
+  grid-auto-columns: clamp(230px, 25vw, 350px);
+  padding-inline: var(--gutter);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--gutter);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  cursor: grab;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rail--galeria::-webkit-scrollbar {
+  display: none;
+}
+
+.rail--galeria.is-dragging {
+  cursor: grabbing;
+}
+
+.galeria__item {
+  margin: 0;
+  scroll-snap-align: start;
+}
+
+.galeria__item img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: var(--soft);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Cardapio --------------------------------------------------------------- */
+
+.pratos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(16px, 2vw, 30px);
+  margin-top: clamp(38px, 4vw, 58px);
+}
+
+.prato__figure {
+  margin: 0 0 18px;
+  overflow: hidden;
+}
+
+.prato__figure img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--soft);
+  transition: transform 620ms var(--ease);
+}
+
+.prato:hover .prato__figure img {
+  transform: scale(1.035);
+}
+
+.prato h3 {
+  margin: 0 0 8px;
+  font-size: clamp(1.02rem, 1.25vw, 1.16rem);
+}
+
+.prato p {
+  margin: 0;
+  max-width: 30ch;
+  color: var(--dim);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.cardapio__rodape {
+  margin-top: clamp(34px, 4vw, 52px);
+}
+
+/* Faixa de foto grande --------------------------------------------------- */
+
+.cozinha {
+  position: relative;
+  min-height: min(78vh, 720px);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  color: var(--white);
+  isolation: isolate;
+}
+
+.cozinha img {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cozinha::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(12, 11, 10, 0.86) 0%,
+    rgba(12, 11, 10, 0.42) 34%,
+    rgba(12, 11, 10, 0) 68%
+  );
+}
+
+.cozinha__copy {
+  width: var(--wrap);
+  margin-inline: auto;
+  padding-bottom: clamp(46px, 6vw, 78px);
+}
+
+.cozinha__copy h2 {
+  max-width: 15ch;
+  color: var(--white);
+}
+
+.cozinha__copy h2 em {
+  color: var(--marca-tint);
+}
+
+.tema--bistro .cozinha__copy h2 em {
+  color: var(--red-tint);
+}
+
+.cozinha__copy p {
+  max-width: 44ch;
+  margin-top: 20px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.68;
+}
+
+/*
+ * Variante da faixa de foto para a secao de localizacao do jantar. O arquivo e
+ * vertical (1290x1647) numa faixa larga, entao o corte e todo no eixo Y: a
+ * banda vem mais alta que a do bistro para cortar menos, e o enquadramento sobe
+ * para sobrarem as vigas e as luminarias, e nao so os tampos das mesas.
+ */
+.cozinha--local {
+  min-height: min(88vh, 880px);
+}
+
+.cozinha--local img {
+  object-position: 50% 45%;
+}
+
+/* Elo com o emporio ------------------------------------------------------ */
+
+.emporio {
+  width: var(--wrap-casa);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(34px, 5vw, 76px);
+  align-items: center;
+}
+
+.emporio__figure {
+  margin: 0;
+}
+
+.emporio__figure img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--soft);
+}
+
+/* Reserva ---------------------------------------------------------------- */
+
+.reserva__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(32px, 4vw, 62px);
+}
+
+.reserva__grid h2 {
+  margin: 0 0 20px;
+  font-size: clamp(1.08rem, 1.4vw, 1.24rem);
+}
+
+@media (max-width: 1080px) {
+  .pratos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(20px, 3vw, 34px);
+  }
+
+  .reserva__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+}
+
+@media (max-width: 860px) {
+  .manifesto,
+  .emporio {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
+  }
+
+  .emporio__figure {
+    order: 1;
+  }
+
+  .hero--bistro {
+    min-height: 820px;
+  }
+
+  .hero__marca {
+    width: min(300px, 66vw);
+  }
+
+  .cozinha {
+    min-height: 62vh;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero--bistro {
+    min-height: 780px;
+  }
+
+  .rail--galeria {
+    grid-auto-columns: minmax(210px, 68vw);
+  }
+
+  .pratos {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 34px;
+  }
+}
+

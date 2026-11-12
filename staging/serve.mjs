@@ -1,6 +1,6 @@
 // Servidor do menu de TESTE (staging). Entrega `public/` como o Vercel entregaria, com duas
 // diferenças deliberadas: /menu/js/engine-config.js vem de staging/engine-config.js e o
-// rewrite /menu-engine/... (vercel.json) aponta para o Engine de staging.
+// rewrite /menu-engine/... (next.config.ts) aponta para o Engine de staging.
 // Uso: node staging/serve.mjs   (PORT=5199, ENGINE_STAGING_URL=http://127.0.0.1:3200)
 // Não toca em src/ nem em public/: o comportamento de produção não muda.
 import { createServer } from 'node:http';

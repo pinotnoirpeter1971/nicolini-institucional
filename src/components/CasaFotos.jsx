@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
 import { Chevron } from './Icons';
 import { fotosDaCasa } from '../data/casa';

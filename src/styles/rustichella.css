@@ -1,0 +1,1096 @@
+/* Rustichella: tema --rustichella e landing /rustichella. Recorte das linhas 1800–2894 do antigo src/styles.css; a ordem de importação está em app/layout.tsx. */
+/* Jantar Rustichella ====================================================== */
+
+/*
+ * Terceira familia de cor da casa, ao lado do emporio (vermelho) e do bistro
+ * (marrom). O verde e o unico dos tres que nao pertence a Nicolini: e o do selo
+ * da Rustichella, e e justamente por isso que ele serve aqui — a pagina se
+ * anuncia como encontro no primeiro golpe de vista, sem precisar dizer.
+ *
+ * O papel tambem muda: um creme de grao, mais amarelo que o do bistro, tirado
+ * do proprio fundo do selo. Assim o logo convidado assenta na pagina em vez de
+ * flutuar num retangulo mais claro que o resto.
+ */
+.tema--rustichella {
+  --marca: #23593a;
+  --marca-deep: #17422a;
+  --marca-tint: #9cbb9e;
+  --marca-cream: #e2ead9;
+  --paper: #f7f3e7;
+  --soft: #eee6d3;
+  --line: #ddd3bb;
+  /*
+   * O vermelho do emporio entra aqui como terceira cor, nao como tema: creme e
+   * verde continuam sendo a pagina, e o vinho aparece nos dois momentos de
+   * decisao — a carta e a reserva. E tambem o que tira a carta do quase-preto,
+   * que era pesado demais no meio de uma pagina de papel claro.
+   */
+  --vinho: #8d3028;
+}
+
+/*
+ * Faixa em vinho. Mesmo contrato das outras bandas: define as variaveis e
+ * `.band` faz o resto. O creme e o mesmo `--paper` do tema, um grau mais claro,
+ * e o rosa de destaque foi escolhido no limite de 4.5:1 sobre o vinho, que e o
+ * que o texto de apoio e o sobrescrito exigem.
+ */
+.band--vinho {
+  --bg: var(--vinho);
+  --fg: #f9f4ec;
+  --tint: #e9b9ae;
+  --dim: rgba(249, 244, 236, 0.72);
+  --hair: rgba(249, 244, 236, 0.22);
+}
+
+/* Hero ------------------------------------------------------------------- */
+
+/*
+ * Altura fixa em px pelo mesmo motivo do hero do bistro: presa a viewport, a
+ * faixa mudaria de proporcao em cada monitor. 820px tambem e o ponto em que a
+ * foto (1920x1080) ainda cobre uma tela de 1440 sem ser ampliada.
+ */
+.hero--evento {
+  min-height: 820px;
+  align-items: center;
+  text-align: center;
+}
+
+/* A folga vertical dá à foto o mesmo espaço de movimento do hero do Bistrô. */
+.hero--evento .hero__media {
+  top: -14%;
+  bottom: -14%;
+  transform: translate3d(0, var(--paralaxe, 0px), 0);
+  will-change: transform;
+}
+
+/* O letreiro continua centralizado, mas o contraste passa a vir do tratamento
+ * uniforme da foto e dos extremos do hero — nunca de uma sombra no miolo. */
+.hero--evento .hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  /* O letreiro por cima e branco e a foto e de meio-dia: sem derrubar o brilho
+   * nao ha contraste que sustente o texto. A reducao e uniforme para preservar
+   * montanha e ceu sem marcar o centro do campo. */
+  filter: saturate(0.98) contrast(1.02) brightness(0.67);
+}
+
+/* O centro da foto fica limpo. So topo e base recebem contraste, para que o
+ * hero nao ganhe uma mancha circular no meio do campo. */
+.hero--evento .hero__scrim {
+  background: linear-gradient(
+      to bottom,
+      rgba(12, 11, 10, 0.54) 0%,
+      rgba(12, 11, 10, 0.16) 28%,
+      rgba(12, 11, 10, 0) 48%
+    ),
+    linear-gradient(
+      to top,
+      rgba(12, 11, 10, 0.62) 0%,
+      rgba(12, 11, 10, 0.24) 24%,
+      rgba(12, 11, 10, 0) 58%
+    );
+}
+
+.hero--evento .hero__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 0;
+}
+
+/*
+ * As pecas entram na mesma ordem em que se leem, e so depois que a foto pinta:
+ * marcas, titulo, apresentacao, data, links. Sobrescrito e titulo entram quase
+ * juntos — sao uma unidade; o resto vem depois, com folga.
+ */
+.evento__marcas,
+.evento__titulo,
+.evento__resumo,
+.evento__datas,
+.hero--evento .hero__acoes {
+  opacity: 0;
+  transition: opacity 1100ms var(--ease);
+}
+
+.hero--evento.esta-pronto .evento__marcas {
+  opacity: 1;
+  transition-delay: 200ms;
+}
+
+.hero--evento.esta-pronto .evento__titulo {
+  opacity: 1;
+  transition-delay: 400ms;
+}
+
+.hero--evento.esta-pronto .evento__resumo {
+  opacity: 1;
+  transition-delay: 760ms;
+}
+
+.hero--evento.esta-pronto .evento__datas {
+  opacity: 1;
+  transition-delay: 940ms;
+}
+
+.hero--evento.esta-pronto .hero__acoes {
+  opacity: 1;
+  transition-delay: 1120ms;
+}
+
+/*
+ * As marcas sao o sobrescrito do hero — ocupam o lugar da antiga linha em caixa
+ * alta. Pequenas de proposito: creditam as duas casas e devolvem o primeiro
+ * olhar ao titulo.
+ *
+ * Sem conjuncao entre elas: neste tamanho um "&" pesaria mais que os proprios
+ * logos, e sobrescrito nao e frase — e credito.
+ *
+ * Nao ha como iguala-las metricamente e nao se deve tentar: o bistro e um
+ * monograma de traco branco e a Rustichella e um selo cheio, que "pesa" mais no
+ * mesmo tamanho. O equilibrio e optico — o monograma vai mais largo, o selo
+ * mais compacto — e foi calibrado no olho, nao na regua.
+ */
+.hero--evento .evento__marcas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(22px, 3.4vw, 46px);
+  margin: 0 0 clamp(24px, 2.8vw, 38px);
+}
+
+.evento__logo {
+  display: block;
+  height: auto;
+}
+
+/*
+ * O monograma e traco fino e branco: sobre o campo claro ele sumia nas hastes.
+ * A sombra escurece so o entorno do traco, sem precisar apagar a foto por tras.
+ */
+.evento__logo--bistro {
+  width: clamp(112px, 11.4vw, 156px);
+  filter: drop-shadow(0 1px 2px rgba(12, 11, 10, 0.5))
+    drop-shadow(0 6px 22px rgba(12, 11, 10, 0.55));
+}
+
+/*
+ * O selo tem creme por dentro e ja se sustenta sozinho; leva so a sombra de
+ * profundidade, para nao parecer colado por cima da foto.
+ */
+.evento__logo--rustichella {
+  width: clamp(78px, 7.9vw, 108px);
+  filter: drop-shadow(0 6px 20px rgba(12, 11, 10, 0.45));
+}
+
+/*
+ * O titulo e o ponto de entrada, e agora e o encontro das duas casas escrito
+ * por extenso. Cabe em uma linha ate ~1100px e, abaixo disso, quebra depois do
+ * "&" — nunca dentro de um dos dois nomes, que e o que o `nowrap` do `em` e o
+ * `&nbsp;` do markup garantem.
+ *
+ * O corpo desceu de 5.3rem para 4.4rem: sao 32 caracteres numa linha so, e no
+ * tamanho anterior ela estourava a medida em qualquer monitor.
+ *
+ * O seletor precisa dos dois nomes: `.hero h1` (0,1,1) vence `.evento__titulo`
+ * (0,1,0), entao o `max-width: none` daqui nunca chegou a valer — o titulo
+ * ficava preso aos 20ch de `.hero h1` e quebrava em duas linhas mesmo sobrando
+ * 400px de medida. Nao aparecia antes porque o titulo anterior ja vinha com
+ * `<br>` no markup.
+ */
+.hero--evento .evento__titulo {
+  max-width: none;
+  margin: 0;
+  color: var(--white);
+  font-size: clamp(2.4rem, 4.6vw, 4.4rem);
+  line-height: 1.04;
+  text-shadow: 0 2px 6px rgba(12, 11, 10, 0.4), 0 10px 40px rgba(12, 11, 10, 0.5);
+}
+
+/* O `em` herdado puxaria o verde da marca, que sobre a foto escura nao tem
+ * contraste nenhum — aqui o italico sozinho ja marca a virada da frase. O
+ * `nowrap` mantem "Rustichella d'Abruzzo" inteiro: quebrado, o sobrenome da
+ * convidada cairia sozinho na segunda linha. */
+.evento__titulo em {
+  color: inherit;
+  white-space: nowrap;
+}
+
+/*
+ * A apresentacao entrou no lugar do sobrescrito em caixa alta. Medida curta
+ * para quebrar em duas ou tres linhas centradas: passando disso, texto centrado
+ * sobre foto vira bloco e para de se ler.
+ */
+.evento__resumo {
+  max-width: 64ch;
+  margin: clamp(24px, 2.6vw, 34px) auto 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(0.98rem, 1.1vw, 1.06rem);
+  line-height: 1.65;
+  text-shadow: 0 1px 14px rgba(12, 11, 10, 0.68);
+}
+
+.evento__datas {
+  margin: clamp(22px, 2.6vw, 32px) 0 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: var(--serif);
+  font-size: clamp(1.18rem, 2.05vw, 1.85rem);
+  font-style: italic;
+  letter-spacing: -0.015em;
+  text-shadow: 0 1px 14px rgba(12, 11, 10, 0.62);
+}
+
+.hero--evento .hero__acoes {
+  margin-top: clamp(26px, 3vw, 40px);
+}
+
+/* Faixa de fatos --------------------------------------------------------- */
+
+/*
+ * Vem antes de qualquer texto corrido porque responde, de uma vez, as quatro
+ * perguntas que chegam por WhatsApp: quando, que horas, o que se come e se
+ * ainda tem lugar. Os filetes verticais separam sem desenhar caixas.
+ */
+.fatos {
+  padding: clamp(38px, 4.4vw, 62px) 0;
+}
+
+.fatos__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(20px, 2.4vw, 34px);
+}
+
+.fato {
+  padding-left: clamp(18px, 2vw, 30px);
+  border-left: 1px solid var(--hair);
+}
+
+.fato:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+
+.fato .eyebrow {
+  margin-bottom: 10px;
+}
+
+.fato__valor {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(1.3rem, 2vw, 1.85rem);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+.fato__nota {
+  margin: 8px 0 0;
+  color: var(--dim);
+  font-size: 0.83rem;
+  line-height: 1.5;
+}
+
+/* Abertura --------------------------------------------------------------- */
+
+/*
+ * Galeria a esquerda, texto a direita. A coluna da imagem vem menor: uma foto
+ * 4/5 ao lado de quatro paragrafos ja pesa o bastante, e igualar as duas faria
+ * a secao parecer um comparativo, nao uma abertura.
+ */
+.historia {
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1fr);
+  gap: clamp(38px, 5.5vw, 84px);
+  align-items: center;
+}
+
+.historia__copy h2 {
+  margin: 0;
+}
+
+.historia__copy .prose {
+  margin-top: clamp(20px, 2.2vw, 28px);
+}
+
+/*
+ * A moldura da abertura. Foi carrossel automatico, depois foto unica, e voltou
+ * a ser trilho a pedido do cliente — mas o de `CasaFotos`, que so anda quando
+ * alguem manda e mostra em quantas fotos voce esta. O que o carrossel antigo
+ * fazia de errado era o tempo, nao o formato.
+ *
+ * Reaproveita as classes `.casa-fotos*` inteiras; o unico ajuste e a proporcao,
+ * porque a da home e quadrada e os arquivos do pastificio sao verticais.
+ */
+.quadro-evento .casa-fotos {
+  aspect-ratio: 4 / 5;
+}
+
+/*
+ * O selo assina a secao no lugar do sobrescrito "O jantar", que saiu: um rotulo
+ * generico e a marca da convidada diziam a mesma coisa no mesmo ponto, e entre
+ * os dois quem assina melhor e a marca. Por isso ele cresceu.
+ *
+ * O PNG tem ~9,5% de transparencia de cada lado, entao a ponta da faixa do selo
+ * nasce recuada em relacao ao texto abaixo. O `translateX` devolve essa margem
+ * sem mexer no fluxo: alinhamento optico, nao de caixa.
+ */
+.historia__selo {
+  display: block;
+  width: clamp(124px, 12.5vw, 168px);
+  height: auto;
+  margin-bottom: clamp(22px, 2.6vw, 32px);
+  transform: translateX(-9.5%);
+}
+
+/* Credito de fotografia -------------------------------------------------- */
+
+/*
+ * Mesma familia dos sobrescritos, um grau abaixo e sem a cor da marca: e
+ * informacao de rodape, nao rotulo de secao.
+ */
+.credito {
+  margin: 0;
+  color: var(--dim);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* Sangria da delegacao --------------------------------------------------- */
+
+/*
+ * A virada entre "o jantar" e "quem vem cozinhar", no lugar onde havia uma
+ * faixa que esticava um arquivo de 905px de ponta a ponta da tela. Aqui a foto
+ * e da propria delegacao e o corte foi pensado para sangrar.
+ */
+.sangria {
+  position: relative;
+  /* Mais alta que antes de proposito: a foto e 4:3 e a faixa e larga, entao
+   * cada pixel de altura aqui e um pixel a menos de corte vertical la. */
+  min-height: min(92vh, 880px);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  color: var(--white);
+  isolation: isolate;
+}
+
+.sangria img {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /*
+   * Horizontal: a acao esta no centro e a direita do quadro, entao o
+   * enquadramento puxa para la e mantem os dois em cena.
+   *
+   * Vertical: quase no topo. A 42% a faixa cortava a cabeca do chef, que e o
+   * ponto mais alto da composicao — e quanto mais larga a tela, mais fundo o
+   * corte descia. A 10% sobra folga acima dele ate em 1920px. O que se perde e
+   * o rodape da bancada, que e vidro e tabua.
+   */
+  object-position: 62% 10%;
+}
+
+/*
+ * Scrim horizontal, ao contrario do de `.cozinha`, que sobe de baixo. Sao duas
+ * sangrias na mesma pagina: escurecidas pelo mesmo lado, a segunda leria como
+ * repeticao da primeira. A esquerda do quadro e armario e potes — escurecer ali
+ * nao cobre ninguem.
+ */
+.sangria::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(10, 9, 8, 0.9) 0%,
+    rgba(10, 9, 8, 0.72) 30%,
+    rgba(10, 9, 8, 0.26) 58%,
+    rgba(10, 9, 8, 0.06) 100%
+  );
+}
+
+.sangria__copy {
+  width: var(--wrap);
+  margin-inline: auto;
+  padding-bottom: clamp(52px, 6vw, 88px);
+}
+
+
+/*
+ * E `p`, nao `h2`, de proposito: esta faixa e uma fotografia com legenda, nao
+ * uma secao. Com titulo ela roubaria o lugar de "A casa em pessoa", que vem
+ * logo abaixo e e quem apresenta os dois de verdade.
+ */
+.sangria__linha {
+  max-width: 16ch;
+  margin: 0;
+  color: var(--white);
+  font-family: var(--serif);
+  font-size: clamp(2.05rem, 3.6vw, 3.4rem);
+  font-weight: 500;
+  letter-spacing: -0.048em;
+  line-height: 1.04;
+  text-shadow: 0 2px 10px rgba(10, 9, 8, 0.45);
+  text-wrap: balance;
+}
+
+.sangria__legenda {
+  max-width: 40ch;
+  margin: clamp(20px, 2.4vw, 30px) 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.sangria .credito {
+  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.46);
+}
+
+/* A tira ----------------------------------------------------------------- */
+
+/*
+ * Cinco fotos com legenda, entre a delegacao e o menu. Todas na mesma
+ * proporcao vertical de `.prato__figure`: uma razao so para foto vertical na
+ * casa inteira, e nao tres.
+ *
+ * Na medida larga, e nao na do texto: `--wrap-wide` existe para blocos que sao
+ * sobretudo fotografia, e este e um deles. A cabeca da secao continua na
+ * medida de leitura — e o mesmo desencontro proposital do trilho dos balcoes
+ * na home.
+ *
+ * O contraste nao vem da grade: vem de uma foto em preto e branco entre quatro
+ * coloridas. Nao precisa de item destacado.
+ *
+ * O credito unico ("Fotografia Giovanni Galati") saiu do pe da tira: das cinco
+ * fotos de hoje, tres nao sao dele. Ver o comentario de `creditoFotos` em
+ * `data/rustichella.js`.
+ */
+.tira {
+  width: var(--wrap-wide);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(14px, 1.6vw, 26px);
+}
+
+.tira__item {
+  margin: 0;
+}
+
+.tira__item img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--soft);
+  transition: transform 620ms var(--ease);
+}
+
+.tira__item:hover img {
+  transform: scale(1.035);
+}
+
+.tira__item figcaption {
+  margin-top: 16px;
+}
+
+.tira__item h3 {
+  margin: 0 0 8px;
+  font-size: clamp(1rem, 1.2vw, 1.14rem);
+}
+
+.tira__item p {
+  margin: 0;
+  color: var(--dim);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.tira__paginacao {
+  display: none;
+}
+
+
+/* Espiga ----------------------------------------------------------------- */
+
+/*
+ * O desenho vem de um PNG que carrega SO o canal alfa; a cor sai de
+ * `currentColor`. E o que permite a mesma peca aparecer verde sobre o creme e
+ * clara sobre a faixa escura sem manter duas versoes do arquivo — e mudar de
+ * cor sozinha se a paleta do tema mudar.
+ */
+.espiga {
+  display: block;
+  aspect-ratio: 512 / 866;
+  background: currentColor;
+  -webkit-mask: url('/media/rustichella/espiga.png') no-repeat center / contain;
+  mask: url('/media/rustichella/espiga.png') no-repeat center / contain;
+}
+
+/* Marca d'agua da abertura: grande, quase apagada e fora do fluxo, atras da
+ * coluna de texto. E o unico ornamento da pagina em escala de cartaz. */
+.espiga--historia {
+  position: absolute;
+  z-index: 0;
+  top: clamp(-40px, -2vw, 0px);
+  right: calc(var(--gutter) - clamp(20px, 4vw, 70px));
+  width: clamp(150px, 20vw, 300px);
+  color: var(--marca);
+  opacity: 0.09;
+  pointer-events: none;
+}
+
+/* Na carta ela e assinatura, nao ornamento de fundo: pequena, centralizada e
+ * no verde claro que a faixa escura pede. */
+.espiga--carta {
+  /* Abaixo de ~50px o desenho gravado perde as barbas e vira um borrao
+   * vertical; e o menor tamanho em que ainda se le "espiga". */
+  width: 54px;
+  margin: 0 auto clamp(22px, 2.6vw, 32px);
+  color: var(--tint);
+  opacity: 0.85;
+}
+
+/* Menu ------------------------------------------------------------------- */
+
+/*
+ * Carta centralizada, na medida de um menu impresso. Sem foto nenhuma: os cinco
+ * pratos ainda nao foram executados aqui, e fotos genericas de massa mentiriam
+ * sobre o prato agora e seriam trocadas na primeira semana depois do evento.
+ * O que sustenta a secao e a composicao — eixo central, espiga na cabeca,
+ * numeral em italico na frente de cada nome.
+ *
+ * Encolheu quase pela metade. Cada tempo carregava uma linha de etapa em caixa
+ * alta ("TERCEIRO PRATO"), um filete de 1px com 48px de margem de cada lado e
+ * um nome a 2.15rem: eram cinco blocos de ~250px para dizer cinco pratos, e a
+ * secao virava uma rolagem inteira. O numeral ja da a ordem que a etapa dava.
+ */
+.carta {
+  max-width: 42rem;
+  text-align: center;
+}
+
+.carta__head {
+  margin-bottom: clamp(30px, 3.6vw, 48px);
+}
+
+.carta__head h2 {
+  max-width: none;
+}
+
+.tempos {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(22px, 2.5vw, 34px);
+  list-style: none;
+}
+
+/* O numeral entra na propria linha do nome, e nao numa coluna a esquerda: numa
+ * carta centralizada, uma coluna lateral quebraria o eixo. Em `em` para
+ * acompanhar o corpo do titulo quando a medida muda. */
+.tempo__ordem {
+  margin-right: 0.6em;
+  color: var(--tint);
+  font-size: 0.8em;
+  font-style: italic;
+  letter-spacing: 0;
+}
+
+.tempo h3 {
+  max-width: 28ch;
+  margin: 0 auto;
+  font-size: clamp(1.18rem, 1.75vw, 1.6rem);
+  line-height: 1.2;
+}
+
+.tempo__descricao {
+  max-width: 44ch;
+  margin: 9px auto 0;
+  color: var(--dim);
+  font-size: 0.9rem;
+  line-height: 1.62;
+}
+
+/* A sobremesa ainda nao existe. Em italico e no tom do texto de apoio ela se
+ * anuncia como espaco reservado, sem fingir que ja e um prato. */
+.tempo--aberto h3 {
+  color: var(--dim);
+  font-style: italic;
+}
+
+/* Delegacao -------------------------------------------------------------- */
+
+/*
+ * Duas fichas lado a lado, cada uma com retrato e texto na mesma linha. Antes
+ * eram dois retratos 3/4 empilhados sobre nome e cargo: a secao passava de uma
+ * tela inteira so de foto e nao dizia quem eram as pessoas. Deitada, a ficha
+ * cabe numa tela de notebook mesmo com um paragrafo para cada um.
+ *
+ * O filete vertical entre as duas e o mesmo gesto da carta: separa sem caixa.
+ */
+.delegacao {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: clamp(40px, 4vw, 60px) 0 0;
+  text-align: left;
+}
+
+.pessoa {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'foto cabeca'
+    'foto texto';
+  column-gap: clamp(20px, 2vw, 28px);
+  padding-inline: clamp(22px, 2.6vw, 40px);
+}
+
+.pessoa:first-child {
+  padding-left: 0;
+}
+
+.pessoa:last-child {
+  padding-right: 0;
+}
+
+.pessoa + .pessoa {
+  border-left: 1px solid var(--hair);
+}
+
+/* So o titulo: quem apresenta cada convidado e a propria ficha. */
+.convidados__head {
+  max-width: 46rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.convidados__head h2 {
+  font-size: clamp(2.8rem, 4.1vw, 4.4rem);
+}
+
+.convidados {
+  padding-block: clamp(80px, 7vw, 112px);
+}
+
+.convidados .wrap {
+  width: min(1280px, var(--wrap-wide));
+}
+
+/* 4/5 e a proporcao nativa dos dois retratos oficiais: nenhum corte. */
+.pessoa__figure {
+  grid-area: foto;
+  align-self: start;
+  margin: 0;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  background: var(--soft);
+}
+
+.pessoa__figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /*
+   * Os dois retratos vieram de ensaios diferentes: um de estudio, sobre fundo
+   * cinza, e um de externa, com folhagem de outono atras. O dessaturado leve
+   * aproxima os dois e segura os dois pontos altos de cor — o blazer rosa de um
+   * e o laranja das arvores do outro — dentro de uma pagina de creme e verde.
+   *
+   * AFERIR NA TELA: 0.88 foi calibrado para os retratos anteriores. Se o rosa
+   * ainda puxar a pagina, descer para 0.80 resolve sem lavar os dois.
+   */
+  filter: saturate(0.88);
+}
+
+/*
+ * O lugar de quem ainda nao tem retrato ja fica reservado, na mesma proporcao
+ * dos outros: quando a foto chegar, a pagina nao muda de forma — so troca o
+ * conteudo da moldura. O tracejado diz "falta isto" sem parecer erro.
+ */
+.pessoa__figure.esta-vazia {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--hair);
+  background: transparent;
+}
+
+.pessoa__vazio {
+  color: var(--dim);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Tudo parte da borda de cima do retrato: cargo, nome e texto comecam na mesma
+ * altura nas duas fichas, e o olho le as duas colunas como um par. */
+.pessoa__cabeca {
+  grid-area: cabeca;
+}
+
+.pessoa__papel {
+  margin: 0 0 14px;
+  color: var(--tint);
+  font-size: 0.69rem;
+  font-weight: 650;
+  letter-spacing: 0.15em;
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+
+/* A casa em segunda linha e no tom de apoio: as duas fichas ficam com a mesma
+ * cabeca de duas linhas, e o verde fica so para o cargo, que e o que muda. */
+.pessoa__casa {
+  display: block;
+  color: var(--dim);
+}
+
+.pessoa h3 {
+  margin: 0;
+  font-size: clamp(1.5rem, 2vw, 1.95rem);
+  line-height: 1.08;
+}
+
+.pessoa__legenda {
+  margin: 12px 0 0;
+  color: var(--fg);
+  font-family: var(--serif);
+  font-size: clamp(0.98rem, 1.05vw, 1.05rem);
+  font-style: italic;
+  line-height: 1.45;
+}
+
+/* Um filete curto em verde, e nao uma linha na largura toda: marca a troca de
+ * voz, do nome para a apresentacao, com o mesmo peso de um sinal de carta. */
+.pessoa__texto {
+  grid-area: texto;
+  margin: 0;
+  color: var(--dim);
+  font-size: 0.9rem;
+  line-height: 1.72;
+}
+
+.pessoa__texto::before {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 1px;
+  margin: 22px 0 20px;
+  background: var(--tint);
+  opacity: 0.7;
+}
+
+/* Palco da marca d'agua, que e absoluta. */
+.secao--historia {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Acima da marca d'agua, que fica em `z-index: 0`. */
+.secao--historia > .wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* Reserva ---------------------------------------------------------------- */
+
+/*
+ * Uma tarja, nao uma secao. A grade de tres colunas que havia aqui repetia, no
+ * mesmo rolar de tela, as datas da faixa de fatos logo acima e o endereco do
+ * mapa logo abaixo — tres vezes a mesma informacao em pouco mais de uma tela.
+ * Sobrou o que nao esta em nenhum outro lugar: o numero para onde escrever.
+ *
+ * Em vinho como a carta: sao os dois momentos em que a pagina pede uma decisao.
+ */
+.reserva-faixa {
+  padding: clamp(30px, 3.6vw, 48px) 0;
+}
+
+.reserva-faixa__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: clamp(14px, 2.4vw, 36px);
+}
+
+.reserva-faixa__texto {
+  max-width: 42ch;
+  font-family: var(--serif);
+  font-size: clamp(1.15rem, 1.9vw, 1.6rem);
+  letter-spacing: -0.025em;
+  line-height: 1.32;
+}
+
+@media (max-width: 1080px) {
+  /* Empilhado, o texto abre a secao e a galeria o acompanha logo abaixo. */
+  .historia {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(30px, 5vw, 46px);
+  }
+
+  .historia__copy {
+    order: -1;
+  }
+
+  /* Empilhada, a moldura 4/5 ficaria mais alta que a tela e empurraria o
+     titulo para fora. */
+  .quadro-evento .casa-fotos {
+    aspect-ratio: 3 / 2;
+  }
+}
+
+@media (max-width: 1100px) {
+  /*
+   * Abaixo desta largura, cinco colunas dao tiles de menos de 200px — legenda
+   * de duas linhas nao cabe neles. A tira vira trilho horizontal com encaixe,
+   * o mesmo gesto da galeria da home e do bistro. Rolagem nativa, sem script:
+   * nas larguras em que isto vale, o dedo ja faz o trabalho.
+   */
+  .tira {
+    width: auto;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: clamp(206px, 46vw, 268px);
+    padding-inline: var(--gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+    scroll-padding-inline: var(--gutter);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .tira::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tira__item {
+    scroll-snap-align: start;
+  }
+
+  .tira__paginacao {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: clamp(24px, 4vw, 32px) auto 0;
+  }
+
+  .tira__paginacao button {
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--marca) 28%, transparent);
+    transition: transform 240ms var(--ease), background 240ms var(--ease);
+  }
+
+  .tira__paginacao button.esta-ativa {
+    background: var(--marca);
+    transform: scale(1.35);
+  }
+}
+
+@media (max-width: 860px) {
+  /*
+   * Na largura do celular nao ha "esquerda" para escurecer: o texto ocupa a
+   * faixa inteira. O scrim volta a subir de baixo, como o da cozinha, e o
+   * enquadramento recentra para os dois caberem no corte vertical.
+   */
+  .sangria {
+    min-height: min(80vh, 620px);
+    align-items: flex-end;
+  }
+
+  .sangria img {
+    object-position: 50% 38%;
+  }
+
+  .sangria::after {
+    background: linear-gradient(
+      to top,
+      rgba(10, 9, 8, 0.92) 0%,
+      rgba(10, 9, 8, 0.62) 38%,
+      rgba(10, 9, 8, 0.1) 76%
+    );
+  }
+
+  .sangria__copy {
+    padding-bottom: clamp(38px, 7vw, 56px);
+  }
+
+  .sangria__linha {
+    max-width: 20ch;
+  }
+}
+
+@media (max-width: 860px) {
+  .fatos__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(22px, 4vw, 32px);
+  }
+
+  /* Em duas colunas o filete precisa cair no primeiro item de cada linha, e
+   * nao so no primeiro do grid. */
+  .fato:nth-child(odd) {
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .fato:nth-child(even) {
+    padding-left: clamp(18px, 3vw, 26px);
+    border-left: 1px solid var(--hair);
+  }
+}
+
+/* Abaixo disso duas fichas lado a lado espremem o paragrafo numa coluna de
+ * poucas palavras. Empilhadas, cada uma mantem retrato e texto deitados. */
+@media (max-width: 1080px) {
+  .delegacao {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 820px;
+    margin-inline: auto;
+  }
+
+  .pessoa {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .pessoa,
+  .pessoa:first-child,
+  .pessoa:last-child {
+    padding-inline: 0;
+  }
+
+  .pessoa + .pessoa {
+    margin-top: clamp(32px, 5vw, 48px);
+    padding-top: clamp(32px, 5vw, 48px);
+    border-top: 1px solid var(--hair);
+    border-left: 0;
+  }
+
+  /* Empilhadas, a segunda espelha a primeira: o retrato troca de lado e a
+   * coluna deixa de parecer uma lista de cadastro. */
+  .pessoa + .pessoa {
+    grid-template-areas:
+      'cabeca foto'
+      'texto foto';
+  }
+}
+
+@media (max-width: 860px) {
+  /*
+   * O sobrescrito continua lado a lado no celular: as duas marcas somam ~52vw e
+   * cabem folgadas. Empilhadas, virariam duas linhas de credito antes do
+   * titulo — atraso demais para quem chegou pelo link da bio.
+   */
+  .hero--evento .evento__marcas {
+    gap: clamp(18px, 5vw, 30px);
+  }
+
+  .evento__logo--bistro {
+    width: min(132px, 31vw);
+  }
+
+  .evento__logo--rustichella {
+    width: min(92px, 21vw);
+  }
+}
+
+@media (max-width: 640px) {
+  .hero--evento {
+    min-height: 700px;
+  }
+
+  /*
+   * Ate uns 540px o titulo ainda cabe numa linha so, que e o que o cliente
+   * pediu. Abaixo disso ele quebra depois do "&" — e ai o que manda e a segunda
+   * linha, "Rustichella d'Abruzzo", que nao pode quebrar. Este corpo e o maior
+   * que ainda deixa essa linha inteira num 360px.
+   */
+  .hero--evento .evento__titulo {
+    font-size: clamp(1.75rem, 7vw, 2.6rem);
+  }
+
+  /* Retrato de novo: na largura do celular a moldura 3/2 fica baixa demais e
+     os ninhos de massa viram uma tira sem assunto. */
+  .quadro-evento .casa-fotos {
+    aspect-ratio: 4 / 5;
+  }
+
+  /* A marca d'agua encosta na coluna de texto quando so ha uma; recuada e mais
+   * apagada, ela continua presente sem disputar a leitura. */
+  .espiga--historia {
+    opacity: 0.06;
+  }
+
+  /*
+   * No celular a foto toma a largura da tela, de borda a borda, e o texto vem
+   * inteiro embaixo. Dividir a linha com o texto deixava o retrato do tamanho
+   * de uma miniatura e a cabeca espremida em tres linhas de italico.
+   * Sem espelho e sem filete: a propria foto seguinte ja separa as fichas.
+   */
+  .convidados__head + .delegacao {
+    margin-top: 36px;
+  }
+
+  .pessoa,
+  .pessoa + .pessoa {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      'foto'
+      'cabeca'
+      'texto';
+    text-align: center;
+  }
+
+  /* Centralizada sob a foto, a ficha segue o eixo do titulo da secao e da
+   * carta: e o mesmo eixo da pagina inteira no celular. */
+  .pessoa + .pessoa {
+    margin-top: 72px;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  /* `(100% - 100vw) / 2` e a sangria ate a borda sem depender do gutter. */
+  .pessoa__figure {
+    margin-inline: calc((100% - 100vw) / 2);
+    margin-bottom: 28px;
+  }
+
+  .pessoa h3 {
+    font-size: 1.8rem;
+  }
+
+  .pessoa__legenda {
+    max-width: 30ch;
+    margin-inline: auto;
+  }
+
+  .pessoa__texto {
+    max-width: 36ch;
+    margin-inline: auto;
+    font-size: 0.95rem;
+  }
+
+  .pessoa__texto::before {
+    margin-inline: auto;
+  }
+
+  /* "Os convidados" numa linha so ate uns 300px de tela. */
+  .convidados__head h2 {
+    font-size: clamp(2.1rem, 10.5vw, 2.8rem);
+  }
+}
