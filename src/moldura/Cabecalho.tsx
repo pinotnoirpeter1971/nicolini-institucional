@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { casa } from '../data/casa';
 import { categoriasNoMenu, itensAcesos, lojaFisica, menuPrincipal, modulos, pecasDeLoja, todosOsProdutos } from '../menu-do-site';
 import { abrirPainel, useSacola } from '../sacola/armazem';
 import { Arrow, Fechar, Menu, Pin, Sacola } from '../components/Icons';
-import { BotaoCep, BotaoDepartamentos, CampoDeBusca, IconeConta, IconeCurtidos } from './Guardadas';
+import { BotaoCep, CampoDeBusca, IconeConta, IconeCurtidos } from './Guardadas';
 
 /*
  * O header do protótipo do e-commerce, como ele é (decisão de Pedro,
@@ -37,14 +37,32 @@ export function Cabecalho() {
   const pathname = (usePathname() ?? '/').toLowerCase();
   const [rolado, setRolado] = useState(false);
   const [aberto, setAberto] = useState(false);
+  const [deptos, setDeptos] = useState(false);
+  const refDeptos = useRef<HTMLDivElement>(null);
   const categorias = itensAcesos(categoriasNoMenu);
   const paginas = itensAcesos(menuPrincipal);
   const ativo = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   const travada = (peca: keyof typeof pecasDeLoja) => pecasDeLoja[peca] === 'travada';
+  const ativa = (peca: keyof typeof pecasDeLoja) => pecasDeLoja[peca] === 'ativa';
+  const departamentos = todosOsProdutos.aceso && categorias.length > 0;
 
   useEffect(() => {
     setAberto(false);
+    setDeptos(false);
   }, [pathname]);
+
+  /* Departamentos aberto: Esc ou clique fora fecham. */
+  useEffect(() => {
+    if (!deptos) return undefined;
+    const tecla = (e: KeyboardEvent) => e.key === 'Escape' && setDeptos(false);
+    const fora = (e: MouseEvent) => !refDeptos.current?.contains(e.target as Node) && setDeptos(false);
+    document.addEventListener('keydown', tecla);
+    document.addEventListener('mousedown', fora);
+    return () => {
+      document.removeEventListener('keydown', tecla);
+      document.removeEventListener('mousedown', fora);
+    };
+  }, [deptos]);
 
   useEffect(() => {
     const atualizar = () => setRolado(window.scrollY > 8);
@@ -90,7 +108,7 @@ export function Cabecalho() {
           {casa.marca}
         </Link>
 
-        {travada('busca') && <CampoDeBusca />}
+        {(ativa('busca') || travada('busca')) && <CampoDeBusca />}
 
         <div className="cabecalho__ferramentas">
           {travada('cep') && <BotaoCep />}
@@ -102,7 +120,18 @@ export function Cabecalho() {
 
       <nav className="cabecalho__nav" aria-label="Navegação principal">
         <div className="wrap cabecalho__nav-linha">
-          {travada('megaMenu') && <BotaoDepartamentos />}
+          {ativa('megaMenu') && departamentos && (
+            <div className="cabecalho__deptos" ref={refDeptos}>
+              <button type="button" className="cabecalho__departamentos" aria-expanded={deptos} aria-controls="lista-de-departamentos" onClick={() => setDeptos((d) => !d)}>
+                <Menu /> Departamentos
+              </button>
+              <ul id="lista-de-departamentos" className="cabecalho__deptos-lista" hidden={!deptos}>
+                {[...categorias, todosOsProdutos].map((item) => (
+                  <li key={item.href}>{link(item)}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           {categorias.map((item) => link(item))}
           {paginas.map((item) => link(item))}
           <Link href={lojaFisica.href} className={`cabecalho__loja ${ativo(lojaFisica.href) ? 'is-ativo' : ''}`} aria-current={ativo(lojaFisica.href) ? 'page' : undefined}>
@@ -113,12 +142,15 @@ export function Cabecalho() {
 
       <nav id="menu-do-celular" className="cabecalho__gaveta" aria-label="Navegação no celular" hidden={!aberto}>
         <div className="wrap cabecalho__gaveta-lista">
-          {todosOsProdutos.aceso && (
-            <Link href={todosOsProdutos.href} className="cabecalho__gaveta-todos">
-              {todosOsProdutos.rotulo} <Arrow />
-            </Link>
+          <p className="cabecalho__gaveta-titulo">A casa</p>
+          {[...paginas, lojaFisica].map((item) => link(item))}
+          {ativa('megaMenu') && departamentos && (
+            <>
+              <p className="cabecalho__gaveta-titulo cabecalho__gaveta-titulo--dept">Departamentos</p>
+              {link(todosOsProdutos, 'cabecalho__gaveta-todos')}
+              {categorias.map((item) => link(item))}
+            </>
           )}
-          {[...categorias, ...paginas, lojaFisica].map((item) => link(item))}
           {travada('curtidos') && <IconeCurtidos comRotulo />}
           {travada('conta') && <IconeConta comRotulo />}
         </div>

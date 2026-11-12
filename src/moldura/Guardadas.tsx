@@ -8,7 +8,7 @@
  * apagadas. A função de cada uma pede spec próprio.
  */
 import { textoDaFaixa } from '../menu-do-site';
-import { Busca, Coracao, Menu, Pessoa, Pin } from '../components/Icons';
+import { Busca, Coracao, Pessoa, Pin } from '../components/Icons';
 
 const EM_BREVE = 'Em breve';
 
@@ -24,12 +24,14 @@ export function FaixaDeAnuncio() {
   );
 }
 
+/* PROVISÓRIO (demonstração, 12/11/2026; Pedro desfaz depois): formulário GET que leva a
+ * /produtos?busca=<termo>; a página filtra por nome e marca. Sem rede aqui, sem dado guardado. */
 export function CampoDeBusca() {
   return (
-    <div className="cabecalho__busca" role="search" title={EM_BREVE}>
+    <form className="cabecalho__busca" role="search" action="/produtos" method="get">
       <Busca />
-      <input type="search" placeholder="Busque produtos, marcas e origens" aria-label="Buscar produtos (em breve)" disabled />
-    </div>
+      <input type="search" name="busca" placeholder="Busque produtos, marcas e origens" aria-label="Buscar produtos" autoComplete="off" required />
+    </form>
   );
 }
 
@@ -61,15 +63,6 @@ export function IconeCurtidos({ comRotulo = false }: { comRotulo?: boolean }) {
   );
 }
 
-/* O gatilho do mega menu de departamentos: as categorias vêm do Engine, que o
- * layout não chama, então o menu não abre (DESIGN-BRIEF §6). */
-export function BotaoDepartamentos() {
-  return (
-    <button type="button" className="cabecalho__departamentos" aria-disabled="true" title={EM_BREVE}>
-      <Menu /> Departamentos
-    </button>
-  );
-}
 
 export function Newsletter() {
   return (

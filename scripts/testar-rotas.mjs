@@ -365,16 +365,17 @@ try {
      * vista, mas travadas. Todas desativadas, nenhuma leva a página que não
      * existe, nada de formulário; as de fora do header seguem apagadas.
      */
-    const travadas = [...r.corpo.matchAll(/<button\b[^>]*class="(faixa-de-anuncio__cep|cabecalho__cep|cabecalho__icone|cabecalho__travado|cabecalho__departamentos)"[^>]*>/g)];
+    const travadas = [...r.corpo.matchAll(/<button\b[^>]*class="(faixa-de-anuncio__cep|cabecalho__cep|cabecalho__icone|cabecalho__travado)"[^>]*>/g)];
     const soltas = travadas.filter((m) => !m[0].includes('aria-disabled="true"')).map((m) => m[1]);
-    const busca = r.corpo.match(/<input\b[^>]*type="search"[^>]*>/g) ?? [];
+    /* Busca e Departamentos destravados (12/11/2026; a busca é provisória): form GET para /produtos e botão que abre as categorias. */
+    const busca = r.corpo.match(/<form\b[^>]*role="search"[^>]*>/g) ?? [];
     conferir(
-      `${caminho} com as peças do header à vista e travadas (faixa, busca, CEP, conta, curtidos, departamentos)`,
-      travadas.length === 7 && soltas.length === 0 && busca.length === 1 && busca.every((b) => /\sdisabled(="")?[\s>/]/.test(b)),
+      `${caminho} com faixa, CEP, conta e curtidos travados; busca (GET /produtos) e Departamentos ativos`,
+      travadas.length === 6 && soltas.length === 0 && busca.length === 1 && busca[0].includes('action="/produtos"') && /<button\b[^>]*class="cabecalho__departamentos"[^>]*aria-expanded="false"/.test(r.corpo),
       `${travadas.length} botões, soltos: ${soltas.join(' ') || 'nenhum'}, busca: ${busca.join(' ')}`,
     );
     const semPagina = links.filter((l) => /^\/(busca|buscar|conta|minha-conta|curtidos|favoritos|departamentos|cep|checkout|entrar)(\/|$)/.test(l));
-    conferir(`${caminho} sem link para página que não existe`, semPagina.length === 0 && !/<form\b/.test(r.corpo), semPagina.join(' '));
+    conferir(`${caminho} sem link para página que não existe`, semPagina.length === 0 && !/<form\b(?![^>]*role="search")/.test(r.corpo), semPagina.join(' '));
     conferir(`${caminho} sem newsletter, selos de pagamento nem promessa de entrega`, !/newsletter|rodape__pagamentos|Entrega grátis/.test(r.corpo));
     conferir(`${caminho} sem o laboratório`, !/laboratorio|dados simulados/i.test(r.corpo));
     conferir(`${caminho} com o header novo (Eventos, Bistrô e Loja física)`, r.corpo.includes('class="cabecalho') && links.includes('/eventos') && links.includes('/bistro') && links.includes('/a-loja'));
