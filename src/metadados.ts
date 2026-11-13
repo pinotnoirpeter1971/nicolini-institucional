@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { PublicMediaData } from './engine/sdk-0.7.0/index.js';
 
 /*
  * Metadados das páginas fixas. Antes moravam em index.html e rustichella.html.
@@ -77,4 +78,32 @@ export function metadadosDaPagina({
     twitter: { card: 'summary_large_image' },
     ...(privada ? { robots: { index: false, follow: false } } : {}),
   };
+}
+
+/*
+ * Imagem de compartilhamento da matéria/evento: a capa servida como JPEG por
+ * /capa/<slug>.jpg (app/capa/[arquivo]/route.ts), porque o WhatsApp não mostra
+ * miniatura de WebP, que é o que o Engine entrega. ?v muda quando a capa muda.
+ */
+export const LARGURA_DA_CAPA = 1200;
+
+type Capa = { photo: PublicMediaData | null } | null;
+
+export function fotoDaCapa(capa: Capa): { fonte: string; width: number; height: number } | null {
+  const foto = capa?.photo;
+  if (!foto) return null;
+  if (foto.kind === 'video') return foto.poster ? { fonte: foto.poster, width: foto.width, height: foto.height } : null;
+  const maior = [...foto.sources].sort((a, b) => b.width - a.width)[0];
+  if (!maior || maior.width <= foto.width) return { fonte: foto.url, width: foto.width, height: foto.height };
+  return { fonte: maior.url, width: maior.width, height: Math.round((maior.width * foto.height) / foto.width) };
+}
+
+export function imagemDaCapa(slug: string, capa: Capa) {
+  const foto = fotoDaCapa(capa);
+  if (!foto || !foto.width || !foto.height) return null;
+  let h = 5381;
+  for (const c of foto.fonte) h = ((h * 33) ^ c.charCodeAt(0)) >>> 0;
+  /* A largura de saída segue a maior fonte; a proporção é a da foto. */
+  const width = Math.min(LARGURA_DA_CAPA, foto.width);
+  return { url: `/capa/${slug}.jpg?v=${h.toString(36)}`, width, height: Math.round((width * foto.height) / foto.width) };
 }

@@ -273,7 +273,7 @@ try {
         categoria: /href="\/blog\/categoria\/receita-do-mes"[^>]*>Receita do mês/,
         categoriaSlug: 'receita-do-mes',
         tituloNaCategoria: 'Massa fresca na manteiga e sálvia',
-        imagem: /\/media\/blog\/massas\.jpg$/,
+        imagem: /\/capa\/massa-fresca-na-manteiga-e-sage\.jpg\?v=\w+$/,
         proximosEmOrdem: ['Degustação de azeites', 'Jantar Nicolini × Rustichella', 'Noite de vinhos do Sul'],
         eventoComPagina: { titulo: 'Rustichella', slug: 'jantar-nicolini-e-rustichella', caminho: '/rustichella' },
         eventoSemPagina: 'degustacao-de-azeites',

@@ -2,7 +2,7 @@ import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { eventIsUpcoming } from '../../../../src/engine/sdk-0.7.0/index.js';
 import { hojeNaCasa } from '../../../../src/engine/formato';
 import { descricaoDaMateria } from '../../../../src/ui/descricao';
-import { metadadosDaPagina } from '../../../../src/metadados';
+import { imagemDaCapa, metadadosDaPagina } from '../../../../src/metadados';
 import { indiceDoBlog, materia as lerMateria, materias } from '../../../../src/engine/fonte';
 import { caminhoDaPaginaPropria } from '../../../../src/ui/CartaoDeMateria';
 import { PaginaDoEvento } from '../../../../src/paginas/Blog';
@@ -27,8 +27,7 @@ async function noAr(slug: string) {
 export async function generateMetadata({ params }: Props) {
   const m = await noAr((await params).slug);
   if (!m || m.kind !== 'event') return {};
-  const capa = m.cover?.photo;
-  return metadadosDaPagina({ caminho: `/eventos/${m.slug}`, titulo: m.title, descricao: descricaoDaMateria(m), imagem: capa && capa.kind === 'image' ? capa : null });
+  return metadadosDaPagina({ caminho: `/eventos/${m.slug}`, titulo: m.title, descricao: descricaoDaMateria(m), imagem: imagemDaCapa(m.slug, m.cover) });
 }
 
 export default async function Pagina({ params }: Props) {

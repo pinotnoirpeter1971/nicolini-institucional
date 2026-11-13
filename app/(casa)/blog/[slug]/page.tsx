@@ -1,6 +1,6 @@
 import { notFound, permanentRedirect } from 'next/navigation';
 import { descricaoDaMateria } from '../../../../src/ui/descricao';
-import { metadadosDaPagina } from '../../../../src/metadados';
+import { imagemDaCapa, metadadosDaPagina } from '../../../../src/metadados';
 import { indiceDoBlog, materia as lerMateria, materias } from '../../../../src/engine/fonte';
 import { PaginaDaMateria } from '../../../../src/paginas/Blog';
 
@@ -25,8 +25,7 @@ async function noAr(slug: string) {
 export async function generateMetadata({ params }: Props) {
   const m = await noAr((await params).slug);
   if (!m || m.kind !== 'article') return {};
-  const capa = m.cover?.photo;
-  return metadadosDaPagina({ caminho: `/blog/${m.slug}`, titulo: m.title, descricao: descricaoDaMateria(m), imagem: capa && capa.kind === 'image' ? capa : null });
+  return metadadosDaPagina({ caminho: `/blog/${m.slug}`, titulo: m.title, descricao: descricaoDaMateria(m), imagem: imagemDaCapa(m.slug, m.cover) });
 }
 
 export default async function Pagina({ params }: Props) {
