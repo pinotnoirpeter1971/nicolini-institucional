@@ -83,27 +83,46 @@ export function metadadosDaPagina({
 /*
  * Imagem de compartilhamento da matéria/evento: a capa servida como JPEG por
  * /capa/<slug>.jpg (app/capa/[arquivo]/route.ts), porque o WhatsApp não mostra
- * miniatura de WebP, que é o que o Engine entrega. ?v muda quando a capa muda.
+ * miniatura de WebP, que é o que o Engine entrega. Sai recortada em 1,91:1 no
+ * ponto de foco da capa, como a prévia do WhatsApp no editor do Engine. ?v
+ * muda quando a foto ou o foco mudam: endereço novo, miniatura nova.
  */
 export const LARGURA_DA_CAPA = 1200;
+export const PROPORCAO_DA_CAPA = 1.91;
 
 type Capa = { photo: PublicMediaData | null } | null;
+type Foco = { x: number; y: number };
 
-export function fotoDaCapa(capa: Capa): { fonte: string; width: number; height: number } | null {
+export function fotoDaCapa(capa: Capa): { fonte: string; width: number; height: number; foco: Foco } | null {
   const foto = capa?.photo;
   if (!foto) return null;
-  if (foto.kind === 'video') return foto.poster ? { fonte: foto.poster, width: foto.width, height: foto.height } : null;
+  const foco = foto.focus ?? { x: 0.5, y: 0.5 };
+  if (foto.kind === 'video') return foto.poster ? { fonte: foto.poster, width: foto.width, height: foto.height, foco } : null;
   const maior = [...foto.sources].sort((a, b) => b.width - a.width)[0];
-  if (!maior || maior.width <= foto.width) return { fonte: foto.url, width: foto.width, height: foto.height };
-  return { fonte: maior.url, width: maior.width, height: Math.round((maior.width * foto.height) / foto.width) };
+  if (!maior || maior.width <= foto.width) return { fonte: foto.url, width: foto.width, height: foto.height, foco };
+  return { fonte: maior.url, width: maior.width, height: Math.round((maior.width * foto.height) / foto.width), foco };
+}
+
+/* Recorte 1,91:1 no foco (como object-position), em pixels da foto, e o tamanho de saída. */
+export function recorteDaCapa(width: number, height: number, foco: Foco) {
+  const cw = Math.min(width, Math.round(height * PROPORCAO_DA_CAPA));
+  const ch = Math.min(height, Math.round(cw / PROPORCAO_DA_CAPA));
+  const limite = (v: number) => Math.min(1, Math.max(0, v));
+  const saida = Math.min(LARGURA_DA_CAPA, cw);
+  return {
+    left: Math.round((width - cw) * limite(foco.x)),
+    top: Math.round((height - ch) * limite(foco.y)),
+    width: cw,
+    height: ch,
+    saida: { width: saida, height: Math.round(saida / PROPORCAO_DA_CAPA) },
+  };
 }
 
 export function imagemDaCapa(slug: string, capa: Capa) {
   const foto = fotoDaCapa(capa);
   if (!foto || !foto.width || !foto.height) return null;
   let h = 5381;
-  for (const c of foto.fonte) h = ((h * 33) ^ c.charCodeAt(0)) >>> 0;
-  /* A largura de saída segue a maior fonte; a proporção é a da foto. */
-  const width = Math.min(LARGURA_DA_CAPA, foto.width);
-  return { url: `/capa/${slug}.jpg?v=${h.toString(36)}`, width, height: Math.round((width * foto.height) / foto.width) };
+  for (const c of `${foto.fonte}|${foto.foco.x}|${foto.foco.y}`) h = ((h * 33) ^ c.charCodeAt(0)) >>> 0;
+  const { saida } = recorteDaCapa(foto.width, foto.height, foto.foco);
+  return { url: `/capa/${slug}.jpg?v=${h.toString(36)}`, ...saida };
 }
