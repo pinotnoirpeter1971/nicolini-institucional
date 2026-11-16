@@ -147,30 +147,20 @@
   line-height: 1.5;
 }
 
-/* A assinatura da Capilano fecha o site, centrada: longe do botão do WhatsApp, que fica no canto. */
-.rodape__capilano {
-  display: flex;
-  justify-content: center;
-  padding-top: clamp(40px, 5vw, 56px);
-  padding-bottom: 8px;
-}
-
+/* A assinatura da Capilano: uma linha na ponta direita da faixa legal (no
+ * celular, sozinha e à direita, longe do botão do WhatsApp, que fica no canto). */
 .capilano {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 7px;
+  margin-left: auto;
   color: #8c857b;
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  line-height: 1.45;
-  text-align: center;
 }
 
 .capilano svg {
-  width: 17px;
-  height: 17px;
-  color: #b3ab9f;
+  flex: none;
+  width: 11px;
+  height: 11px;
 }
 
 /* Guardados: newsletter e selos de pagamento. */

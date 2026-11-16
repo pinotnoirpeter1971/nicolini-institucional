@@ -15,15 +15,9 @@
   var raiz = document.getElementById('app');
   var avisos = document.getElementById('avisos');
 
-  /* A assinatura da Capilano fecha cada vista: o símbolo vem do CSS e a frase
-   * fica em três linhas. As vistas se redesenham inteiras, então ela entra
-   * depois de cada desenho, no fim do `main`. */
-  var ASSINATURA = '<div class="capilano-pe"><div class="wrap"><div class="capilano">' +
-    '<p>Desenvolvido sob<br />medida<br />pela Capilano.</p></div></div></div>';
-  new MutationObserver(function () {
-    var principal = raiz.querySelector('#conteudo');
-    if (principal && !principal.querySelector('.capilano')) principal.insertAdjacentHTML('beforeend', ASSINATURA);
-  }).observe(raiz, { childList: true, subtree: true });
+  /* A assinatura da Capilano: a última linha do rodapé das vistas (o símbolo
+   * vem do CSS). As telas da reserva ficam sem ela. */
+  var ASSINATURA = '<p class="capilano">Desenvolvido sob medida pela Capilano</p>';
 
   /* === Utilidades ======================================================== */
 
@@ -691,6 +685,7 @@
               '<p class="selo-demo">Protótipo</p>' +
               '<p>O cardápio desta entrada é um estudo visual. Consulte a disponibilidade ' +
               'real de reservas no formulário antes de planejar sua visita.</p>' +
+              ASSINATURA +
             '</div>' +
           '</div>' +
         '</section>' +
@@ -855,6 +850,7 @@
                   : '<p class="selo-demo">Protótipo</p><p>Preços e composição dos pratos são demonstrativos. ' +
                     'Fale com o salão sobre restrições alimentares — não listamos alergênicos nesta versão.</p>') +
                 rodapeReserva +
+                ASSINATURA +
               '</div>' +
             '</div>' +
           '</div>' +
@@ -977,6 +973,7 @@
           '<p class="selo-demo">Protótipo</p>' +
           '<p>Horários e contatos da página de visita ainda são provisórios. ' +
           'Para reservas, consulte a agenda em tempo real.</p>' +
+          ASSINATURA +
         '</div>' +
       '</div></main>'
     );

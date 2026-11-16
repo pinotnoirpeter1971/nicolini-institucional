@@ -85,9 +85,6 @@ export function Rodape() {
           {casa.razaoSocial} · CNPJ {casa.cnpj}
         </p>
         <p>Endereço, contato e CNPJ obtidos de registros públicos.</p>
-      </div>
-
-      <div className="wrap rodape__capilano">
         <AssinaturaCapilano />
       </div>
     </footer>

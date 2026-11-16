@@ -1,6 +1,6 @@
 /*
- * A assinatura da Capilano, a última linha do site: o símbolo em cima e a
- * frase em três linhas, pequena e quieta. O símbolo usa a cor do texto
+ * A assinatura da Capilano: uma linha discreta na ponta direita da faixa legal
+ * do rodapé, com o símbolo ao lado. O símbolo usa a cor do texto
  * (currentColor), então a cor fica no CSS (`.capilano`, em moldura-rodape.css).
  */
 const SIMBOLO =
@@ -8,17 +8,11 @@ const SIMBOLO =
 
 export function AssinaturaCapilano() {
   return (
-    <div className="capilano">
+    <p className="capilano">
       <svg viewBox="0 0 260.11 260.11" aria-hidden="true" focusable="false">
         <path fill="currentColor" fillRule="evenodd" d={SIMBOLO} />
       </svg>
-      <p>
-        Desenvolvido sob
-        <br />
-        medida
-        <br />
-        pela Capilano.
-      </p>
-    </div>
+      Desenvolvido sob medida pela Capilano
+    </p>
   );
 }
