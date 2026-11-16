@@ -1512,7 +1512,12 @@ svg {
 /* Assinatura da Capilano, no fim de cada vista: pequena e quieta, o símbolo
  * em cima e a frase em três linhas. O símbolo é máscara: pega a cor do tema. */
 .capilano-pe {
-  padding: 4px 0 calc(40px + env(safe-area-inset-bottom));
+  padding: 56px 0 calc(40px + env(safe-area-inset-bottom));
+}
+
+/* Depois do rodapé da vista, o respiro já vem dele. */
+main:has(.rodape) .capilano-pe {
+  padding-top: 4px;
 }
 
 .capilano {
