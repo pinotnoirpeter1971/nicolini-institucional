@@ -1504,9 +1504,36 @@ svg {
 }
 
 /* Espaço reservado embaixo do conteúdo, para o convite nunca cobrir a última
- * linha do rodapé. */
-.cardapio--flutua .rodape {
+ * linha. A última linha agora é a assinatura da Capilano. */
+.cardapio--flutua .capilano-pe {
   padding-bottom: calc(92px + env(safe-area-inset-bottom));
+}
+
+/* Assinatura da Capilano, no fim de cada vista: pequena e quieta, o símbolo
+ * em cima e a frase em três linhas. O símbolo é máscara: pega a cor do tema. */
+.capilano-pe {
+  padding: 4px 0 calc(40px + env(safe-area-inset-bottom));
+}
+
+.capilano {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.capilano::before {
+  content: '';
+  width: 17px;
+  height: 17px;
+  background: var(--marca);
+  -webkit-mask: url(../assets/capilano.svg) center / contain no-repeat;
+  mask: url(../assets/capilano.svg) center / contain no-repeat;
 }
 
 /* Rodapé do cardápio */

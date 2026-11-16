@@ -4,6 +4,7 @@ import { itensAcesos, lojaFisica, menuPrincipal, modulos, pecasDeLoja, todosOsPr
 import { Arrow } from '../components/Icons';
 import { Newsletter, SelosDePagamento } from './Guardadas';
 import { Redes } from './Redes';
+import { AssinaturaCapilano } from './AssinaturaCapilano';
 
 /*
  * O rodapé do e-commerce, em cinco colunas, com os dados reais do site no ar
@@ -84,6 +85,10 @@ export function Rodape() {
           {casa.razaoSocial} · CNPJ {casa.cnpj}
         </p>
         <p>Endereço, contato e CNPJ obtidos de registros públicos.</p>
+      </div>
+
+      <div className="wrap rodape__capilano">
+        <AssinaturaCapilano />
       </div>
     </footer>
   );

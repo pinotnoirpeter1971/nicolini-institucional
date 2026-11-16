@@ -15,6 +15,16 @@
   var raiz = document.getElementById('app');
   var avisos = document.getElementById('avisos');
 
+  /* A assinatura da Capilano fecha cada vista: o símbolo vem do CSS e a frase
+   * fica em três linhas. As vistas se redesenham inteiras, então ela entra
+   * depois de cada desenho, no fim do `main`. */
+  var ASSINATURA = '<div class="capilano-pe"><div class="wrap"><div class="capilano">' +
+    '<p>Desenvolvido sob<br />medida<br />pela Capilano.</p></div></div></div>';
+  new MutationObserver(function () {
+    var principal = raiz.querySelector('#conteudo');
+    if (principal && !principal.querySelector('.capilano')) principal.insertAdjacentHTML('beforeend', ASSINATURA);
+  }).observe(raiz, { childList: true, subtree: true });
+
   /* === Utilidades ======================================================== */
 
   function h(texto) {

@@ -43,6 +43,11 @@
   `http://127.0.0.1:5183` (a origem autorizada); com isso o painel do
   laboratório some. Teste: `npm run test:pedidos` (casa recebendo: ponta a
   ponta, clique duplo e reenvio, preço alterado, recibo; casa pausada: recusa).
+- **Assinatura da Capilano (16/11/2026, pedido de Pedro):** o símbolo em cima
+  e "Desenvolvido sob / medida / pela Capilano." como última linha do rodapé
+  do site, centrada para não brigar com o botão do WhatsApp
+  (`src/moldura/AssinaturaCapilano.tsx`), e no fim de cada vista do `/menu/`
+  (`ASSINATURA` em `public/menu/js/app.js`, símbolo em `public/menu/assets/capilano.svg`).
 - Como rodar, onde fica cada coisa e as variáveis públicas: [`README.md`](README.md).
 
 ### Rotas e o que não pode quebrar (`next.config.ts`)
