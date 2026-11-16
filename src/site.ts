@@ -26,7 +26,7 @@ function lerChaveDeIndexacao(valor: string | undefined): boolean {
 
 export const indexavel = lerChaveDeIndexacao(process.env.NEXT_PUBLIC_SITE_INDEXAVEL);
 
-export const engineUrl = (process.env.NEXT_PUBLIC_ENGINE_URL || 'https://capilano-restaurant-engines.vercel.app').replace(/\/+$/, '');
+export const engineUrl = (process.env.NEXT_PUBLIC_ENGINE_URL || 'https://gestao.capilanocreative.com').replace(/\/+$/, '');
 
 /* A chave da casa no Engine (o mesmo `nicolini` do /menu). Blog, Produtos e
  * Pedidos são lidos por ela (SPEC-SITE §3.1). */

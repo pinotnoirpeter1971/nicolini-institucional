@@ -1,7 +1,7 @@
 window.CAPILANO_ENGINE = Object.freeze({
   sdkVersion: '0.2.0',
-  apiBaseUrl: 'https://capilano-restaurant-engines.vercel.app',
+  apiBaseUrl: 'https://gestao.capilanocreative.com',
   publicApiBaseUrl: '/menu-engine',
-  reservationApiBaseUrl: 'https://capilano-restaurant-engines.vercel.app',
+  reservationApiBaseUrl: 'https://gestao.capilanocreative.com',
   restaurantKey: 'nicolini'
 });
