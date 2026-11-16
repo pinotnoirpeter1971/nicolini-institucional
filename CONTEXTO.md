@@ -48,8 +48,10 @@
   pequeno ao lado, na ponta direita da faixa legal do rodapé (no celular,
   sozinha e à direita, longe do botão do WhatsApp;
   `src/moldura/AssinaturaCapilano.tsx`), e como última linha do rodapé do
-  cardápio e da visita no `/menu/` (`ASSINATURA` em `public/menu/js/app.js`,
-  símbolo em `public/menu/assets/capilano.svg`). As telas da reserva ficam sem ela.
+  cardápio e da visita no `/menu/`, como no Benatti: 10,5 px, translúcida,
+  56 px abaixo do resto e no canto direito no desktop (`ASSINATURA` em
+  `public/menu/js/app.js`, símbolo em `public/menu/assets/capilano.svg`). As
+  telas da reserva ficam sem ela.
 - Como rodar, onde fica cada coisa e as variáveis públicas: [`README.md`](README.md).
 
 ### Rotas e o que não pode quebrar (`next.config.ts`)

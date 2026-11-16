@@ -1509,22 +1509,30 @@ svg {
   padding-bottom: calc(92px + env(safe-area-inset-bottom));
 }
 
-/* Assinatura da Capilano: a última linha do rodapé, pequena e quieta, com o
- * símbolo ao lado. O símbolo é máscara: pega a cor do texto. */
+/* Assinatura da Capilano: a última linha do rodapé, pequena, translúcida e
+ * afastada do resto, com o símbolo ao lado; no desktop, no canto direito.
+ * O símbolo é máscara: pega a cor do texto. */
 .rodape .capilano {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin-top: 24px;
-  font-size: 11.5px;
-  letter-spacing: 0.01em;
+  gap: 6px;
+  margin-top: 56px;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  opacity: 0.7;
+}
+
+@media (min-width: 1000px) {
+  .rodape .capilano {
+    justify-content: flex-end;
+  }
 }
 
 .capilano::before {
   content: '';
   flex: none;
-  width: 11px;
-  height: 11px;
+  width: 9px;
+  height: 9px;
   background: currentColor;
   -webkit-mask: url(../assets/capilano.svg) center / contain no-repeat;
   mask: url(../assets/capilano.svg) center / contain no-repeat;
