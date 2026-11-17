@@ -56,6 +56,12 @@
   56 px abaixo do resto, alinhada à esquerda (`ASSINATURA` em
   `public/menu/js/app.js`, símbolo em `public/menu/assets/capilano.svg`). As
   telas da reserva ficam sem ela.
+- **Aviso de segurança do Next 16.4.3 (17/11/2026), upgrade adiado a pedido de Pedro até a revisão de segurança:**
+  o site **não está exposto** (os dois advisories do npm, GHSA-mfr8-8qww-v76h e GHSA-vc7v-qv4w-wrv8, exigem
+  `'use cache'`, que o site não usa; ele usa só `unstable_cache`, em `src/engine/fonte.ts`). Não adote `'use cache'`
+  antes de subir para a 16.4.6. O primeiro `next build` por agente para com `SecurityFatalError` e o seguinte passa
+  (é o `agentUpgrade` do próprio Next). Levantamento completo, versões e o que testar no upgrade: `docs/STATUS.md` do
+  Restaurants Engine, seção "Next.js 16.4.3".
 - Como rodar, onde fica cada coisa e as variáveis públicas: [`README.md`](README.md).
 
 ### Rotas e o que não pode quebrar (`next.config.ts`)
