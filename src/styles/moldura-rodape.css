@@ -3,7 +3,8 @@
 .rodape {
   --tint: var(--marca-tint);
   --hair: var(--line-dark);
-  padding: clamp(56px, 7vw, 88px) 0 28px;
+  /* Embaixo sobra espaço para o botão flutuante do WhatsApp não cobrir a última linha. */
+  padding: clamp(56px, 7vw, 88px) 0 calc(100px + env(safe-area-inset-bottom));
   color: var(--paper);
   background: var(--ink);
 }
@@ -147,13 +148,14 @@
   line-height: 1.5;
 }
 
-/* A assinatura da Capilano: uma linha na ponta direita da faixa legal (no
- * celular, sozinha e à direita, longe do botão do WhatsApp, que fica no canto). */
+/* A assinatura da Capilano: uma linha na faixa legal. Quando ela divide a linha
+ * com o texto legal (telas largas), vai para a ponta direita; quando cai sozinha
+ * numa linha, fica à esquerda, alinhada com o resto do rodapé. */
 .capilano {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin: 0 0 0 auto;
+  margin: 0;
   font-size: 0.656rem;
   letter-spacing: 0.02em;
   color: #8c857b;
@@ -164,6 +166,13 @@
 .capilano:hover,
 .capilano:focus-within {
   opacity: 1;
+}
+
+/* A partir daqui ela cabe na mesma linha do texto legal (medido: cabe desde ~905 px). */
+@media (min-width: 960px) {
+  .capilano {
+    margin-left: auto;
+  }
 }
 
 .capilano svg {

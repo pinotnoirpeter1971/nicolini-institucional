@@ -46,12 +46,14 @@
 - **Assinatura da Capilano (16/11/2026, pedido de Pedro, enxugada no mesmo
   dia):** uma linha só, "Desenvolvido sob medida pela Capilano" ("Capilano" é
   link quieto para capilanocreative.com, sublinha ao passar o mouse), com o
-  símbolo pequeno ao lado, na ponta direita da faixa legal do rodapé, com o
-  mesmo tamanho (10,5 px) e a mesma translucidez (80%) do `/menu/` (no celular,
-  sozinha e à direita, longe do botão do WhatsApp;
-  `src/moldura/AssinaturaCapilano.tsx`), e como última linha do rodapé do
+  símbolo pequeno ao lado, na faixa legal do rodapé: na ponta direita só quando
+  divide a linha com o texto legal (a partir de 960 px; Pedro, 17/11/2026: sozinha
+  na linha, a ponta direita parecia torta), e à esquerda quando cai sozinha. O
+  rodapé ganhou espaço embaixo (100 px) para o botão flutuante do WhatsApp não
+  cobrir a última linha. Mesmo tamanho (10,5 px) e mesma translucidez (80%) do
+  `/menu/` (`src/moldura/AssinaturaCapilano.tsx`), e como última linha do rodapé do
   cardápio e da visita no `/menu/`, como no Benatti: 10,5 px, translúcida,
-  56 px abaixo do resto e no canto direito no desktop (`ASSINATURA` em
+  56 px abaixo do resto, alinhada à esquerda (`ASSINATURA` em
   `public/menu/js/app.js`, símbolo em `public/menu/assets/capilano.svg`). As
   telas da reserva ficam sem ela.
 - Como rodar, onde fica cada coisa e as variáveis públicas: [`README.md`](README.md).

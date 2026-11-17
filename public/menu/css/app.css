@@ -1510,8 +1510,9 @@ svg {
 }
 
 /* Assinatura da Capilano: a última linha do rodapé, pequena, translúcida e
- * afastada do resto, com o símbolo ao lado; no desktop, no canto direito.
- * O símbolo é máscara: pega a cor do texto. */
+ * afastada do resto, com o símbolo ao lado, alinhada à esquerda como o resto do
+ * rodapé (sozinha na linha, a ponta direita ficaria torta). O símbolo é máscara:
+ * pega a cor do texto. */
 .rodape .capilano {
   display: flex;
   align-items: center;
@@ -1528,12 +1529,6 @@ svg {
 .rodape .capilano:focus-within { opacity: 1; }
 .rodape .capilano a:hover,
 .rodape .capilano a:focus-visible { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
-
-@media (min-width: 1000px) {
-  .rodape .capilano {
-    justify-content: flex-end;
-  }
-}
 
 .capilano::before {
   content: '';
