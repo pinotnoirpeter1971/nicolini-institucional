@@ -17,7 +17,7 @@
 
   /* A assinatura da Capilano: a última linha do rodapé das vistas (o símbolo
    * vem do CSS). As telas da reserva ficam sem ela. */
-  var ASSINATURA = '<p class="capilano">Desenvolvido sob medida pela Capilano</p>';
+  var ASSINATURA = '<p class="capilano"><span>Desenvolvido sob medida pela <a href="https://capilanocreative.com" target="_blank" rel="noopener">Capilano</a></span></p>';
 
   /* === Utilidades ======================================================== */
 

@@ -12,7 +12,10 @@ export function AssinaturaCapilano() {
       <svg viewBox="0 0 260.11 260.11" aria-hidden="true" focusable="false">
         <path fill="currentColor" fillRule="evenodd" d={SIMBOLO} />
       </svg>
-      Desenvolvido sob medida pela Capilano
+      <span>
+        Desenvolvido sob medida pela{" "}
+        <a href="https://capilanocreative.com" target="_blank" rel="noopener">Capilano</a>
+      </span>
     </p>
   );
 }

@@ -44,8 +44,10 @@
   laboratório some. Teste: `npm run test:pedidos` (casa recebendo: ponta a
   ponta, clique duplo e reenvio, preço alterado, recibo; casa pausada: recusa).
 - **Assinatura da Capilano (16/11/2026, pedido de Pedro, enxugada no mesmo
-  dia):** uma linha só, "Desenvolvido sob medida pela Capilano", com o símbolo
-  pequeno ao lado, na ponta direita da faixa legal do rodapé (no celular,
+  dia):** uma linha só, "Desenvolvido sob medida pela Capilano" ("Capilano" é
+  link quieto para capilanocreative.com, sublinha ao passar o mouse), com o
+  símbolo pequeno ao lado, na ponta direita da faixa legal do rodapé, com o
+  mesmo tamanho (10,5 px) e a mesma translucidez (80%) do `/menu/` (no celular,
   sozinha e à direita, longe do botão do WhatsApp;
   `src/moldura/AssinaturaCapilano.tsx`), e como última linha do rodapé do
   cardápio e da visita no `/menu/`, como no Benatti: 10,5 px, translúcida,
