@@ -74,11 +74,6 @@ export default function Loja() {
                 indicação para a mesa, fale com a casa.
               </p>
               <div>
-                <a className="link" href={`tel:${casa.telefone.link}`}>
-                  {casa.telefone.exibicao}
-                </a>
-              </div>
-              <div>
                 <a className="link" href={`mailto:${casa.email}`}>
                   {casa.email}
                 </a>

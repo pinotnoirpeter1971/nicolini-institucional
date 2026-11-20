@@ -34,7 +34,6 @@ export function Rodape({ comBlog }: { comBlog: boolean }) {
           <a href={`https://wa.me/${casa.whatsapp.link}`} target="_blank" rel="noreferrer">
             WhatsApp {casa.whatsapp.exibicao}
           </a>
-          <a href={`tel:${casa.telefone.link}`}>{casa.telefone.exibicao}</a>
           <a href={`mailto:${casa.email}`}>{casa.email}</a>
         </section>
 

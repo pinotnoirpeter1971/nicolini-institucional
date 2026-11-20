@@ -210,16 +210,11 @@ export default function Bistro() {
             <h2>Reserva</h2>
             <div className="prose">
               <p>
-                Reservamos por WhatsApp e por telefone.
+                Reservamos por WhatsApp.
               </p>
               <div>
                 <a className="link" href={reservaWhats} target="_blank" rel="noreferrer">
                   {bistro.whatsapp.exibicao} <Arrow direction="upRight" />
-                </a>
-              </div>
-              <div>
-                <a className="link" href={`tel:${bistro.telefone.link}`}>
-                  {bistro.telefone.exibicao}
                 </a>
               </div>
               {/* Sem as redes da casa aqui: o WhatsApp do emporio apareceria

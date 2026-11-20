@@ -21,7 +21,6 @@ export const bistro = {
     foto: '/media/bistro/hero.jpg',
     alt: 'Salão do Bistrô Nicolini à noite, com taças e luminárias acesas',
   },
-  telefone: { exibicao: '(54) 3029-0217', link: '+555430290217' },
   whatsapp: { exibicao: '(54) 99959-2314', link: '5554999592314' },
   email: 'comercialnicolini@outlook.com',
   horarios: [

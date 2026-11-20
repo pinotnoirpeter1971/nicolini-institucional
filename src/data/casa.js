@@ -1,7 +1,7 @@
 /*
  * Fonte única das informações institucionais.
  *
- * Endereço, telefone fixo, CNPJ e razão social foram coletados de registros
+ * Endereço, CNPJ e razão social foram coletados de registros
  * públicos (Receita Federal / ReceitaWS e diretórios locais) em setembro de
  * 2026 — confirmar antes de qualquer publicação. WhatsApp e horários vêm de
  * listagens de terceiros. O e-mail comercialnicolini@outlook.com foi
@@ -19,7 +19,6 @@ export const casa = {
     estado: 'RS',
     cep: '95055-010',
   },
-  telefone: { exibicao: '(54) 3029-0217', link: '+555430290217' },
   whatsapp: { exibicao: '(54) 99959-2314', link: '5554999592314' },
   email: 'comercialnicolini@outlook.com',
   instagram: '@emporionicolini',

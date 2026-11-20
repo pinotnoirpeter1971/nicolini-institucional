@@ -246,9 +246,6 @@ export function PaginaDaSacola() {
                         <a className="link" href={contato} target="_blank" rel="noreferrer">
                           WhatsApp da loja {casa.whatsapp.exibicao} <Arrow direction="upRight" />
                         </a>
-                        <a className="link" href={`tel:${casa.telefone.link}`}>
-                          {casa.telefone.exibicao}
-                        </a>
                       </p>
                     </div>
                   </div>
