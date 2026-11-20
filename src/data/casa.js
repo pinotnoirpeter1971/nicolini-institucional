@@ -4,8 +4,8 @@
  * Endereço, telefone fixo, CNPJ e razão social foram coletados de registros
  * públicos (Receita Federal / ReceitaWS e diretórios locais) em setembro de
  * 2026 — confirmar antes de qualquer publicação. WhatsApp e horários vêm de
- * listagens de terceiros; o e-mail `@queijarianicolini.com.br` é um endereço
- * de marca provável, ainda não verificado.
+ * listagens de terceiros. O e-mail comercialnicolini@outlook.com foi
+ * informado por Pedro em 20/11/2026.
  */
 
 export const casa = {
@@ -21,7 +21,7 @@ export const casa = {
   },
   telefone: { exibicao: '(54) 3029-0217', link: '+555430290217' },
   whatsapp: { exibicao: '(54) 99959-2314', link: '5554999592314' },
-  email: 'contato@queijarianicolini.com.br',
+  email: 'comercialnicolini@outlook.com',
   instagram: '@queijarianicolini',
   cnpj: '30.134.710/0001-75',
   razaoSocial: 'Queijaria Nicolini Ltda.',

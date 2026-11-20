@@ -5,7 +5,7 @@
  * Avenida Abramo Randon, 1141), por isso o endereco vem de `casa.js` — duplicar
  * a rua seria criar duas versoes da mesma verdade. Telefone e WhatsApp de
  * reserva sao os mesmos da casa, coletados de listagens de terceiros; o e-mail
- * `@queijarianicolini.com.br` e provavel e ainda nao verificado. Os horarios
+ * e o da casa (informado por Pedro em 20/11/2026). Os horarios
  * abaixo seguem provisorios — nao ha fonte publica confiavel para eles.
  * O Instagram proprio do bistro e @bistronicolini.
  */
@@ -23,7 +23,7 @@ export const bistro = {
   },
   telefone: { exibicao: '(54) 3029-0217', link: '+555430290217' },
   whatsapp: { exibicao: '(54) 99959-2314', link: '5554999592314' },
-  email: 'bistro@queijarianicolini.com.br',
+  email: 'comercialnicolini@outlook.com',
   horarios: [
     { dia: 'Terça a quinta', hora: '12h às 15h · 19h às 23h' },
     { dia: 'Sexta e sábado', hora: '12h às 15h · 19h às 23h30' },
