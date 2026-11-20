@@ -89,7 +89,10 @@ function ContadorDaSacola() {
 }
 
 export function Cabecalho({ categorias, comBlog }: { categorias: DepartamentoDoMenu[]; comBlog: boolean }) {
-  const pathname = (usePathname() ?? '/').toLowerCase();
+  /* Na revalidação da home (ISR), a Vercel renderiza o caminho como "/index": é a mesma página, e
+   * sem isto o servidor manda o header comum e o navegador o da abertura (erro de hidratação). */
+  const lido = (usePathname() ?? '/').toLowerCase();
+  const pathname = lido === '/index' ? '/' : lido;
   const [rolado, setRolado] = useState(false);
   const [aberto, setAberto] = useState(false);
   /* O menu suspenso aberto: '*' (Departamentos) ou o href de um departamento. */
