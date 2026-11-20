@@ -1,6 +1,6 @@
 'use client';
 
-import { createOrderAttempt } from '../engine/sdk-0.7.0/index.js';
+import { createOrderAttempt } from '../engine/sdk-0.8.0/index.js';
 
 /*
  * O que o navegador guarda além da sacola (SPEC-SITE §7):

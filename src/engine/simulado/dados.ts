@@ -5,7 +5,7 @@
  * daqui aparece no build. Nada disto é conteúdo real: produtos e preços
  * são exemplos para desenhar as telas e os estados.
  *
- * Cada objeto segue À RISCA os tipos do SDK público (src/engine/sdk-0.7.0), para
+ * Cada objeto segue À RISCA os tipos do SDK público (src/engine/sdk-0.8.0), para
  * a Etapa 3 só trocar a fonte. As fotos são as que o site já publica em
  * public/media (nenhuma foto nova vai ao ar por causa do laboratório).
  */
@@ -14,7 +14,7 @@ import type {
   PublicOrderConfigData,
   PublicProductCategoryData,
   PublicProductData,
-} from '../sdk-0.7.0/index.js';
+} from '../sdk-0.8.0/index.js';
 
 /** Marca que o teste procura no build de produção: não pode aparecer lá. */
 export const MARCA_DO_LABORATORIO = 'dados-simulados-do-laboratorio-nicolini';
@@ -56,14 +56,14 @@ const F = {
 /* ── Produtos ─────────────────────────────────────────────────────────────── */
 
 export const categoriasDeProdutos: PublicProductCategoryData[] = [
-  { slug: 'queijos', name: 'Queijos', description: 'Dos grandes franceses aos italianos de longa maturação.', count: 0 },
-  { slug: 'charcutaria', name: 'Charcutaria', description: 'Do jamón ao Parma, cortes fatiados na hora.', count: 0 },
-  { slug: 'massas', name: 'Massas', description: 'Massas italianas, do grano duro à fresca.', count: 0 },
-  { slug: 'vinhos', name: 'Vinhos', description: 'Garrafas para abrir agora ou para guardar na adega.', count: 0 },
-  { slug: 'conservas', name: 'Conservas', description: 'Latas, vidros e preparos com padrão Nicolini.', count: 0 },
+  { slug: 'queijos', name: 'Queijos', description: 'Dos grandes franceses aos italianos de longa maturação.', count: 0, photo: null, children: [], origins: [] },
+  { slug: 'charcutaria', name: 'Charcutaria', description: 'Do jamón ao Parma, cortes fatiados na hora.', count: 0, photo: null, children: [], origins: [] },
+  { slug: 'massas', name: 'Massas', description: 'Massas italianas, do grano duro à fresca.', count: 0, photo: null, children: [], origins: [] },
+  { slug: 'vinhos', name: 'Vinhos', description: 'Garrafas para abrir agora ou para guardar na adega.', count: 0, photo: null, children: [], origins: [] },
+  { slug: 'conservas', name: 'Conservas', description: 'Latas, vidros e preparos com padrão Nicolini.', count: 0, photo: null, children: [], origins: [] },
 ];
 
-type NovoProduto = Omit<PublicProductData, 'id' | 'currency' | 'photo' | 'category' | 'stepGrams' | 'minGrams' | 'sizeLabel' | 'featured' | 'available'> &
+type NovoProduto = Omit<PublicProductData, 'id' | 'currency' | 'photo' | 'category' | 'department' | 'stepGrams' | 'minGrams' | 'sizeLabel' | 'featured' | 'available'> &
   Partial<Pick<PublicProductData, 'stepGrams' | 'minGrams' | 'sizeLabel' | 'featured' | 'available'>>;
 
 let proximo = 1;
@@ -81,6 +81,7 @@ function produto(p: NovoProduto): PublicProductData {
     minGrams: porPeso ? (p.minGrams ?? 100) : null,
     photo: p.photos[0] ?? null,
     category: { slug: categoria.slug, name: categoria.name },
+    department: { slug: categoria.slug, name: categoria.name },
   };
 }
 
@@ -307,7 +308,61 @@ export const produtos: PublicProductData[] = [
   }),
 ];
 
-for (const c of categoriasDeProdutos) c.count = produtos.filter((p) => p.categorySlug === c.slug).length;
+/*
+ * Dois níveis (D-141 do Engine): algumas categorias dentro dos departamentos, para o menu e as
+ * páginas mostrarem a coluna "Categorias". O produto passa a apontar para a categoria de dentro.
+ */
+export const subcategoriasDeProdutos = [
+  { slug: 'duros-e-curados', name: 'Duros e curados', departamento: 'queijos', produtos: ['parmigiano-reggiano-24-meses', 'grana-padano-dop', 'pecorino-romano', 'prima-donna-maturo', 'comte-18-meses', 'manchego-curado', 'queijo-canastra', 'parmigiano-36-meses-peca'] },
+  { slug: 'azuis', name: 'Azuis', departamento: 'queijos', produtos: ['roquefort-aop', 'gorgonzola-dolce'] },
+  { slug: 'macios-e-cremosos', name: 'Macios e cremosos', departamento: 'queijos', produtos: ['brie-de-meaux', 'taleggio-dop', 'burrata-fresca', 'mascarpone'] },
+  { slug: 'presuntos', name: 'Presuntos', departamento: 'charcutaria', produtos: ['jamon-iberico-de-bellota', 'prosciutto-di-parma-24-meses'] },
+  { slug: 'salumi', name: 'Salumi', departamento: 'charcutaria', produtos: ['mortadella-bologna-pistache', 'salame-tipo-italiano', 'guanciale-curado'] },
+  { slug: 'tintos', name: 'Tintos', departamento: 'vinhos', produtos: ['barolo-docg-2018', 'chianti-classico-2021', 'malbec-reserva'] },
+  { slug: 'espumantes', name: 'Espumantes', departamento: 'vinhos', produtos: ['champagne-brut-reserve', 'espumante-nature'] },
+];
+for (const sub of subcategoriasDeProdutos)
+  for (const p of produtos.filter((x) => sub.produtos.includes(x.slug))) {
+    p.categorySlug = sub.slug;
+    p.category = { slug: sub.slug, name: sub.name };
+  }
+const fotoDoDepartamento: Record<string, PublicMediaData> = {
+  queijos: F.queijos('Queijos curados na prateleira'),
+  charcutaria: F.charcutaria('Charcutaria no balcão'),
+  massas: F.massas('Massas italianas'),
+  vinhos: F.vinhos('Garrafas de vinho'),
+  conservas: F.conservas('Conservas na prateleira'),
+};
+const paisDaOrigem = (origem: string | null) => origem?.split(',').at(-1)?.trim() || null;
+const slugDoPais = (pais: string) => pais.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+export const departamentoDoProduto = (p: PublicProductData) => subcategoriasDeProdutos.find((s) => s.slug === p.categorySlug)?.departamento ?? p.categorySlug;
+for (const p of produtos) {
+  const d = categoriasDeProdutos.find((c) => c.slug === departamentoDoProduto(p))!;
+  p.department = { slug: d.slug, name: d.name };
+}
+for (const c of categoriasDeProdutos) {
+  const doDepartamento = produtos.filter((p) => departamentoDoProduto(p) === c.slug);
+  c.count = doDepartamento.length;
+  c.photo = fotoDoDepartamento[c.slug] ?? null;
+  c.children = subcategoriasDeProdutos
+    .filter((s) => s.departamento === c.slug)
+    .map((s) => ({ slug: s.slug, name: s.name, description: null, count: produtos.filter((p) => p.categorySlug === s.slug).length }))
+    .filter((s) => s.count > 0);
+  const paises = new Map<string, { slug: string; name: string; count: number }>();
+  for (const p of doDepartamento) {
+    const pais = paisDaOrigem(p.origin);
+    if (!pais) continue;
+    const slug = slugDoPais(pais);
+    const atual = paises.get(slug) ?? { slug, name: pais, count: 0 };
+    atual.count++;
+    paises.set(slug, atual);
+  }
+  c.origins = [...paises.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'pt-BR'));
+}
+export const slugDaOrigem = (p: PublicProductData) => {
+  const pais = paisDaOrigem(p.origin);
+  return pais ? slugDoPais(pais) : null;
+};
 
 /* ── Pedidos ──────────────────────────────────────────────────────────────── */
 

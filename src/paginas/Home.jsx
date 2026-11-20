@@ -1,19 +1,18 @@
 import Link from 'next/link';
 import { Arrow } from '../components/Icons';
-import { Balcoes } from '../components/Balcoes';
 import { CasaFotos } from '../components/CasaFotos';
 import { Reveal } from '../components/Reveal';
-import { casa } from '../data/casa';
+import { casa, setores } from '../data/casa';
 import { conteudoAConfirmar, modulos } from '../menu-do-site';
 import { CartaoDeProduto } from '../ui/CartaoDeProduto';
+import { FotoDoDepartamento } from './Produtos';
 import { CapaNoCartao, enderecoDaMateria } from '../ui/CartaoDeMateria';
 
 /*
- * A home (DESIGN-BRIEF §7). A abertura é a do site no ar (hero, "A casa" e
- * "Nossos produtos"); depois entram o destaque de produtos e o bloco vermelho
- * do e-commerce, o Blog (agora real, com link) e o fechamento. O destaque e o
- * Blog só aparecem com o módulo aceso e com conteúdo; a página não pede nada
- * ao Engine quando eles estão apagados.
+ * A home (DESIGN-BRIEF §7, refeita em 19/11/2026 no desenho do protótipo do
+ * e-commerce, a pedido do cliente). A abertura continua a do site no ar. O
+ * destaque e o Blog só aparecem com o módulo aceso e com conteúdo; a página
+ * não pede nada ao Engine quando eles estão apagados.
  */
 
 function Hero() {
@@ -86,72 +85,82 @@ function TabuaDeFrios() {
   );
 }
 
+/*
+ * Os departamentos na home (protótipo: "A casa tem muitos caminhos"): um
+ * cartão com foto por departamento, na ordem do painel. Vêm do Engine com o
+ * módulo Produtos aceso; sem ele (ou com o Engine fora), os cinco balcões da
+ * loja, sem link.
+ */
+function Departamentos({ departamentos }) {
+  const cartoes = departamentos.length
+    ? departamentos.map((d) => ({ chave: d.slug, nome: d.name, href: `/produtos/${d.slug}`, foto: <FotoDoDepartamento departamento={d} sizes="(max-width: 760px) 50vw, 16vw" /> }))
+    : setores.map((s) => ({ chave: s.id, nome: s.nome, href: null, foto: <img src={s.foto} alt="" loading="lazy" decoding="async" /> }));
+  return (
+    <section className="home-departamentos" aria-labelledby="nossos-produtos">
+      <div className="wrap">
+        <Reveal className="home-cabeca">
+          <div>
+            <p className="eyebrow">Nossos produtos</p>
+            <h2 id="nossos-produtos">
+              A casa tem muitos <em>caminhos.</em>
+            </h2>
+          </div>
+          <p className="home-cabeca__nota">Para preparar um jantar especial ou encontrar um ingrediente que não se vê por aí.</p>
+        </Reveal>
+        <Reveal delay={80}>
+          <div className="home-departamentos__grade" style={{ '--n': cartoes.length }}>
+          {cartoes.map((c, i) => {
+            const miolo = (
+              <>
+                <span className="departamento-cartao__foto">{c.foto}</span>
+                <span className="departamento-cartao__numero">{String(i + 1).padStart(2, '0')}</span>
+                <h3>{c.nome}</h3>
+                {c.href && (
+                  <i aria-hidden="true">
+                    <Arrow />
+                  </i>
+                )}
+              </>
+            );
+            return c.href ? (
+              <Link key={c.chave} href={c.href} className="departamento-cartao">
+                {miolo}
+              </Link>
+            ) : (
+              <div key={c.chave} className="departamento-cartao">
+                {miolo}
+              </div>
+            );
+          })}
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 /**
+ * A home no desenho do protótipo do e-commerce (pedido do cliente, 19/11/2026):
+ * a abertura do site no ar (validada com o header 1+), os departamentos, a
+ * seleção da semana, a tábua de frios, o Blog e "A loja" em fundo escuro, com
+ * o texto e as fotos de "A casa". Destaques e Blog só aparecem com o módulo
+ * aceso e com conteúdo.
+ *
  * @param {{
- *   destaques?: import('../engine/sdk-0.7.0/index.js').PublicProductCardData[],
- *   recentes?: import('../engine/sdk-0.7.0/index.js').BlogCardData[],
+ *   departamentos?: import('../engine/sdk-0.8.0/index.js').PublicProductCategoryData[],
+ *   destaques?: import('../engine/sdk-0.8.0/index.js').PublicProductCardData[],
+ *   recentes?: import('../engine/sdk-0.8.0/index.js').BlogCardData[],
  * }} props
  */
-export default function Home({ destaques = [], recentes = [] }) {
+export default function Home({ departamentos = [], destaques = [], recentes = [] }) {
   return (
     <>
       <Hero />
-
-      <section id="a-casa" className="band band--paper section section--casa">
-        <div className="casa">
-          <Reveal className="casa__media">
-            <CasaFotos />
-          </Reveal>
-
-          <Reveal className="casa__copy" delay={90}>
-            <h2>
-              Para nós, a boa
-              <br />
-              gastronomia começa
-              <br />
-              <em>pelo ingrediente.</em>
-            </h2>
-            <div className="prose">
-              <p>
-                A Nicolini foi criada para quem aprecia a boa cozinha e busca pelos melhores ingredientes. Nossa seleção
-                reúne produtos renomados dos quatro cantos do mundo, cada um com uma história única e o melhor padrão de
-                qualidade.
-              </p>
-              <p>
-                É onde você pode descobrir produtos, aprender mais sobre cada um e levar para casa aquilo um pouco de cada
-                canto do mundo.
-              </p>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      <section id="o-que-encontra" className="band band--ink section section--balcoes">
-        <div className="wrap">
-          <Reveal className="secao__head">
-            <div>
-              <p className="eyebrow">Nossos produtos</p>
-              <h2>
-                A casa tem muitos <em>caminhos.</em>
-              </h2>
-            </div>
-            {modulos.produtos && (
-              <Link className="link secao__head-acao" href="/produtos">
-                Ver todos os produtos <Arrow />
-              </Link>
-            )}
-          </Reveal>
-        </div>
-
-        <Reveal delay={80}>
-          <Balcoes comLinks={modulos.produtos} />
-        </Reveal>
-      </section>
-
+      <Departamentos departamentos={departamentos} />
       {destaques.length > 0 && (
-        <section className="band band--paper section secao-destaques" aria-labelledby="selecao-da-semana">
+        <section className="home-selecao" aria-labelledby="selecao-da-semana">
           <div className="wrap">
-            <Reveal className="cabeca-de-secao">
+            <Reveal className="home-cabeca">
               <div>
                 <p className="eyebrow">Seleção da semana</p>
                 <h2 id="selecao-da-semana">
@@ -161,7 +170,7 @@ export default function Home({ destaques = [], recentes = [] }) {
                 </h2>
               </div>
               <Link className="link" href="/produtos">
-                Ver todos os produtos <Arrow />
+                Ver a seleção <Arrow />
               </Link>
             </Reveal>
             <div className="grade-de-produtos grade-de-produtos--quatro">
@@ -169,12 +178,13 @@ export default function Home({ destaques = [], recentes = [] }) {
                 <CartaoDeProduto key={produto.id} produto={produto} />
               ))}
             </div>
+            <Link className="link home-selecao__todos" href="/produtos">
+              Ver todos os produtos <Arrow />
+            </Link>
           </div>
         </section>
       )}
-
       {conteudoAConfirmar.tabuaDeFrios && <TabuaDeFrios />}
-
       {recentes.length > 0 && (
         <section id="blog" className="band band--soft section section--blog">
           <div className="wrap blog__layout">
@@ -193,7 +203,6 @@ export default function Home({ destaques = [], recentes = [] }) {
                 Ver todas as matérias <Arrow />
               </Link>
             </Reveal>
-
             {recentes.map((materia, indice) => (
               <Reveal as="article" className="materia" key={materia.id} delay={80 + indice * 100}>
                 <Link href={enderecoDaMateria(materia)} className="materia__link">
@@ -209,35 +218,41 @@ export default function Home({ destaques = [], recentes = [] }) {
           </div>
         </section>
       )}
-
-      {/* Fechamento: a fachada e o convite do site no ar. Contato, horários e
-          endereço passaram ao rodapé de cinco colunas, e o mapa mora na página
-          da loja física: a home não repete os dois. */}
-      <section className="band band--paper section">
-        <div className="emporio">
-          <Reveal className="emporio__figure">
-            <img src="/media/loja/fachada.jpg" alt="Fachada de entrada do Empório Nicolini" loading="lazy" decoding="async" />
+      {/* "A loja" do protótipo, com o texto e as fotos de "A casa" do site no ar. */}
+      <section id="a-casa" className="home-loja" aria-labelledby="a-loja">
+        <div className="wrap home-loja__grade">
+          <Reveal className="home-loja__fotos">
+            <CasaFotos />
           </Reveal>
-
-          <Reveal delay={90}>
-            <p className="eyebrow">Uma casa em Caxias do Sul</p>
-            <h2>
-              Mais do que
+          <Reveal className="home-loja__texto" delay={90}>
+            <p className="eyebrow">A loja</p>
+            <h2 id="a-loja">
+              Para nós, a boa
               <br />
-              uma <em>prateleira.</em>
+              gastronomia começa
+              <br />
+              <em>pelo ingrediente.</em>
             </h2>
-            <div className="prose" style={{ marginTop: 24 }}>
-              <p>
-                A Nicolini é um lugar para descobrir, perguntar, provar e levar para casa aquilo que muda uma receita ou
-                um encontro.
-              </p>
-              <p>
-                {casa.endereco.linha1}, {casa.endereco.bairro}. {casa.horarios.map((h) => `${h.dia}: ${h.hora.toLowerCase()}`).join('; ')}.
-              </p>
-            </div>
-            <div className="acoes" style={{ marginTop: 26 }}>
+            <p>
+              A Nicolini foi criada para quem aprecia a boa cozinha e busca pelos melhores ingredientes. Nossa seleção reúne
+              produtos renomados dos quatro cantos do mundo, cada um com uma história única e o melhor padrão de qualidade.
+            </p>
+            <p className="home-loja__endereco">
+              Visite-nos em Caxias do Sul
+              <br />
+              <span>
+                {casa.endereco.linha1}, {casa.endereco.bairro}
+              </span>
+              {casa.horarios.map((h) => (
+                <span key={h.dia}>
+                  <br />
+                  {h.dia}: {h.hora.toLowerCase()}
+                </span>
+              ))}
+            </p>
+            <div className="acoes">
               <Link className="link" href="/a-loja">
-                A loja física <Arrow />
+                Conhecer a loja <Arrow />
               </Link>
               <a className="link" href={casa.mapsBusca} target="_blank" rel="noreferrer">
                 Abrir no Google Maps <Arrow direction="upRight" />

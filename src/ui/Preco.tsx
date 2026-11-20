@@ -1,4 +1,4 @@
-import type { PublicProductCardData } from '../engine/sdk-0.7.0/index.js';
+import type { PublicProductCardData } from '../engine/sdk-0.8.0/index.js';
 import { dinheiro, gramas } from '../engine/formato';
 
 /*

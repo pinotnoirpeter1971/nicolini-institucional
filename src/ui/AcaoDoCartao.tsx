@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { PublicProductCardData } from '../engine/sdk-0.7.0/index.js';
+import type { PublicProductCardData } from '../engine/sdk-0.8.0/index.js';
 import { modulos } from '../menu-do-site';
 import { abrirPainel, adicionar } from '../sacola/armazem';
 import { Sacola } from '../components/Icons';

@@ -1,4 +1,4 @@
-import type { BlogPostData } from '../engine/sdk-0.7.0/index.js';
+import type { BlogPostData } from '../engine/sdk-0.8.0/index.js';
 
 /** A descrição da matéria para busca e compartilhamento: o resumo; sem ele, o início do primeiro parágrafo. */
 export function descricaoDaMateria(m: Pick<BlogPostData, 'excerpt' | 'blocks' | 'title'>) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { BlogCardData, BlogPostKind, PublicProductCardData } from '../engine/sdk-0.7.0/index.js';
+import type { BlogCardData, BlogPostKind, PublicProductCardData } from '../engine/sdk-0.8.0/index.js';
 import { maisMaterias, maisProdutos } from '../engine/navegador';
 import { CartaoDeProduto } from './CartaoDeProduto';
 import { CartaoDeEvento, CartaoDeMateria } from './CartaoDeMateria';
@@ -45,8 +45,8 @@ function Botao({ estado, carregar, rotulo }: { estado: 'parado' | 'carregando' |
   );
 }
 
-export function MaisProdutos({ categoria, cursor, limite }: { categoria: string; cursor: string | null; limite: number }) {
-  const mais = useMais<PublicProductCardData>(cursor, (c) => maisProdutos({ category: categoria, cursor: c, limit: limite }));
+export function MaisProdutos({ categoria, origem, cursor, limite }: { categoria: string; origem?: string; cursor: string | null; limite: number }) {
+  const mais = useMais<PublicProductCardData>(cursor, (c) => maisProdutos({ category: categoria, origin: origem, cursor: c, limit: limite }));
   return (
     <>
       {mais.itens.map((p) => (

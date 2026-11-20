@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import type { PublicMediaData } from './engine/sdk-0.7.0/index.js';
+import type { PublicMediaData } from './engine/sdk-0.8.0/index.js';
 
 /*
  * Metadados das páginas fixas. Antes moravam em index.html e rustichella.html.

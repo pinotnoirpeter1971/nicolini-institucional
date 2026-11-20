@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { BlogCardData, BlogCategoryData, BlogPostData } from '../engine/sdk-0.7.0/index.js';
+import type { BlogCardData, BlogCategoryData, BlogPostData } from '../engine/sdk-0.8.0/index.js';
 import { dataPorExtenso, periodo } from '../engine/formato';
 import { casa } from '../data/casa';
 import { siteUrl } from '../site';

@@ -1,4 +1,4 @@
-import type { PublicMediaData } from '../engine/sdk-0.7.0/index.js';
+import type { PublicMediaData } from '../engine/sdk-0.8.0/index.js';
 
 /*
  * Foto do Engine (SPEC-SITE §5): <img> comum, com as larguras que o Engine já

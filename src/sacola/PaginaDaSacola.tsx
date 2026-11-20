@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { RestaurantsOrderError, type PublicOrderConfigData } from '../engine/sdk-0.7.0/index.js';
+import { RestaurantsOrderError, type PublicOrderConfigData } from '../engine/sdk-0.8.0/index.js';
 import { configDePedidos, enviarPedido } from '../engine/navegador';
 import { dinheiro } from '../engine/formato';
 import { casa } from '../data/casa';

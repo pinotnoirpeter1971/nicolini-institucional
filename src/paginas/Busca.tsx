@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import type { PublicProductCardData } from '../engine/sdk-0.7.0/index.js';
+import type { PublicProductCardData } from '../engine/sdk-0.8.0/index.js';
 import { Arrow } from '../components/Icons';
 import { CartaoDeProduto } from '../ui/CartaoDeProduto';
 import { Migalhas } from '../ui/Migalhas';

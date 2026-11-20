@@ -442,6 +442,51 @@ button.link {
   content: '';
 }
 
+/* As categorias de dentro e os países do departamento, embaixo da linha de departamentos (D-141). */
+.recortes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 44px;
+  padding-top: 24px;
+}
+
+.recortes__grupo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.recortes__rotulo {
+  margin-right: 6px;
+  color: var(--muted);
+  font-size: 0.69rem;
+  font-weight: 650;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.recortes a {
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 550;
+  white-space: nowrap;
+  transition: border-color 200ms var(--ease), background 200ms var(--ease), color 200ms var(--ease);
+}
+
+.recortes a:hover {
+  border-color: var(--ink);
+}
+
+.recortes a[aria-current='page'] {
+  border-color: var(--ink);
+  color: var(--white);
+  background: var(--ink);
+}
+
 /* "Ver mais". */
 .grade__rodape {
   grid-column: 1 / -1;

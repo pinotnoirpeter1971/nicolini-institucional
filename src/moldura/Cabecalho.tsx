@@ -17,10 +17,11 @@ import {
   paginasComAbertura,
   pecasDeLoja,
   todosOsProdutos,
+  type DepartamentoDoMenu,
   type ItemDoMenu,
 } from '../menu-do-site';
 import { abrirPainel, useSacola } from '../sacola/armazem';
-import { Busca, Fechar, Menu, Pin, Sacola } from '../components/Icons';
+import { Arrow, Busca, Chevron, Fechar, Menu, Pin, Sacola } from '../components/Icons';
 import { CampoDeBusca, FaixaDeAnuncio, IconeConta, IconeCurtidos } from './Guardadas';
 import { useAbertura } from './abertura';
 
@@ -43,6 +44,12 @@ import { useAbertura } from './abertura';
  * abre o header ali mesmo, com o cursor na busca. Sem animação para quem pede
  * menos movimento no sistema. No celular: menu, logo e sacola, a busca
  * embaixo, e o menu escuro com o bloco da área primeiro.
+ *
+ * O menu suspenso dos departamentos (o do protótipo, pedido do cliente em
+ * 19/11/2026): o mouse sobre um departamento abre, embaixo do header, a faixa
+ * escura com a descrição, as categorias de dentro e as origens; sobre
+ * "Departamentos", a lista numerada de todos. Abre com uma pausa curta (o
+ * mouse que só atravessa a linha não abre nada) e fecha ao sair.
  */
 
 const EASE = 'cubic-bezier(.22, 1, .36, 1)';
@@ -81,16 +88,18 @@ function ContadorDaSacola() {
   );
 }
 
-export function Cabecalho({ categorias, comBlog }: { categorias: ItemDoMenu[]; comBlog: boolean }) {
+export function Cabecalho({ categorias, comBlog }: { categorias: DepartamentoDoMenu[]; comBlog: boolean }) {
   const pathname = (usePathname() ?? '/').toLowerCase();
   const [rolado, setRolado] = useState(false);
   const [aberto, setAberto] = useState(false);
-  const [deptos, setDeptos] = useState(false);
+  /* O menu suspenso aberto: '*' (Departamentos) ou o href de um departamento. */
+  const [mega, setMega] = useState<string | null>(null);
+  const [naGaveta, setNaGaveta] = useState<string | null>(null);
+  const relogioDoMega = useRef<number | undefined>(undefined);
   const [pronto, setPronto] = useState(false);
   const [faixaVisivel, setFaixaVisivel] = useState(false);
   const [faixaFechada, setFaixaFechada] = useState(false);
   const refHeader = useRef<HTMLElement>(null);
-  const refDeptos = useRef<HTMLDivElement>(null);
   const antes = useRef<{ lupa?: DOMRect; casa?: Map<string, Medida> }>({});
   const animacoes = useRef<Animation[]>([]);
   const focarBusca = useRef(false);
@@ -191,21 +200,32 @@ export function Cabecalho({ categorias, comBlog }: { categorias: ItemDoMenu[]; c
 
   useEffect(() => {
     setAberto(false);
-    setDeptos(false);
+    setMega(null);
+    setNaGaveta(null);
   }, [pathname]);
 
-  /* Departamentos aberto: Esc ou clique fora fecham. */
+  /* O menu suspenso: abre depois de 160 ms parado no item e fecha 240 ms depois de sair (do item ou da faixa). */
+  const megaDepois = (valor: string | null, ms: number) => {
+    window.clearTimeout(relogioDoMega.current);
+    relogioDoMega.current = window.setTimeout(() => setMega(valor), ms);
+  };
+  const abrirMega = (valor: string) => megaDepois(valor, mega ? 60 : 160);
+  const fecharMega = () => megaDepois(null, 240);
+  const manterMega = () => window.clearTimeout(relogioDoMega.current);
+  useEffect(() => () => window.clearTimeout(relogioDoMega.current), []);
+
+  /* Menu suspenso aberto: Esc ou um clique fora do header fecham. */
   useEffect(() => {
-    if (!deptos) return undefined;
-    const tecla = (e: KeyboardEvent) => e.key === 'Escape' && setDeptos(false);
-    const fora = (e: MouseEvent) => !refDeptos.current?.contains(e.target as Node) && setDeptos(false);
+    if (!mega) return undefined;
+    const tecla = (e: KeyboardEvent) => e.key === 'Escape' && setMega(null);
+    const fora = (e: MouseEvent) => !refHeader.current?.contains(e.target as Node) && setMega(null);
     document.addEventListener('keydown', tecla);
     document.addEventListener('mousedown', fora);
     return () => {
       document.removeEventListener('keydown', tecla);
       document.removeEventListener('mousedown', fora);
     };
-  }, [deptos]);
+  }, [mega]);
 
   /* Header aberto pela lupa: Esc ou um clique fora dele devolvem ao topo. */
   useEffect(() => {
@@ -357,23 +377,45 @@ export function Cabecalho({ categorias, comBlog }: { categorias: ItemDoMenu[]; c
             ) : (
               <>
                 {ativa('megaMenu') && departamentos && (
-                  <div className="cabecalho__deptos" ref={refDeptos} style={ordem(0)}>
-                    <button type="button" className="cabecalho__departamentos" aria-expanded={deptos} aria-controls="lista-de-departamentos" onClick={() => setDeptos((d) => !d)}>
+                  <div className="cabecalho__deptos" style={ordem(0)}>
+                    <button
+                      type="button"
+                      className="cabecalho__departamentos"
+                      aria-expanded={mega === '*'}
+                      aria-controls="menu-suspenso"
+                      onClick={() => {
+                        manterMega();
+                        setMega((m) => (m === '*' ? null : '*'));
+                      }}
+                      onMouseEnter={() => abrirMega('*')}
+                      onMouseLeave={fecharMega}
+                    >
                       <Menu /> Departamentos
                     </button>
-                    <ul id="lista-de-departamentos" className="cabecalho__deptos-lista" hidden={!deptos}>
-                      {[...categorias, todosOsProdutos].map((item) => (
-                        <li key={item.href}>{link(item)}</li>
-                      ))}
-                    </ul>
                   </div>
                 )}
-                {naLinha.map((item, i) => link(item, 'cabecalho__categoria', ordem(i + 1)))}
+                {naLinha.map((item, i) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={['cabecalho__categoria', (ativo(item.href) || mega === item.href) && 'is-ativo'].filter(Boolean).join(' ')}
+                    aria-current={ativo(item.href) ? 'page' : undefined}
+                    style={ordem(i + 1)}
+                    onMouseEnter={() => abrirMega(item.href)}
+                    onMouseLeave={fecharMega}
+                  >
+                    {item.rotulo}
+                  </Link>
+                ))}
               </>
             )}
             {casaAcesa.map((item, i) => daCasa(item, `cabecalho__casa${i === 0 ? ' cabecalho__casa--primeira' : ''}`, ordem(esquerda + i)))}
           </div>
         </nav>
+
+        {!daArea && departamentos && mega && (
+          <MenuSuspenso departamentos={categorias} aberto={mega} onEntrar={manterMega} onSair={fecharMega} />
+        )}
 
         <nav id="menu-do-celular" className="cabecalho__gaveta" aria-label="Navegação no celular" hidden={!aberto}>
           <div className="wrap cabecalho__gaveta-lista">
@@ -393,7 +435,31 @@ export function Cabecalho({ categorias, comBlog }: { categorias: ItemDoMenu[]; c
               <>
                 <p className="cabecalho__gaveta-titulo cabecalho__gaveta-titulo--dept">Departamentos</p>
                 {link(todosOsProdutos, 'cabecalho__gaveta-todos')}
-                {categorias.map((item) => link(item))}
+                {categorias.map((item) =>
+                  item.filhos.length ? (
+                    <div key={item.href} className="cabecalho__gaveta-depto">
+                      <div className="cabecalho__gaveta-depto-linha">
+                        {link(item)}
+                        <button
+                          type="button"
+                          aria-label={`Categorias de ${item.rotulo}`}
+                          aria-expanded={naGaveta === item.href}
+                          onClick={() => setNaGaveta((g) => (g === item.href ? null : item.href))}
+                        >
+                          <Chevron direction="down" />
+                        </button>
+                      </div>
+                      {naGaveta === item.href && (
+                        <div className="cabecalho__gaveta-filhos">
+                          {item.filhos.map((f) => link(f))}
+                          {link({ ...item, rotulo: `Ver ${item.rotulo.toLowerCase()}` })}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    link(item)
+                  ),
+                )}
               </>
             )}
             {travada('curtidos') && <IconeCurtidos comRotulo />}
@@ -402,5 +468,91 @@ export function Cabecalho({ categorias, comBlog }: { categorias: ItemDoMenu[]; c
         </nav>
       </header>
     </>
+  );
+}
+
+/*
+ * A faixa escura embaixo do header (protótipo, variante "índice"). Para um
+ * departamento: o nome, a descrição, "Ver a categoria", e as colunas
+ * Categorias e Origem (cada uma até oito; o resto está na página). Para
+ * "Departamentos": todos numerados, em duas colunas.
+ */
+const NA_COLUNA = 8;
+
+function MenuSuspenso({
+  departamentos,
+  aberto,
+  onEntrar,
+  onSair,
+}: {
+  departamentos: DepartamentoDoMenu[];
+  aberto: string;
+  onEntrar: () => void;
+  onSair: () => void;
+}) {
+  const d = departamentos.find((x) => x.href === aberto);
+  return (
+    <div id="menu-suspenso" className="menu-suspenso" onMouseEnter={onEntrar} onMouseLeave={onSair}>
+      {aberto === '*' || !d ? (
+        <div className="wrap menu-suspenso__todos">
+          <div className="menu-suspenso__titulo">
+            <p className="eyebrow">Compre por departamento</p>
+            <h2>
+              A casa inteira,
+              <br />
+              <em>por aqui.</em>
+            </h2>
+            <Link className="link" href={todosOsProdutos.href}>
+              Ver todos <Arrow />
+            </Link>
+          </div>
+          <div className="menu-suspenso__colunas">
+            {departamentos.map((x, i) => (
+              <Link key={x.href} href={x.href} className="menu-suspenso__depto">
+                <span>{String(i + 1).padStart(2, '0')}</span>
+                <b>{x.rotulo}</b>
+                <em>{x.descricao}</em>
+                <Arrow />
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="wrap menu-suspenso__um">
+          <div className="menu-suspenso__titulo">
+            <p className="eyebrow">{d.rotulo}</p>
+            <h2>{d.descricao ?? d.rotulo}</h2>
+            <Link className="link" href={d.href}>
+              Ver a categoria <Arrow />
+            </Link>
+          </div>
+          {d.filhos.length > 0 && (
+            <div className="menu-suspenso__lista">
+              <p className="eyebrow">Categorias</p>
+              {d.filhos.slice(0, NA_COLUNA).map((f) => (
+                <Link key={f.href} href={f.href}>
+                  {f.rotulo}
+                  <Arrow />
+                </Link>
+              ))}
+            </div>
+          )}
+          {d.origens.length > 0 && (
+            <div className="menu-suspenso__lista">
+              <p className="eyebrow">Origem</p>
+              {d.origens.slice(0, NA_COLUNA).map((o) => (
+                <Link key={o.href} href={o.href}>
+                  <span className="menu-suspenso__origem">
+                    {o.bandeira && <i aria-hidden="true">{o.bandeira}</i>}
+                    {o.rotulo}
+                  </span>
+                  <Arrow />
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

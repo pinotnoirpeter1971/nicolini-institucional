@@ -19,7 +19,7 @@ import {
   type PublicOrderLineData,
   type PublicOrderReceiptData,
   type PublicProductCardData,
-} from '../sdk-0.7.0/index.js';
+} from '../sdk-0.8.0/index.js';
 import { configDePedidos, produtos } from './dados';
 import { cartao } from './servidor';
 

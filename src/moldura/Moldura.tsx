@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { categoriasDeProdutos, indiceDoBlog } from '../engine/fonte';
-import { modulos, type ItemDoMenu } from '../menu-do-site';
+import { bandeiraDoPais, modulos, type DepartamentoDoMenu } from '../menu-do-site';
 import { laboratorio } from '../site';
 import { WhatsappGlyph } from '../components/Icons';
 import { Cabecalho } from './Cabecalho';
@@ -26,11 +26,19 @@ import { Rodape } from './Rodape';
  * página sai com o header sem categorias (sem Departamentos) e se corrige na
  * revalidação seguinte: o header nunca derruba a página.
  */
-async function categoriasDoHeader(): Promise<ItemDoMenu[]> {
+async function categoriasDoHeader(): Promise<DepartamentoDoMenu[]> {
   if (!modulos.produtos) return [];
   try {
     const categorias = await categoriasDeProdutos();
-    return (categorias ?? []).map((c) => ({ rotulo: c.name, href: `/produtos/${c.slug}`, aceso: true }));
+    /* `children` e `origins` vêm do Engine com D-141; um Engine anterior não os manda. */
+    return (categorias ?? []).map((c) => ({
+      rotulo: c.name,
+      href: `/produtos/${c.slug}`,
+      aceso: true,
+      descricao: c.description,
+      filhos: (c.children ?? []).map((f) => ({ rotulo: f.name, href: `/produtos/${f.slug}`, aceso: true })),
+      origens: (c.origins ?? []).map((o) => ({ rotulo: o.name, href: `/produtos/${c.slug}/${o.slug}`, aceso: true, bandeira: bandeiraDoPais(o.slug) })),
+    }));
   } catch (erro) {
     console.error('Header: categorias do Engine indisponíveis', erro);
     return [];

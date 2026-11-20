@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /*
  * Teste de Pedidos (sacola e recibo) contra o Engine de staging, pelo mesmo SDK
- * que a sacola usa (src/engine/sdk-0.7.0), saindo com a origem do laboratório
+ * que a sacola usa (src/engine/sdk-0.8.0), saindo com a origem do laboratório
  * (http://127.0.0.1:5183), como o navegador. Casa `bistro-teste`.
  *
  * Confere conforme o estado da casa no staging:
@@ -30,7 +30,7 @@ const staging = (process.env.ENGINE_STAGING || 'http://127.0.0.1:3280').replace(
 const casa = process.env.PEDIDOS_CASA || 'bistro-teste';
 const origem = 'http://127.0.0.1:5183';
 
-const sdk = await import(pathToFileURL(join(raiz, 'src/engine/sdk-0.7.0/index.js')).href);
+const sdk = await import(pathToFileURL(join(raiz, 'src/engine/sdk-0.8.0/index.js')).href);
 const { RestaurantsOrderError, createOrderAttempt, createOrderToken, createPublicOrder, fetchPublicOrderConfig, fetchPublicProducts, fetchPublicProductsByIds, lineTotalCents, lookupPublicOrder, orderRefusalLines } = sdk;
 
 /* O navegador do laboratório manda a origem dele; aqui ela é posta à mão. Guarda os endereços chamados. */

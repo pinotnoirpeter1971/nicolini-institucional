@@ -6,7 +6,7 @@ import {
   orderQuantityProblem,
   type OrderCurrentLineData,
   type PublicProductCardData,
-} from '../engine/sdk-0.7.0/index.js';
+} from '../engine/sdk-0.8.0/index.js';
 import { produtosPorIds } from '../engine/navegador';
 import { remover, useSacola } from './armazem';
 

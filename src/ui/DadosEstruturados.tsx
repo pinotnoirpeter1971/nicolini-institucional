@@ -1,5 +1,5 @@
-import type { PublicProductData } from '../engine/sdk-0.7.0/index.js';
-import { youtubeThumbnail, type BlogPostData } from '../engine/sdk-0.7.0/index.js';
+import type { PublicProductData } from '../engine/sdk-0.8.0/index.js';
+import { youtubeThumbnail, type BlogPostData } from '../engine/sdk-0.8.0/index.js';
 import { siteUrl } from '../site';
 import { descricaoDaMateria } from './descricao';
 

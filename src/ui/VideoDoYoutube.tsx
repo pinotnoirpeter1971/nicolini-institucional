@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { youtubeEmbedUrl, youtubeThumbnail, type PublicMediaData } from '../engine/sdk-0.7.0/index.js';
+import { youtubeEmbedUrl, youtubeThumbnail, type PublicMediaData } from '../engine/sdk-0.8.0/index.js';
 import { Play } from '../components/Icons';
 import { Foto } from './Foto';
 

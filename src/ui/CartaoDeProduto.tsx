@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { PublicProductCardData } from '../engine/sdk-0.7.0/index.js';
+import type { PublicProductCardData } from '../engine/sdk-0.8.0/index.js';
 import { Foto } from './Foto';
 import { Preco } from './Preco';
 import { AcaoDoCartao } from './AcaoDoCartao';

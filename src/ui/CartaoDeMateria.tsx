@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { youtubeThumbnail, type BlogCardData, type BlogCoverData } from '../engine/sdk-0.7.0/index.js';
+import { youtubeThumbnail, type BlogCardData, type BlogCoverData } from '../engine/sdk-0.8.0/index.js';
 import { dataPorExtenso, diaEMes, periodo } from '../engine/formato';
 import { Arrow, Play } from '../components/Icons';
 import { Foto } from './Foto';

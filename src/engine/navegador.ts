@@ -17,7 +17,7 @@ import type {
   PublicOrderReceiptData,
   PublicProductCardData,
   PublicProductPageData,
-} from './sdk-0.7.0/index.js';
+} from './sdk-0.8.0/index.js';
 import {
   createPublicOrder,
   fetchBlogPosts,
@@ -25,7 +25,7 @@ import {
   fetchPublicProducts,
   fetchPublicProductsByIds,
   lookupPublicOrder,
-} from './sdk-0.7.0/index.js';
+} from './sdk-0.8.0/index.js';
 import { casaNoEngine, engineUrl } from '../site';
 
 type Simulado = typeof import('./simulado/navegador');
@@ -40,7 +40,7 @@ const base = { apiBaseUrl: engineUrl, restaurantKey: casaNoEngine };
 /* Leitura curta; o envio espera mais (reenviar a mesma chave não duplica). */
 const sinal = (ms = 8000) => AbortSignal.timeout(ms);
 
-export async function maisProdutos(filtro: { category?: string; featured?: boolean; cursor: string; limit?: number }): Promise<PublicProductPageData> {
+export async function maisProdutos(filtro: { category?: string; origin?: string; featured?: boolean; cursor: string; limit?: number }): Promise<PublicProductPageData> {
   const s = await simulado();
   if (s) return s.fetchPublicProducts({ ...base, ...filtro });
   return fetchPublicProducts({ ...base, ...filtro });

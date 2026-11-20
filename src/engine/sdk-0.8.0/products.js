@@ -52,11 +52,17 @@ async function get(input, path, allowMissing = false) {
         throw new RestaurantsPublicError("Resposta pública inválida.", 502);
     return body.data;
 }
-/** Uma página de cartões: destaques primeiro, depois nome. 24 por página (até 48). Categoria que não existe: 404 (`RestaurantsPublicError`). */
+/**
+ * Uma página de cartões: destaques primeiro, depois nome. 24 por página (até 48). `category` aceita
+ * departamento (traz as categorias de dentro) ou categoria; `origin`, o slug do país. Categoria que
+ * não existe: 404 (`RestaurantsPublicError`).
+ */
 export async function fetchPublicProducts(input) {
     const query = new URLSearchParams();
     if (input.category)
         query.set("category", input.category);
+    if (input.origin)
+        query.set("origin", input.origin);
     if (input.featured)
         query.set("featured", "1");
     if (input.cursor)
@@ -85,7 +91,7 @@ export async function fetchPublicProductsByIds(input) {
 export async function fetchPublicProduct(input) {
     return get(input, `/items/${encodeURIComponent(input.slug)}`, true);
 }
-/** Categorias com ao menos um produto no ar, em ordem, com a contagem. */
+/** Departamentos com ao menos um produto no ar, em ordem: contagem, foto, categorias de dentro e origens. */
 export async function fetchPublicProductCategories(input) {
     return (await get(input, "/categories")).items;
 }

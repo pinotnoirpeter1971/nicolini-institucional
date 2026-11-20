@@ -29,7 +29,7 @@ globalThis.localStorage = { getItem: (k) => guardado.get(k) ?? null, setItem: (k
 const { assinaturaDoEnvio } = await carregar('src/sacola/envio.ts');
 const { tentativaPara } = await carregar('src/sacola/aparelho.ts');
 const { aplicarRecusa } = await carregar('src/sacola/recusa.ts');
-const { RestaurantsOrderError } = await carregar('src/engine/sdk-0.7.0/index.js');
+const { RestaurantsOrderError } = await carregar('src/engine/sdk-0.8.0/index.js');
 
 let falhas = 0;
 const conferir = (nome, ok, detalhe = '') => {

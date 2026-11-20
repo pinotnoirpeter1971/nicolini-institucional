@@ -31,16 +31,34 @@ export type PublicProductData = PublicProductCardData & {
         slug: string;
         name: string;
     };
+    /** O departamento da categoria; o mesmo que `category` quando o produto mora no departamento. */
+    department: {
+        slug: string;
+        name: string;
+    };
 };
 export type PublicProductPageData = {
     items: PublicProductCardData[];
     nextCursor: string | null;
 };
-export type PublicProductCategoryData = {
+/** Categoria dentro de um departamento, com quantos produtos no ar. */
+export type PublicProductSubcategoryData = {
     slug: string;
     name: string;
     description: string | null;
     count: number;
+};
+/** País de origem dos produtos do departamento ("Parma, Itália" conta como Itália, `italia`). */
+export type PublicProductOriginData = {
+    slug: string;
+    name: string;
+    count: number;
+};
+/** Departamento com produto no ar; `count` soma as categorias de dentro. */
+export type PublicProductCategoryData = PublicProductSubcategoryData & {
+    photo: PublicMediaData | null;
+    children: PublicProductSubcategoryData[];
+    origins: PublicProductOriginData[];
 };
 export type PublicProductIndexEntry = {
     slug: string;
@@ -67,9 +85,14 @@ type Base = {
     restaurantKey: string;
     signal?: AbortSignal;
 };
-/** Uma página de cartões: destaques primeiro, depois nome. 24 por página (até 48). Categoria que não existe: 404 (`RestaurantsPublicError`). */
+/**
+ * Uma página de cartões: destaques primeiro, depois nome. 24 por página (até 48). `category` aceita
+ * departamento (traz as categorias de dentro) ou categoria; `origin`, o slug do país. Categoria que
+ * não existe: 404 (`RestaurantsPublicError`).
+ */
 export declare function fetchPublicProducts(input: Base & {
     category?: string;
+    origin?: string;
     featured?: boolean;
     cursor?: string | null;
     limit?: number;
@@ -88,7 +111,7 @@ export declare function fetchPublicProductsByIds(input: Base & {
 export declare function fetchPublicProduct(input: Base & {
     slug: string;
 }): Promise<PublicProductData | null>;
-/** Categorias com ao menos um produto no ar, em ordem, com a contagem. */
+/** Departamentos com ao menos um produto no ar, em ordem: contagem, foto, categorias de dentro e origens. */
 export declare function fetchPublicProductCategories(input: Base): Promise<PublicProductCategoryData[]>;
 /** Todos os produtos no ar (até 5.000): slug, categoria e a hora da última alteração. */
 export declare function fetchPublicProductIndex(input: Base): Promise<PublicProductIndexEntry[]>;

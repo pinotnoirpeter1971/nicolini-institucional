@@ -10,7 +10,8 @@ export const revalidate = 60;
 export async function GET() {
   const categorias = await categoriasDeProdutos();
   if (!categorias) return Response.json({ itens: [] }, { status: 404 });
-  const nomes = new Map(categorias.map((c) => [c.slug, c.name]));
+  /* O nome da categoria de cada produto, de dentro ou do departamento, e o do departamento junto (a busca acha os dois). */
+  const nomes = new Map(categorias.flatMap((d) => [[d.slug, d.name] as const, ...(d.children ?? []).map((c) => [c.slug, `${c.name} ${d.name}`] as const)]));
   const itens = (await catalogoParaBusca()).map((p) => ({ ...p, categoryName: nomes.get(p.categorySlug) ?? null }));
   return Response.json({ itens });
 }

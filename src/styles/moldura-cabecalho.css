@@ -279,39 +279,6 @@
   color: var(--marca);
 }
 
-.cabecalho__deptos-lista {
-  position: absolute;
-  z-index: 70;
-  top: 100%;
-  left: 0;
-  min-width: 230px;
-  margin: 0;
-  padding: 8px 0;
-  list-style: none;
-  background: var(--white);
-  border-radius: 0 0 10px 10px;
-  box-shadow: 0 1px 0 rgba(35, 31, 26, 0.1), 0 16px 32px rgba(35, 31, 26, 0.12);
-}
-
-.cabecalho__deptos-lista[hidden] {
-  display: none;
-}
-
-.cabecalho__deptos-lista a {
-  display: block;
-  padding: 11px 20px;
-  color: var(--ink);
-  font-size: 0.86rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.cabecalho__deptos-lista a:hover,
-.cabecalho__deptos-lista a.is-ativo {
-  color: var(--marca);
-  background: #f6f3ee;
-}
-
 .cabecalho__departamentos {
   margin-right: 18px;
   padding-left: 0;
@@ -409,6 +376,232 @@
 .cabecalho__gaveta-todos svg {
   width: 16px;
   height: 16px;
+}
+
+/* Departamento com categorias, no menu do celular: o nome leva à página; a seta abre as de dentro. */
+.cabecalho__gaveta-depto {
+  border-bottom: 1px solid #393630;
+}
+
+.cabecalho__gaveta-depto-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cabecalho__gaveta-depto-linha > a {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  font: 500 1.2rem var(--serif);
+  letter-spacing: -0.01em;
+}
+
+.cabecalho__gaveta-depto-linha > button {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  color: #8f877c;
+  background: transparent;
+}
+
+.cabecalho__gaveta-depto-linha > button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* O ícone já vem girado para baixo (estilo do próprio SVG): quem gira ao abrir é o botão. */
+.cabecalho__gaveta-depto-linha > button {
+  transition: transform 200ms var(--ease);
+}
+
+.cabecalho__gaveta-depto-linha > button[aria-expanded='true'] {
+  transform: rotate(180deg);
+}
+
+.cabecalho__gaveta-filhos {
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 12px 14px;
+}
+
+.cabecalho__gaveta-filhos > a {
+  padding: 8px 0;
+  color: #d7d1c7;
+  font-size: 0.95rem;
+}
+
+.cabecalho__gaveta-filhos > a:last-child {
+  color: #dc7d72;
+}
+
+/*
+ * O menu suspenso dos departamentos (protótipo do e-commerce, variante
+ * "índice"): a faixa escura embaixo do header, na largura da tela.
+ */
+.menu-suspenso {
+  position: absolute;
+  z-index: 70;
+  top: 100%;
+  right: 0;
+  left: 0;
+  overflow: hidden;
+  border-top: 1px solid #2b2926;
+  color: var(--white);
+  background: var(--ink);
+  box-shadow: 0 17px 30px rgba(0, 0, 0, 0.14);
+  animation: menu-suspenso-entra 200ms ease-out both;
+}
+
+@keyframes menu-suspenso-entra {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu-suspenso__um,
+.menu-suspenso__todos {
+  min-height: 300px;
+  display: grid;
+  align-items: start;
+  padding: 34px 0 38px;
+}
+
+.menu-suspenso__um {
+  grid-template-columns: 0.86fr 1fr 1fr;
+  gap: 64px;
+}
+
+.menu-suspenso__todos {
+  grid-template-columns: 0.65fr 1.35fr;
+  gap: 72px;
+}
+
+.menu-suspenso .eyebrow {
+  margin-bottom: 16px;
+  color: #c9c1b5;
+}
+
+.menu-suspenso__titulo h2 {
+  max-width: 300px;
+  margin: 0 0 24px;
+  color: var(--white);
+  font: 500 1.7rem/1.08 var(--serif);
+  letter-spacing: -0.04em;
+}
+
+.menu-suspenso__titulo h2 em {
+  color: #db786d;
+}
+
+.menu-suspenso__titulo .link {
+  color: #f2eee7;
+}
+
+.menu-suspenso__titulo .link svg {
+  color: #dd756b;
+}
+
+.menu-suspenso__lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-suspenso__lista > a {
+  min-height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #e9e4dc;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: color 200ms var(--ease);
+}
+
+.menu-suspenso__lista > a:hover {
+  color: #dc786d;
+}
+
+.menu-suspenso__lista svg,
+.menu-suspenso__depto svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  opacity: 0.6;
+}
+
+.menu-suspenso__origem {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.menu-suspenso__origem i {
+  width: 18px;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+  font-size: 0.95rem;
+  font-style: normal;
+  line-height: 1;
+}
+
+.menu-suspenso__colunas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 44px;
+  align-content: start;
+}
+
+.menu-suspenso__depto {
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) minmax(0, 1.1fr) 16px;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid #3a3732;
+  color: var(--white);
+  transition: color 200ms var(--ease);
+}
+
+.menu-suspenso__depto:hover {
+  color: #dc786d;
+}
+
+.menu-suspenso__depto span {
+  color: #c36a60;
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.menu-suspenso__depto b {
+  font: 500 1.2rem var(--serif);
+}
+
+.menu-suspenso__depto em {
+  color: #aaa297;
+  font-size: 0.72rem;
+  font-style: normal;
+  line-height: 1.3;
+}
+
+@media (max-width: 760px) {
+  .menu-suspenso {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-suspenso {
+    animation: none;
+  }
 }
 
 /* A Rustichella não é redesenhada: guarda a largura de antes da moldura nova. */

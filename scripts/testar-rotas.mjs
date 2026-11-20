@@ -420,7 +420,7 @@ try {
     const daAreaNaLinha = [...header.matchAll(/<a\b[^>]*class="cabecalho__da-area"[^>]*>/g)].map((m) => hrefDe(m[0]));
     conferir(
       `${caminho} com ${daArea[caminho] ? 'a navegação da área no lugar dos departamentos' : 'os departamentos à esquerda (sem navegação de área)'}`,
-      daArea[caminho] ? daAreaNaLinha.join() === daArea[caminho].join() && !header.includes('lista-de-departamentos') : daAreaNaLinha.length === 0,
+      daArea[caminho] ? daAreaNaLinha.join() === daArea[caminho].join() && !header.includes('cabecalho__departamentos') : daAreaNaLinha.length === 0,
       daAreaNaLinha.join(' ') || 'nenhuma',
     );
     if (caminho === '/rustichella') conferir('/rustichella com a âncora #os-convidados', r.corpo.includes('id="os-convidados"'));
@@ -457,8 +457,9 @@ try {
   }
   /*
    * As categorias do header vêm do Engine (12/11/2026, pedido de Pedro): as mesmas de /produtos e na mesma ordem
-   * (as do painel com produto no ar); a linha mostra as 5 primeiras e Departamentos todas; nenhuma leva a 404.
-   * Sem categoria no ar (ou com o Engine fora durante o build) o header fica sem elas e sem Departamentos.
+   * (as do painel com produto no ar); a linha mostra as 5 primeiras; nenhuma leva a 404. Desde 19/11/2026, Departamentos
+   * e o mouse sobre cada uma abrem o menu suspenso do protótipo (só no navegador); a lista inteira, na ordem, está na
+   * grade de departamentos da home. Sem categoria no ar (ou com o Engine fora no build) o header fica sem elas e sem Departamentos.
    */
   console.log('\nCategorias do header, do Engine');
   const hrefsDe = (html) => [...html.matchAll(/href="(\/produtos\/[^"#?]+)"/g)].map((m) => m[1]);
@@ -467,12 +468,11 @@ try {
   /* O Bistrô e a Rustichella trocam os departamentos pela navegação delas (conferido acima). */
   for (const caminho of ['/', '/a-loja', '/produtos', '/nao-existe']) {
     const header = ((await pedir(caminho)).corpo.match(/<header\b[\s\S]*?<\/header>/) || [''])[0];
-    const naLista = hrefsDe((header.match(/<ul id="lista-de-departamentos"[\s\S]*?<\/ul>/) || [''])[0]);
     const naLinha = [...header.matchAll(/<a\b[^>]*>/g)].map((m) => m[0]).filter((a) => /class="cabecalho__categoria\b/.test(a)).flatMap(hrefsDe);
     conferir(
-      `${caminho}: header com as categorias de /produtos (${doEngine.length}), em ordem; a linha com as ${Math.min(doEngine.length, 5)} primeiras`,
-      naLista.join() === doEngine.join() && naLinha.join() === doEngine.slice(0, 5).join() && header.includes('cabecalho__departamentos') === doEngine.length > 0,
-      `lista: ${naLista.join(' ') || 'nenhuma'}; linha: ${naLinha.join(' ') || 'nenhuma'}; /produtos: ${doEngine.join(' ') || 'nenhuma'}`,
+      `${caminho}: header com as categorias de /produtos (${doEngine.length}), a linha com as ${Math.min(doEngine.length, 5)} primeiras, em ordem, e o menu suspenso fechado`,
+      naLinha.join() === doEngine.slice(0, 5).join() && header.includes('cabecalho__departamentos') === doEngine.length > 0 && !header.includes('id="menu-suspenso"'),
+      `linha: ${naLinha.join(' ') || 'nenhuma'}; /produtos: ${doEngine.join(' ') || 'nenhuma'}`,
     );
   }
   for (const href of doEngine) {
@@ -481,6 +481,14 @@ try {
   }
   /* O destaque de produtos e o bloco do Blog da home dependem do que o Engine tem no ar (testar-catalogo e testar-blog). */
   const homeNova = await pedir('/');
+  /* A home no desenho do protótipo (19/11/2026): a grade de departamentos (os do Engine, na ordem; sem eles, os balcões sem link) e "A loja" no fim. */
+  const grade = ((homeNova.corpo.match(/<section class="home-departamentos"[\s\S]*?<\/section>/) || [''])[0]);
+  conferir(
+    `/ com a grade de departamentos (${doEngine.length || 'balcões'}) e "A loja" no fim, sem a faixa dos balcões`,
+    (doEngine.length ? [...new Set(hrefsDe(grade))].join() === doEngine.join() : grade.includes('departamento-cartao')) &&
+      /<section id="a-casa" class="home-loja"/.test(homeNova.corpo) && !homeNova.corpo.includes('section--balcoes'),
+    `grade: ${[...new Set(hrefsDe(grade))].join(' ') || 'sem links'}`,
+  );
   /* O bloco da tábua de frios, o mesmo do e-commerce, confirmado por Pedro em 12/11/2026 (conteudoAConfirmar em src/menu-do-site.ts). */
   conferir('/ com o bloco da tábua de frios e o WhatsApp da casa', /id="tabua-de-frios"/.test(homeNova.corpo) && homeNova.corpo.includes('https://wa.me/5554999592314?text='));
 

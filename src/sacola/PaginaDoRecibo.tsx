@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { orderTokenFromHash, type PublicOrderReceiptData } from '../engine/sdk-0.7.0/index.js';
+import { orderTokenFromHash, type PublicOrderReceiptData } from '../engine/sdk-0.8.0/index.js';
 import { lerRecibo } from '../engine/navegador';
 import { dataEHora, dataPorExtenso, dinheiro, gramas } from '../engine/formato';
 import { casa } from '../data/casa';

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { PublicProductCardData, PublicProductCategoryData, PublicProductData } from '../engine/sdk-0.7.0/index.js';
+import type { PublicProductCardData, PublicProductCategoryData, PublicProductData, PublicProductOriginData, PublicProductSubcategoryData } from '../engine/sdk-0.8.0/index.js';
 import { gramas } from '../engine/formato';
 import { setores } from '../data/casa';
 import { modulos } from '../menu-do-site';
@@ -9,6 +9,7 @@ import { CartaoDeProduto } from '../ui/CartaoDeProduto';
 import { Migalhas } from '../ui/Migalhas';
 import { MaisProdutos } from '../ui/VerMais';
 import { Galeria } from '../ui/Galeria';
+import { Foto } from '../ui/Foto';
 import { Comprar } from '../ui/Comprar';
 import { Preco } from '../ui/Preco';
 import { casa } from '../data/casa';
@@ -19,11 +20,18 @@ import { casa } from '../data/casa';
  * site. Os dados chegam prontos da página (servidor), no formato do SDK.
  */
 
-/* As categorias do Engine não têm foto; as cinco que são balcões da loja usam a
- * foto do balcão (src/data/casa.js). Categoria nova fica sem foto até ganhar uma. */
+/* A foto do departamento vem do Engine (D-141); sem ela, os departamentos que
+ * são balcões da loja usam a foto do balcão (src/data/casa.js). Departamento
+ * novo e sem foto fica sem foto até ganhar uma no painel. */
 export function fotoDaCategoria(slug: string) {
   const setor = setores.find((s) => s.categoria === slug);
   return setor ? { src: setor.foto, alt: setor.nome } : null;
+}
+
+export function FotoDoDepartamento({ departamento, sizes, prioridade = false }: { departamento: PublicProductCategoryData; sizes: string; prioridade?: boolean }) {
+  if (departamento.photo) return <Foto foto={departamento.photo} sizes={sizes} prioridade={prioridade} />;
+  const foto = fotoDaCategoria(departamento.slug);
+  return foto ? <img src={foto.src} alt={foto.alt} width="1200" height="1500" loading={prioridade ? 'eager' : 'lazy'} decoding="async" /> : null;
 }
 
 function ComoFunciona() {
@@ -80,7 +88,6 @@ export function PaginaDeProdutos({ categorias, destaques }: { categorias: Public
         </div>
         <ul>
           {categorias.map((c, i) => {
-            const foto = fotoDaCategoria(c.slug);
             return (
               <li key={c.slug}>
                 <Link href={`/produtos/${c.slug}`} className="diretorio__linha">
@@ -90,7 +97,9 @@ export function PaginaDeProdutos({ categorias, destaques }: { categorias: Public
                   <span className="diretorio__contagem">
                     {c.count} {c.count === 1 ? 'produto' : 'produtos'}
                   </span>
-                  <span className="diretorio__foto">{foto && <img src={foto.src} alt="" width="1200" height="1500" loading="lazy" decoding="async" />}</span>
+                  <span className="diretorio__foto">
+                    <FotoDoDepartamento departamento={c} sizes="96px" />
+                  </span>
                   <Arrow />
                 </Link>
               </li>
@@ -126,42 +135,61 @@ export function PaginaDeProdutos({ categorias, destaques }: { categorias: Public
   );
 }
 
+/*
+ * A página de um departamento, de uma categoria de dentro (/produtos/azuis) ou
+ * do departamento filtrado pela origem (/produtos/queijos/italia). A linha de
+ * departamentos fica em cima; embaixo dela, as categorias de dentro e os
+ * países do departamento, como atalhos.
+ */
 export function PaginaDaCategoria({
-  categoria,
+  departamento,
+  filha,
+  origem,
   categorias,
   itens,
   cursor,
   limite,
 }: {
-  categoria: PublicProductCategoryData;
+  departamento: PublicProductCategoryData;
+  filha: PublicProductSubcategoryData | null;
+  origem: PublicProductOriginData | null;
   categorias: PublicProductCategoryData[];
   itens: PublicProductCardData[];
   cursor: string | null;
   limite: number;
 }) {
-  const foto = fotoDaCategoria(categoria.slug);
+  const atual = filha ?? departamento;
+  const total = filha?.count ?? origem?.count ?? departamento.count;
+  const filhas = departamento.children ?? [];
+  const origens = departamento.origins ?? [];
+  const recorte = filha?.name ?? origem?.name;
   return (
     <>
       <section className="topo-de-pagina topo-de-pagina--suave topo-de-categoria">
         <div className="wrap topo-de-categoria__grade">
           <div>
-            <Migalhas itens={[{ rotulo: 'Início', href: '/' }, { rotulo: 'Produtos', href: '/produtos' }, { rotulo: categoria.name }]} />
-            <h1>{categoria.name}</h1>
-            {categoria.description && <p>{categoria.description}</p>}
+            <Migalhas
+              itens={[
+                { rotulo: 'Início', href: '/' },
+                { rotulo: 'Produtos', href: '/produtos' },
+                recorte ? { rotulo: departamento.name, href: `/produtos/${departamento.slug}` } : { rotulo: departamento.name },
+                ...(recorte ? [{ rotulo: recorte }] : []),
+              ]}
+            />
+            <h1>{origem ? `${departamento.name} · ${origem.name}` : atual.name}</h1>
+            {atual.description && <p>{atual.description}</p>}
           </div>
-          {foto && (
-            <div className="topo-de-categoria__foto">
-              <img src={foto.src} alt={foto.alt} width="1200" height="1500" fetchPriority="high" decoding="async" />
-            </div>
-          )}
+          <div className="topo-de-categoria__foto">
+            <FotoDoDepartamento departamento={departamento} sizes="(max-width: 760px) 100vw, 40vw" prioridade />
+          </div>
         </div>
       </section>
 
-      <nav className="categorias-atalho" aria-label="Outras categorias">
+      <nav className="categorias-atalho" aria-label="Departamentos">
         <ul className="wrap">
           {categorias.map((c) => (
             <li key={c.slug}>
-              <Link href={`/produtos/${c.slug}`} aria-current={c.slug === categoria.slug ? 'page' : undefined}>
+              <Link href={`/produtos/${c.slug}`} aria-current={c.slug === departamento.slug ? 'page' : undefined}>
                 {c.name}
               </Link>
             </li>
@@ -169,16 +197,44 @@ export function PaginaDaCategoria({
         </ul>
       </nav>
 
-      <section className="catalogo wrap" aria-label={`Produtos de ${categoria.name}`}>
+      {(filhas.length > 0 || origens.length > 1) && (
+        <nav className="recortes wrap" aria-label={`Recortes de ${departamento.name}`}>
+          {filhas.length > 0 && (
+            <div className="recortes__grupo">
+              <span className="recortes__rotulo">Categorias</span>
+              <Link href={`/produtos/${departamento.slug}`} aria-current={!filha && !origem ? 'page' : undefined}>
+                Todas
+              </Link>
+              {filhas.map((f) => (
+                <Link key={f.slug} href={`/produtos/${f.slug}`} aria-current={filha?.slug === f.slug ? 'page' : undefined}>
+                  {f.name}
+                </Link>
+              ))}
+            </div>
+          )}
+          {origens.length > 1 && (
+            <div className="recortes__grupo">
+              <span className="recortes__rotulo">Origem</span>
+              {origens.map((o) => (
+                <Link key={o.slug} href={`/produtos/${departamento.slug}/${o.slug}`} aria-current={origem?.slug === o.slug ? 'page' : undefined}>
+                  {o.name}
+                </Link>
+              ))}
+            </div>
+          )}
+        </nav>
+      )}
+
+      <section className="catalogo wrap" aria-label={`Produtos de ${atual.name}`}>
         <p className="catalogo__contagem">
-          {itens.length ? `${categoria.count} ${categoria.count === 1 ? 'produto' : 'produtos'} na seleção` : 'Nenhum produto agora'}
+          {itens.length ? `${total} ${total === 1 ? 'produto' : 'produtos'} na seleção` : 'Nenhum produto agora'}
         </p>
         {itens.length ? (
           <div className="grade-de-produtos">
             {itens.map((p) => (
               <CartaoDeProduto key={p.id} produto={p} />
             ))}
-            <MaisProdutos categoria={categoria.slug} cursor={cursor} limite={limite} />
+            <MaisProdutos categoria={atual.slug} origem={origem?.slug} cursor={cursor} limite={limite} />
           </div>
         ) : (
           <div className="vazio">

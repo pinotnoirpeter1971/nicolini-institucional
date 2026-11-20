@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { PublicMediaData } from '../engine/sdk-0.7.0/index.js';
+import type { PublicMediaData } from '../engine/sdk-0.8.0/index.js';
 import { Foto } from './Foto';
 
 /* As fotos do produto: a principal numa moldura fixa e as miniaturas embaixo, como no e-commerce. */

@@ -84,6 +84,27 @@ export const conteudoAConfirmar = {
 export type ItemDoMenu = { rotulo: string; href: string; aceso: boolean };
 
 /*
+ * Um departamento no header (Engine, D-141): o link da linha de baixo e o que
+ * o menu suspenso mostra ao passar o mouse: a descrição, as categorias de
+ * dentro e os países de origem (cada um leva à página filtrada).
+ */
+export type DepartamentoDoMenu = ItemDoMenu & {
+  descricao: string | null;
+  filhos: ItemDoMenu[];
+  origens: Array<ItemDoMenu & { bandeira: string | null }>;
+};
+
+/* A bandeira do país de origem, no menu suspenso (como no protótipo). Sem bandeira conhecida, só o nome. */
+const BANDEIRAS: Record<string, string> = {
+  africa: '🇿🇦', 'africa-do-sul': '🇿🇦', alasca: '🇺🇸', alemanha: '🇩🇪', argentina: '🇦🇷', australia: '🇦🇺', austria: '🇦🇹',
+  belgica: '🇧🇪', brasil: '🇧🇷', canada: '🇨🇦', chile: '🇨🇱', dinamarca: '🇩🇰', escocia: '🇬🇧', espanha: '🇪🇸',
+  'estados-unidos': '🇺🇸', eua: '🇺🇸', franca: '🇫🇷', grecia: '🇬🇷', holanda: '🇳🇱', inglaterra: '🇬🇧', irlanda: '🇮🇪',
+  italia: '🇮🇹', japao: '🇯🇵', libano: '🇱🇧', marrocos: '🇲🇦', mexico: '🇲🇽', noruega: '🇳🇴', 'nova-zelandia': '🇳🇿',
+  'paises-baixos': '🇳🇱', peru: '🇵🇪', portugal: '🇵🇹', 'reino-unido': '🇬🇧', suica: '🇨🇭', turquia: '🇹🇷', uruguai: '🇺🇾',
+};
+export const bandeiraDoPais = (slug: string) => BANDEIRAS[slug] ?? null;
+
+/*
  * As categorias do header (a linha de baixo, Departamentos e o menu do celular)
  * vêm do Engine desde 12/11/2026 (pedido de Pedro; antes eram uma lista fixa
  * aqui). São as categorias com produto no ar, na ordem do painel (Site →

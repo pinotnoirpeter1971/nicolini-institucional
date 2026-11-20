@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { lineTotalCents, type PublicProductData } from '../engine/sdk-0.7.0/index.js';
+import { lineTotalCents, type PublicProductData } from '../engine/sdk-0.8.0/index.js';
 import { dinheiro, gramas } from '../engine/formato';
 import { abrirPainel, adicionar } from '../sacola/armazem';
 import { Sacola } from '../components/Icons';

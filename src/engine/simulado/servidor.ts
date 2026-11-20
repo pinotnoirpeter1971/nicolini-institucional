@@ -1,7 +1,7 @@
 /*
  * LABORATÓRIO: as leituras de Produtos do SDK, respondidas com os dados
  * simulados. Mesmos nomes, mesmas entradas e mesmas saídas das funções do SDK
- * (src/engine/sdk-0.7.0), inclusive o 404 como `RestaurantsPublicError`.
+ * (src/engine/sdk-0.8.0), inclusive o 404 como `RestaurantsPublicError`.
  * O `cenario` é só do laboratório (`?simular=vazio`): o SDK não tem.
  */
 import {
@@ -9,8 +9,8 @@ import {
   type PublicProductCardData,
   type PublicProductData,
   type PublicProductPageData,
-} from '../sdk-0.7.0/index.js';
-import { categoriasDeProdutos, produtos } from './dados';
+} from '../sdk-0.8.0/index.js';
+import { categoriasDeProdutos, departamentoDoProduto, produtos, slugDaOrigem, subcategoriasDeProdutos } from './dados';
 
 export type Cenario = { vazio?: boolean };
 type Base = { apiBaseUrl: string; restaurantKey: string; signal?: AbortSignal };
@@ -25,21 +25,22 @@ function pagina<T>(lista: T[], cursor: string | null | undefined, limite: number
 const ordemPt = new Intl.Collator('pt-BR');
 
 export function cartao(produto: PublicProductData): PublicProductCardData {
-  const { description: _d, origin: _o, photos: _p, category: _c, ...cartao } = produto;
+  const { description: _d, origin: _o, photos: _p, category: _c, department: _dep, ...cartao } = produto;
   return cartao;
 }
 
 /* ── Produtos ─────────────────────────────────────────────────────────────── */
 
 export async function fetchPublicProducts(
-  input: Base & { category?: string; featured?: boolean; cursor?: string | null; limit?: number },
+  input: Base & { category?: string; origin?: string; featured?: boolean; cursor?: string | null; limit?: number },
   cenario: Cenario = {},
 ): Promise<PublicProductPageData> {
-  if (input.category && !categoriasDeProdutos.some((c) => c.slug === input.category))
+  if (input.category && !categoriasDeProdutos.some((c) => c.slug === input.category) && !subcategoriasDeProdutos.some((c) => c.slug === input.category))
     throw new RestaurantsPublicError('Categoria não encontrada.', 404);
   if (cenario.vazio) return { items: [], nextCursor: null };
   const lista = produtos
-    .filter((p) => (!input.category || p.categorySlug === input.category) && (!input.featured || p.featured))
+    .filter((p) => !input.category || p.categorySlug === input.category || departamentoDoProduto(p) === input.category)
+    .filter((p) => (!input.origin || slugDaOrigem(p) === input.origin) && (!input.featured || p.featured))
     .sort((a, b) => Number(b.featured) - Number(a.featured) || ordemPt.compare(a.name, b.name))
     .map(cartao);
   return pagina(lista, input.cursor, Math.min(input.limit ?? 24, 48));

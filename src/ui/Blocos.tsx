@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { BlogBlockData, BlogRunData } from '../engine/sdk-0.7.0/index.js';
+import type { BlogBlockData, BlogRunData } from '../engine/sdk-0.8.0/index.js';
 import { siteUrl } from '../site';
 import { Foto } from './Foto';
 import { VideoDoYoutube } from './VideoDoYoutube';

@@ -24,7 +24,7 @@ import type {
   PublicProductData,
   PublicProductIndexEntry,
   PublicProductPageData,
-} from './sdk-0.7.0/index.js';
+} from './sdk-0.8.0/index.js';
 import {
   RestaurantsPublicError,
   fetchBlogCategories,
@@ -35,7 +35,7 @@ import {
   fetchPublicProductCategories,
   fetchPublicProductIndex,
   fetchPublicProducts,
-} from './sdk-0.7.0/index.js';
+} from './sdk-0.8.0/index.js';
 import { casaNoEngine, engineUrl, laboratorio } from '../site';
 
 export type Cenario = { vazio?: boolean };
@@ -133,8 +133,23 @@ export async function categoriasDeProdutos(): Promise<PublicProductCategoryData[
   return tolerandoOBuild(categoriasEmCache());
 }
 
+/**
+ * Onde um slug de /produtos/[categoria] mora: num departamento (ele mesmo) ou
+ * dentro dele (D-141). `null` se não há categoria com produto no ar com esse slug.
+ */
+export async function localizarCategoria(slug: string) {
+  const categorias = await categoriasDeProdutos();
+  if (!categorias) return null;
+  for (const departamento of categorias) {
+    if (departamento.slug === slug) return { categorias, departamento, filha: null };
+    const filha = (departamento.children ?? []).find((c) => c.slug === slug);
+    if (filha) return { categorias, departamento, filha };
+  }
+  return null;
+}
+
 export async function produtos(
-  filtro: { category?: string; featured?: boolean; cursor?: string | null; limit?: number },
+  filtro: { category?: string; origin?: string; featured?: boolean; cursor?: string | null; limit?: number },
   cenario?: Cenario,
 ): Promise<PublicProductPageData> {
   const s = await simulado();
@@ -147,10 +162,10 @@ export async function produtos(
 /*
  * PROVISÓRIO (busca do header, demonstração de 12/11/2026; Pedro desfaz depois): o catálogo inteiro,
  * lido do Engine no máximo uma vez por minuto e compartilhado. A busca filtra esta cópia, então um
- * termo novo não vira chamada ao Engine. Até 10 páginas de 48 (480 produtos); acima disso a busca
+ * termo novo não vira chamada ao Engine. Até 15 páginas de 48 (720 produtos; 513 desde 19/11/2026); acima disso a busca
  * pede um endpoint próprio no Engine.
  */
-const CATALOGO_PAGINAS_MAX = 10;
+const CATALOGO_PAGINAS_MAX = 15;
 const catalogoEmCache = unstable_cache(
   async (): Promise<PublicProductCardData[]> => {
     const itens: PublicProductCardData[] = [];

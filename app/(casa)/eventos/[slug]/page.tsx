@@ -1,5 +1,5 @@
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
-import { eventIsUpcoming } from '../../../../src/engine/sdk-0.7.0/index.js';
+import { eventIsUpcoming } from '../../../../src/engine/sdk-0.8.0/index.js';
 import { hojeNaCasa } from '../../../../src/engine/formato';
 import { descricaoDaMateria } from '../../../../src/ui/descricao';
 import { imagemDaCapa, metadadosDaPagina } from '../../../../src/metadados';

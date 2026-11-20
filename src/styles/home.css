@@ -523,3 +523,249 @@
   background: transparent;
 }
 
+
+/* Home no desenho do protótipo do e-commerce (19/11/2026) ---------------- */
+
+/* Cabeça das seções novas: título à esquerda, nota ou ação embaixo à direita. */
+.home-cabeca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px 40px;
+  margin-bottom: clamp(30px, 3.4vw, 46px);
+}
+
+.home-cabeca h2 {
+  margin: 0;
+  font-size: clamp(2.6rem, 4.2vw, 4.1rem);
+  line-height: 0.99;
+  letter-spacing: -0.05em;
+}
+
+.home-cabeca__nota {
+  max-width: 31ch;
+  margin: 0;
+  color: var(--dim);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+/* Os departamentos: um cartão com foto por departamento, lado a lado. */
+.home-departamentos {
+  padding: clamp(64px, 6vw, 88px) 0 clamp(80px, 8vw, 120px);
+  background: var(--soft);
+}
+
+.home-departamentos .home-cabeca h2 {
+  white-space: nowrap;
+}
+
+.home-departamentos__grade {
+  display: grid;
+  grid-template-columns: repeat(min(var(--n, 6), 7), minmax(0, 1fr));
+  gap: 10px;
+}
+
+.departamento-cartao {
+  position: relative;
+  min-height: clamp(260px, 22vw, 330px);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow: hidden;
+  color: var(--white);
+  isolation: isolate;
+}
+
+.departamento-cartao__foto {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  background: var(--ink-soft);
+}
+
+.departamento-cartao__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.departamento-cartao::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(6, 6, 5, 0.84), rgba(6, 6, 5, 0.04) 69%);
+  content: '';
+  transition: opacity 300ms;
+}
+
+a.departamento-cartao:hover .departamento-cartao__foto img {
+  transform: scale(1.06);
+}
+
+a.departamento-cartao:hover::before {
+  opacity: 0.91;
+}
+
+.departamento-cartao__numero {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.departamento-cartao h3 {
+  max-width: 9ch;
+  margin: auto 34px 0 0;
+  color: inherit;
+  font-size: clamp(1.45rem, 1.9vw, 1.85rem);
+  line-height: 1.01;
+  letter-spacing: -0.045em;
+}
+
+.departamento-cartao i {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+}
+
+.departamento-cartao i svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* A seleção da semana: fundo branco, quatro cartões e o "ver todos" centrado embaixo. */
+.home-selecao {
+  padding: clamp(80px, 8vw, 120px) 0;
+  background: var(--white);
+}
+
+.home-selecao__todos {
+  display: flex;
+  width: fit-content;
+  margin: clamp(36px, 4vw, 52px) auto 0;
+}
+
+.home-selecao__todos svg {
+  color: var(--marca);
+}
+
+/* A loja: fundo escuro, as fotos da casa à esquerda e o texto à direita. */
+.home-loja {
+  padding: clamp(84px, 9vw, 140px) 0;
+  color: var(--white);
+  background: var(--ink);
+}
+
+.home-loja__grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.93fr);
+  align-items: center;
+  gap: clamp(56px, 10vw, 165px);
+}
+
+.home-loja__fotos {
+  min-width: 0;
+}
+
+.home-loja__texto {
+  max-width: 540px;
+}
+
+.home-loja .eyebrow {
+  color: #d57268;
+}
+
+.home-loja h2 {
+  margin: 0;
+  color: var(--white);
+  font-size: clamp(2.7rem, 4.4vw, 4.2rem);
+  line-height: 0.97;
+  letter-spacing: -0.06em;
+}
+
+.home-loja h2 em {
+  color: #de776d;
+}
+
+.home-loja__texto > p:not(.eyebrow) {
+  margin: 30px 0 0;
+  color: #c6c0b7;
+  font-size: 0.98rem;
+  line-height: 1.8;
+}
+
+.home-loja .home-loja__endereco {
+  margin-top: 26px;
+  color: var(--white);
+  font-size: 0.9rem;
+  font-weight: 650;
+  line-height: 1.75;
+}
+
+.home-loja__endereco span {
+  color: #aaa298;
+  font-weight: 400;
+}
+
+.home-loja .acoes {
+  margin-top: 28px;
+}
+
+.home-loja .link {
+  color: var(--white);
+}
+
+.home-loja .link svg {
+  color: #e27c72;
+}
+
+/* As fotos da casa no fundo escuro: legenda e contador em tons claros. */
+.home-loja .casa-fotos__legenda,
+.home-loja .casa-fotos__contador {
+  color: #aaa298;
+}
+
+@media (max-width: 1090px) {
+  .home-departamentos .home-cabeca h2 {
+    white-space: normal;
+  }
+
+  .home-departamentos__grade {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .home-cabeca {
+    display: block;
+  }
+
+  .home-cabeca__nota,
+  .home-cabeca > .link {
+    margin-top: 18px;
+  }
+
+  .home-departamentos__grade {
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+  }
+
+  .departamento-cartao {
+    min-height: 200px;
+    padding: 16px;
+  }
+
+  .departamento-cartao:first-child {
+    grid-row: span 2;
+    min-height: 407px;
+  }
+
+  .home-loja__grade {
+    grid-template-columns: 1fr;
+    gap: 42px;
+  }
+}
