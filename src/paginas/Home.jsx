@@ -27,9 +27,6 @@ function Hero() {
       <div className="hero__scrim" />
 
       <div className="hero__inner">
-        <p className="eyebrow hero__reveal" style={{ '--d': '60ms', color: 'rgba(255, 255, 255, 0.72)' }}>
-          O EMPÓRIO NICOLINI
-        </p>
         <h1 className="hero__reveal" style={{ '--d': '150ms' }}>
           O melhor da
           <br />
