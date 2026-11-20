@@ -56,6 +56,25 @@
   56 px abaixo do resto, alinhada à esquerda (`ASSINATURA` em
   `public/menu/js/app.js`, símbolo em `public/menu/assets/capilano.svg`). As
   telas da reserva ficam sem ela.
+- **Header 1+ (19/11/2026, decisão de Pedro, vale sobre as escolhas 1 e 2 da seção Design do site).** Protótipo e
+  histórico das hipóteses em `Site Nicolini/mockups/header` (LEIAME.md). Código: `src/moldura/Cabecalho.tsx`,
+  `src/moldura/abertura.ts`, o fim de `src/styles/moldura-cabecalho.css` e `src/menu-do-site.ts`.
+  - Nas páginas que abrem com foto ou vídeo inteiro (`paginasComAbertura`: `/`, `/bistro`, `/rustichella`) o header
+    fica por cima da abertura (que ocupa a tela) e começa curto e sem fundo: logo, a casa, lupa e sacola. Depois de
+    96 px de rolagem fica completo, e só volta a ser curto perto do topo (24 px). Nada some do lugar: a lupa vira a
+    barra de busca, a casa desce para a linha de baixo e ganha a cor da área, os ícones entram ao lado da sacola e os
+    setores surgem um a um. A lupa clicada no topo abre o header ali mesmo, com o cursor na busca (Esc ou clique fora
+    devolvem). Sem animação com movimento reduzido. Nas outras páginas o header nasce completo, como antes.
+  - A linha de baixo é de quem está na página: à esquerda, Departamentos e as categorias (Empório, Blog, Eventos) ou
+    a navegação da área (Bistrô: O Bistrô · Cardápio · Reservas · Como chegar, com Cardápio e Reservas no `/menu/`;
+    Rustichella: O jantar · Os convidados · O menu · Reservar). À direita, na cor da área, a casa toda, sempre igual
+    (Empório · Bistrô · Eventos · Blog), com a parte atual sublinhada de ponta a ponta da palavra. No celular, o bloco
+    da área vem primeiro no menu.
+  - "Visite-nos ↗" (o mapa, em outra aba) no lugar do CEP, que a casa não vai ter; "Loja física" saiu da linha de
+    baixo e segue no menu do celular e no rodapé. A tarja preta está desligada (`faixa` em `src/menu-do-site.ts`:
+    'empurra' desce 5 s depois do header completo; 'flutuante' é uma pílula embaixo, com ✕).
+  - O Blog entrou no menu (header e rodapé) e só aparece com ele ligado no Engine (`Moldura.tsx`, a mesma leitura
+    guardada do índice do Blog): desligado, nenhuma página aponta para `/blog`.
 - **Aviso de segurança do Next 16.4.3 (17/11/2026), upgrade adiado a pedido de Pedro até a revisão de segurança:**
   o site **não está exposto** (os dois advisories do npm, GHSA-mfr8-8qww-v76h e GHSA-vc7v-qv4w-wrv8, exigem
   `'use cache'`, que o site não usa; ele usa só `unstable_cache`, em `src/engine/fonte.ts`). Não adote `'use cache'`
@@ -235,7 +254,8 @@ atendimento), `/pedido#rec1b0zzzzzzzzzz` (não encontrado).
 
 **Escolhas da trilha (para o aceite):**
 
-1. **Header — decisão de Pedro (12/11/2026), acima do DESIGN-BRIEF §8:** o do
+1. **(Comportamento, CEP e casa revistos em 19/11/2026: ver "Header 1+" no topo.)**
+   **Header — decisão de Pedro (12/11/2026), acima do DESIGN-BRIEF §8:** o do
    protótipo do e-commerce, como ele é. Busca, "Receba em"/CEP, conta,
    curtidos, Departamentos e a faixa de anúncio ficam **à vista e travados**:
    desativados (`aria-disabled`/`disabled`, título "Em breve"), sem link, sem
@@ -252,7 +272,7 @@ atendimento), `/pedido#rec1b0zzzzzzzzzz` (não encontrado).
    roda função nem chama o Engine. Na primeira versão a busca morava em
    `/produtos?busca=`: ler o endereço ali tirava `/produtos` do cache, e cada
    visita e cada pesquisa rodavam uma função. Pedro decide o destino da busca.
-2. Texto da faixa: "Empório e Bistrô em Caxias do Sul", no lugar do
+2. (Faixa desligada desde 19/11/2026.) Texto da faixa: "Empório e Bistrô em Caxias do Sul", no lugar do
    "Entrega grátis em Caxias do Sul" do protótipo (promessa que a casa não
    fez). Pedro escolhe a mensagem.
 3. As categorias do header vêm do Engine desde 12/11/2026 (antes eram uma

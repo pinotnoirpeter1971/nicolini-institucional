@@ -332,7 +332,7 @@ try {
   /*
    * Estado de 12/11/2026 (demonstração de Encomendas, pedido de Pedro): em
    * src/menu-do-site.ts, Produtos, Eventos, Pedidos (sacola e recibo) e a
-   * política estão acesos; o Blog segue fora do menu (o bloco da home aparece
+   * política estão acesos; o Blog entrou no menu em 19/11/2026 (o bloco da home aparece
    * quando o Engine tem matéria no ar). Blog, Eventos e Produtos respondem ou
    * não conforme o módulo no Engine (provado em testar-catalogo e
    * testar-blog); aqui, os endereços do simulado, que nunca podem abrir, e as
@@ -382,25 +382,67 @@ try {
     `veio ${catalogo.status}`,
   );
 
+  /*
+   * O header 1+ (Pedro, 19/11/2026; src/moldura/Cabecalho.tsx). À direita da
+   * linha de baixo, a casa toda (Empório, Bistrô, Eventos, Blog) com a parte
+   * atual sublinhada; à esquerda, os departamentos ou a navegação do Bistrô e
+   * da landing de evento. Nas páginas com abertura, o header nasce curto, por
+   * cima dela. "Visite-nos ↗" (o mapa) no lugar do CEP; a tarja preta desligada.
+   */
+  const casaEsperada = { '/': '/', '/a-loja': '/', '/bistro': '/bistro', '/rustichella': '/eventos', '/nao-existe': '/' };
+  const daArea = {
+    '/bistro': ['#o-bistro', '/menu/', '/menu/#/reserva', '#como-chegar'],
+    '/rustichella': ['#o-jantar', '#os-convidados', '#o-menu', '#reserva'],
+  };
+  const hrefDe = (tag) => (tag.match(/href="([^"]*)"/) || [])[1];
+  /* O Blog só entra no menu com ele ligado no Engine (src/moldura/Moldura.tsx); desligado, /blog é 404 (testar-blog). */
+  const comBlog = (await pedir('/blog')).status === 200;
+  const casaDoSite = comBlog ? '/,/bistro,/eventos,/blog' : '/,/bistro,/eventos';
   for (const caminho of ['/', '/a-loja', '/bistro', '/rustichella', '/nao-existe']) {
     const r = await pedir(caminho);
     const links = [...r.corpo.matchAll(/href="(\/[^"#?]*)/g)].map((m) => m[1]);
     const header = (r.corpo.match(/<header\b[\s\S]*?<\/header>/) || [''])[0];
-    const blogNoHeader = [...header.matchAll(/href="(\/blog[^"#?]*)/g)].map((m) => m[1]);
-    conferir(`${caminho} sem o Blog no header (módulo fora do menu)`, blogNoHeader.length === 0, blogNoHeader.join(' '));
+    const casaNaLinha = [...header.matchAll(/<a\b[^>]*class="cabecalho__casa[^"]*"[^>]*>/g)].map((m) => m[0]);
+    const sublinhada = casaNaLinha.filter((a) => a.includes('aria-current="page"')).map(hrefDe);
+    conferir(
+      `${caminho} com a casa no header (Empório, Bistrô, Eventos${comBlog ? ', Blog' : ''}) e ${casaEsperada[caminho]} sublinhado`,
+      casaNaLinha.map(hrefDe).join() === casaDoSite && sublinhada.join() === casaEsperada[caminho],
+      `casa: ${casaNaLinha.map(hrefDe).join(' ')}; sublinhado: ${sublinhada.join(' ') || 'nenhum'}`,
+    );
+    const comAbertura = ['/', '/bistro', '/rustichella'].includes(caminho);
+    conferir(
+      `${caminho} ${comAbertura ? 'com o header curto sobre a abertura (lupa e a casa no topo)' : 'com o header completo desde o início'}`,
+      comAbertura
+        ? /<header\b[^>]*class="cabecalho cabecalho--abertura is-topo"/.test(r.corpo) && header.includes('cabecalho__lupa') && header.includes('cabecalho__casa-topo')
+        : /<header\b[^>]*class="cabecalho"/.test(r.corpo) && !header.includes('cabecalho__lupa'),
+      (header.match(/<header\b[^>]*>/) || [''])[0],
+    );
+    const daAreaNaLinha = [...header.matchAll(/<a\b[^>]*class="cabecalho__da-area"[^>]*>/g)].map((m) => hrefDe(m[0]));
+    conferir(
+      `${caminho} com ${daArea[caminho] ? 'a navegação da área no lugar dos departamentos' : 'os departamentos à esquerda (sem navegação de área)'}`,
+      daArea[caminho] ? daAreaNaLinha.join() === daArea[caminho].join() && !header.includes('lista-de-departamentos') : daAreaNaLinha.length === 0,
+      daAreaNaLinha.join(' ') || 'nenhuma',
+    );
+    if (caminho === '/rustichella') conferir('/rustichella com a âncora #os-convidados', r.corpo.includes('id="os-convidados"'));
     conferir(`${caminho} com a sacola no header`, header.includes('cabecalho__sacola'));
+    const visite = (header.match(/<a\b[^>]*class="cabecalho__cep cabecalho__visite"[^>]*>/) || [''])[0];
+    conferir(
+      `${caminho} com "Visite-nos" (o mapa, em outra aba) no lugar do CEP, e sem a tarja`,
+      visite.includes('href="https://maps.app.goo.gl/') && visite.includes('target="_blank"') && !/Informe seu CEP|faixa-de-anuncio/.test(r.corpo),
+      visite,
+    );
     /*
-     * Decisão de Pedro (12/11/2026): as peças do header do e-commerce ficam à
-     * vista, mas travadas. Todas desativadas, nenhuma leva a página que não
-     * existe, nada de formulário; as de fora do header seguem apagadas.
+     * Decisão de Pedro (12/11/2026): conta e curtidos ficam à vista, mas
+     * travados. Todos desativados, nenhum leva a página que não existe, nada
+     * de formulário; as peças de fora do header seguem apagadas.
      */
-    const travadas = [...r.corpo.matchAll(/<button\b[^>]*class="(faixa-de-anuncio__cep|cabecalho__cep|cabecalho__icone|cabecalho__travado)"[^>]*>/g)];
+    const travadas = [...r.corpo.matchAll(/<button\b[^>]*class="(cabecalho__icone|cabecalho__travado)"[^>]*>/g)];
     const soltas = travadas.filter((m) => !m[0].includes('aria-disabled="true"')).map((m) => m[1]);
     /* Busca e Departamentos destravados (12/11/2026; a busca é provisória): form GET para /busca e botão que abre as categorias. */
     const formBusca = r.corpo.match(/<form\b[^>]*role="search"[^>]*>/g) ?? [];
     conferir(
-      `${caminho} com faixa, CEP, conta e curtidos travados; busca (GET /busca) e Departamentos ativos`,
-      travadas.length === 6 && soltas.length === 0 && formBusca.length === 1 && formBusca[0].includes('action="/busca"') &&
+      `${caminho} com conta e curtidos travados; busca (GET /busca) e Departamentos ativos`,
+      travadas.length === 4 && soltas.length === 0 && formBusca.length === 1 && formBusca[0].includes('action="/busca"') &&
         (!header.includes('lista-de-departamentos') || /<button\b[^>]*class="cabecalho__departamentos"[^>]*aria-expanded="false"/.test(r.corpo)),
       `${travadas.length} botões, soltos: ${soltas.join(' ') || 'nenhum'}, busca: ${formBusca.join(' ')}`,
     );
@@ -408,7 +450,10 @@ try {
     conferir(`${caminho} sem link para página que não existe`, semPagina.length === 0 && !/<form\b(?![^>]*role="search")/.test(r.corpo), semPagina.join(' '));
     conferir(`${caminho} sem newsletter, selos de pagamento nem promessa de entrega`, !/newsletter|rodape__pagamentos|Entrega grátis/.test(r.corpo));
     conferir(`${caminho} sem o laboratório`, !/laboratorio|dados simulados/i.test(r.corpo));
-    conferir(`${caminho} com o header novo (Eventos, Bistrô e Loja física)`, r.corpo.includes('class="cabecalho') && links.includes('/eventos') && links.includes('/bistro') && links.includes('/a-loja'));
+    conferir(
+      `${caminho} com ${comBlog ? 'Blog, ' : ''}Eventos, Bistrô e a loja física nos links${comBlog ? '' : ' (Blog desligado: sem link para /blog)'}`,
+      links.includes('/blog') === comBlog && links.includes('/eventos') && links.includes('/bistro') && links.includes('/a-loja'),
+    );
   }
   /*
    * As categorias do header vêm do Engine (12/11/2026, pedido de Pedro): as mesmas de /produtos e na mesma ordem
@@ -419,7 +464,8 @@ try {
   const hrefsDe = (html) => [...html.matchAll(/href="(\/produtos\/[^"#?]+)"/g)].map((m) => m[1]);
   const diretorio = ((await pedir('/produtos')).corpo.match(/<section class="diretorio[\s\S]*?<\/section>/) || [''])[0];
   const doEngine = [...new Set(hrefsDe(diretorio))];
-  for (const caminho of ['/', '/a-loja', '/bistro', '/produtos', '/nao-existe']) {
+  /* O Bistrô e a Rustichella trocam os departamentos pela navegação delas (conferido acima). */
+  for (const caminho of ['/', '/a-loja', '/produtos', '/nao-existe']) {
     const header = ((await pedir(caminho)).corpo.match(/<header\b[\s\S]*?<\/header>/) || [''])[0];
     const naLista = hrefsDe((header.match(/<ul id="lista-de-departamentos"[\s\S]*?<\/ul>/) || [''])[0]);
     const naLinha = [...header.matchAll(/<a\b[^>]*>/g)].map((m) => m[0]).filter((a) => /class="cabecalho__categoria\b/.test(a)).flatMap(hrefsDe);

@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
-import { categoriasDeProdutos } from '../engine/fonte';
-import { modulos, pecasDeLoja, type ItemDoMenu } from '../menu-do-site';
+import { categoriasDeProdutos, indiceDoBlog } from '../engine/fonte';
+import { modulos, type ItemDoMenu } from '../menu-do-site';
 import { laboratorio } from '../site';
 import { WhatsappGlyph } from '../components/Icons';
 import { Cabecalho } from './Cabecalho';
-import { FaixaDeAnuncio } from './Guardadas';
 import { HospedeDaSacola, HospedeDoLaboratorio } from './Hospedes';
 import { Rodape } from './Rodape';
 
@@ -38,17 +37,32 @@ async function categoriasDoHeader(): Promise<ItemDoMenu[]> {
   }
 }
 
+/*
+ * O Blog no menu (header e rodapé) só com o Blog ligado no Engine: desligado,
+ * /blog dá 404 e nenhuma página aponta para lá. A leitura é a mesma do índice
+ * do Blog (/blog e o bloco da home), guardada por 60 s; Engine fora, o link sai.
+ */
+async function blogNoAr(): Promise<boolean> {
+  if (!modulos.blog) return false;
+  try {
+    return Boolean(await indiceDoBlog());
+  } catch (erro) {
+    console.error('Menu: índice do Blog indisponível', erro);
+    return false;
+  }
+}
+
 export async function Moldura({ tema, children }: { tema?: 'bistro' | 'rustichella'; children: ReactNode }) {
+  const [categorias, comBlog] = await Promise.all([categoriasDoHeader(), blogNoAr()]);
   return (
     <div className={tema ? `tema tema--${tema}` : undefined}>
       <a className="pular-para-o-conteudo" href="#topo">
         Pular para o conteúdo
       </a>
-      {/* A faixa do e-commerce rola junto; o header fica preso no topo. */}
-      {pecasDeLoja.faixaDeAnuncio === 'travada' && <FaixaDeAnuncio />}
-      <Cabecalho categorias={await categoriasDoHeader()} />
+      {/* O header traz a tarja preta, quando ligada (src/menu-do-site.ts, `faixa`). */}
+      <Cabecalho categorias={categorias} comBlog={comBlog} />
       <main id="topo">{children}</main>
-      <Rodape />
+      <Rodape comBlog={comBlog} />
       {/*
        * O número entra quando houver um canal de WhatsApp confirmado para o
        * atendimento (como no site no ar). Some na sacola e no recibo, onde o

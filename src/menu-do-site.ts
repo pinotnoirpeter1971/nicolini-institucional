@@ -1,5 +1,3 @@
-import { laboratorio } from './site';
-
 /*
  * O menu do site e as peças que dependem de módulo do Engine. É configuração
  * do próprio site (SPEC D15, SPEC-SITE §1.6). Ligar um módulo na ativação é
@@ -14,8 +12,12 @@ import { laboratorio } from './site';
 export const modulos = {
   /** /produtos, /produtos/[categoria], /produto/[slug], as categorias no header e o destaque da home. */
   produtos: true,
-  /** /blog, /blog/categoria/[slug], /blog/[slug] e o bloco Blog da home. */
-  blog: laboratorio,
+  /**
+   * O item "Blog" no menu (o grupo da casa no header e o rodapé). Aceso desde
+   * 19/11/2026 (decisão de Pedro no header novo). As páginas /blog… respondem
+   * pelo Blog do Engine (404 com ele desligado).
+   */
+  blog: true,
   /**
    * O item "Eventos" no menu, ao lado do Bistrô. Aceso desde 12/11/2026 (pedido
    * de Pedro): a Rustichella está publicada no Engine. As páginas /eventos e
@@ -42,10 +44,10 @@ export const modulos = {
  * - 'apagada': não é desenhada (as de fora do header).
  */
 export const pecasDeLoja = {
-  faixaDeAnuncio: 'travada',
   /* PROVISÓRIO (demonstração, 12/11/2026): a busca vale 'ativa' e leva a /produtos?busca=. Pedro desfaz depois. */
   busca: 'ativa',
-  cep: 'travada',
+  /* A casa não vai ter CEP (Pedro, 19/11/2026): no lugar dele, "Visite-nos ↗" (Cabecalho.tsx). */
+  cep: 'apagada',
   conta: 'travada',
   curtidos: 'travada',
   /* Destravado em 12/11/2026 (pedido de Pedro): abre a lista das categorias de Produtos. */
@@ -55,11 +57,19 @@ export const pecasDeLoja = {
 } as const;
 
 /*
- * O texto da faixa de anúncio. O do protótipo ("Entrega grátis em Caxias do
- * Sul") é promessa comercial que a casa não fez, e nada fictício vai a público:
- * fica uma frase verdadeira até Pedro escolher a mensagem.
+ * A tarja preta (Pedro, 19/11/2026): DESLIGADA até haver um anúncio de verdade
+ * (um evento, as encomendas de Natal, um horário especial). Para ligar, troque
+ * `modo` e o `texto`:
+ * - 'empurra': desce do alto 5 s depois de o header ficar completo, empurrando
+ *   o header para baixo; some quando a pessoa volta ao topo da página;
+ * - 'flutuante': uma pílula escura embaixo, no centro, 5 s depois, com ✕.
+ * O CEP saiu dela (a casa não vai ter CEP). O texto do protótipo do e-commerce
+ * ("Entrega grátis em Caxias do Sul") é promessa que a casa não fez.
  */
-export const textoDaFaixa = 'Empório e Bistrô em Caxias do Sul';
+export const faixa: { modo: 'desligada' | 'empurra' | 'flutuante'; texto: string } = {
+  modo: 'desligada',
+  texto: 'Empório e Bistrô em Caxias do Sul',
+};
 
 /*
  * Conteúdo que espera confirmação da casa. Mesma regra dos módulos: aceso no
@@ -88,8 +98,68 @@ export type ItemDoMenu = { rotulo: string; href: string; aceso: boolean };
  */
 export const CATEGORIAS_NA_LINHA = 5;
 
-/* Depois das categorias: as páginas da casa (Eventos e Bistrô entram no header
- * do e-commerce, DESIGN-BRIEF §4). "Loja física" fica à direita. */
+/*
+ * O header novo (Pedro, 19/11/2026; protótipo em Site Nicolini/mockups/header,
+ * a hipótese "1+"). A linha de baixo é de quem está na página: à esquerda, o
+ * que tem dentro da parte do site em que se está; à direita, na cor da área, a
+ * casa toda (`casaDoSite`), sempre igual, com a parte atual sublinhada.
+ *
+ * - Empório (home, produtos, A loja, sacola…), Blog e Eventos: à esquerda,
+ *   Departamentos e as categorias. O Blog é do Empório e fala dos produtos dele.
+ * - Bistrô e as landings de evento: à esquerda, a navegação delas
+ *   (`navegacaoDaArea`), no lugar dos departamentos.
+ */
+export type Area = 'emporio' | 'bistro' | 'evento' | 'eventos' | 'blog';
+
+export function areaDoEndereco(pathname: string): Area {
+  const p = pathname.toLowerCase();
+  if (p === '/bistro' || p.startsWith('/bistro/')) return 'bistro';
+  if (p === '/rustichella') return 'evento';
+  if (p === '/eventos' || p.startsWith('/eventos/')) return 'eventos';
+  if (p === '/blog' || p.startsWith('/blog/')) return 'blog';
+  return 'emporio';
+}
+
+/* Qual item do grupo da casa fica sublinhado em cada área. */
+export const casaDaArea: Record<Area, string> = { emporio: '/', bistro: '/bistro', evento: '/eventos', eventos: '/eventos', blog: '/blog' };
+
+export const casaDoSite: ItemDoMenu[] = [
+  { rotulo: 'Empório', href: '/', aceso: true },
+  { rotulo: 'Bistrô', href: '/bistro', aceso: true },
+  { rotulo: 'Eventos', href: '/eventos', aceso: modulos.eventos },
+  { rotulo: 'Blog', href: '/blog', aceso: modulos.blog },
+];
+
+/* A navegação de dentro das áreas que têm a sua. O título abre o bloco no menu do celular. */
+export const navegacaoDaArea: Partial<Record<Area, { titulo: string; itens: { rotulo: string; href: string }[] }>> = {
+  bistro: {
+    titulo: 'Bistrô',
+    itens: [
+      { rotulo: 'O Bistrô', href: '#o-bistro' },
+      { rotulo: 'Cardápio', href: '/menu/' },
+      { rotulo: 'Reservas', href: '/menu/#/reserva' },
+      { rotulo: 'Como chegar', href: '#como-chegar' },
+    ],
+  },
+  evento: {
+    titulo: 'Rustichella',
+    itens: [
+      { rotulo: 'O jantar', href: '#o-jantar' },
+      { rotulo: 'Os convidados', href: '#os-convidados' },
+      { rotulo: 'O menu', href: '#o-menu' },
+      { rotulo: 'Reservar', href: '#reserva' },
+    ],
+  },
+};
+
+/*
+ * As páginas que abrem com foto ou vídeo na tela inteira. Nelas o header começa
+ * curto e sem fundo sobre a abertura (logo, a casa, lupa e sacola) e fica
+ * completo ao rolar; nas outras ele já nasce completo.
+ */
+export const paginasComAbertura = ['/', '/bistro', '/rustichella'];
+
+/* O rodapé: as páginas da casa. */
 export const menuPrincipal: ItemDoMenu[] = [
   { rotulo: 'Blog', href: '/blog', aceso: modulos.blog },
   { rotulo: 'Eventos', href: '/eventos', aceso: modulos.eventos },

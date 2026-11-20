@@ -506,3 +506,328 @@
     display: none !important;
   }
 }
+
+/*
+ * ---------- Header 1+ (Pedro, 19/11/2026) ----------
+ * Protótipo e decisões em Site Nicolini/mockups/header (LEIAME.md). O estado
+ * vem do Cabecalho.tsx: `cabecalho--abertura` nas páginas que abrem com foto ou
+ * vídeo inteiro (o header fica por cima da abertura), `is-topo` enquanto a
+ * pessoa não rolou (header curto e sem fundo), `is-pronto` depois da primeira
+ * pintura (antes disso nada anima). As animações da lupa e da casa são do
+ * Cabecalho.tsx (Web Animations); o resto está aqui.
+ */
+
+/* A linha de baixo: a navegação da área (Bistrô, landing de evento) no lugar dos departamentos. */
+.cabecalho__nav-linha > .cabecalho__da-area:first-child {
+  padding-left: 0;
+}
+
+/* O grupo da casa: à direita, na cor da área, a parte atual sublinhada de ponta a ponta da palavra. */
+.cabecalho__nav-linha > .cabecalho__casa {
+  color: var(--marca);
+}
+
+.cabecalho__nav-linha > .cabecalho__casa--primeira {
+  margin-left: auto;
+}
+
+.cabecalho__nav-linha > .cabecalho__casa:last-child {
+  padding-right: 0;
+}
+
+.cabecalho__nav-linha > .cabecalho__casa::after {
+  right: 15px;
+  left: 15px;
+  width: auto;
+  transform: scaleX(0.45);
+}
+
+.cabecalho__nav-linha > .cabecalho__casa:last-child::after {
+  right: 0;
+}
+
+.cabecalho__nav-linha > .cabecalho__casa:hover::after,
+.cabecalho__nav-linha > .cabecalho__casa.is-ativo::after {
+  transform: scaleX(1);
+}
+
+/* "Visite-nos ↗" no lugar do CEP: o mapa, que vale para o Empório e para o Bistrô. */
+.cabecalho__visite b {
+  text-decoration: none;
+  transition: color 200ms var(--ease);
+}
+
+.cabecalho__visite:hover b {
+  color: var(--marca);
+}
+
+.cabecalho__seta {
+  margin-left: 1px;
+  font-style: normal;
+}
+
+/* A lupa e a casa do topo: só existem no header curto. */
+.cabecalho__lupa {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: none;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+}
+
+.cabecalho__lupa svg {
+  width: 20px;
+  height: 20px;
+}
+
+.cabecalho__casa-topo {
+  display: none;
+  align-items: center;
+  gap: 34px;
+}
+
+.cabecalho__casa-topo a {
+  position: relative;
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.cabecalho__casa-topo a.is-ativo::after {
+  position: absolute;
+  right: 0;
+  bottom: -9px;
+  left: 0;
+  height: 1px;
+  background: currentColor;
+  content: '';
+}
+
+/* Páginas com abertura: o header fica por cima dela, e a abertura ocupa a tela. */
+.cabecalho--abertura {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+}
+
+body:has(.cabecalho--abertura) main > .hero:first-child {
+  min-height: max(520px, 100svh);
+}
+
+/* Sombra leve atrás do header sem fundo: a abertura tem partes claras e o texto branco some nelas. */
+.cabecalho::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 -56px;
+  background: linear-gradient(rgba(12, 11, 10, 0.55), rgba(12, 11, 10, 0.32) 68%, rgba(12, 11, 10, 0));
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cabecalho.is-pronto {
+  transition: background-color 420ms var(--ease), box-shadow 250ms var(--ease), color 420ms var(--ease), top 560ms var(--ease);
+}
+
+.cabecalho.is-pronto::before {
+  transition: opacity 420ms var(--ease);
+}
+
+.cabecalho.is-pronto :is(.cabecalho__logo, .cabecalho__abrir, .cabecalho__sacola, .cabecalho__lupa, .cabecalho__casa-topo a) {
+  transition: color 420ms var(--ease);
+}
+
+/* O header curto, sem fundo, sobre a abertura. */
+.cabecalho.is-topo {
+  color: var(--white);
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.cabecalho.is-topo::before {
+  opacity: 1;
+}
+
+.cabecalho.is-topo :is(.cabecalho__logo, .cabecalho__abrir, .cabecalho__sacola, .cabecalho__lupa, .cabecalho__casa-topo a) {
+  color: var(--white);
+}
+
+.cabecalho.is-topo .cabecalho__lupa {
+  display: inline-grid;
+}
+
+.cabecalho.is-topo .cabecalho__busca {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.cabecalho.is-topo .cabecalho__ferramentas > :not(.cabecalho__sacola):not(.cabecalho__lupa) {
+  display: none;
+}
+
+@media (min-width: 761px) {
+  /* No topo, uma linha só: logo à esquerda; a casa, a lupa e a sacola à direita. */
+  .cabecalho.is-topo .cabecalho__linha {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+  }
+
+  .cabecalho.is-topo .cabecalho__linha > * {
+    grid-row: 1;
+  }
+
+  .cabecalho.is-topo .cabecalho__casa-topo {
+    display: flex;
+    grid-column: 3;
+    margin-right: 6px;
+  }
+
+  .cabecalho.is-topo .cabecalho__ferramentas {
+    grid-column: 4;
+  }
+
+  /* Ao rolar, a linha de baixo surge, um item atrás do outro (a casa desce pelo Cabecalho.tsx). */
+  .cabecalho--abertura .cabecalho__nav {
+    height: var(--cabecalho-nav);
+    overflow: visible;
+  }
+
+  .cabecalho--abertura.is-pronto .cabecalho__nav {
+    transition: height 460ms var(--ease);
+  }
+
+  .cabecalho.is-topo .cabecalho__nav {
+    height: 0;
+    transition-duration: 380ms;
+  }
+
+  .cabecalho--abertura.is-pronto .cabecalho__nav-linha > * {
+    transition: color 200ms var(--ease), opacity 300ms var(--ease) calc(120ms + var(--i, 0) * 18ms),
+      visibility 300ms var(--ease) calc(120ms + var(--i, 0) * 18ms), transform 420ms var(--ease) calc(120ms + var(--i, 0) * 18ms);
+  }
+
+  .cabecalho.is-topo .cabecalho__nav-linha > * {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition-duration: 160ms;
+    transition-delay: 0ms;
+  }
+
+  .cabecalho--abertura .cabecalho__nav-linha > .cabecalho__casa {
+    transition: none !important;
+  }
+
+  /* Os ícones entram ao lado da sacola, um a um. */
+  .cabecalho__ferramentas > :nth-child(2) {
+    --i: 1;
+  }
+
+  .cabecalho__ferramentas > :nth-child(3) {
+    --i: 2;
+  }
+
+  .cabecalho--abertura.is-pronto .cabecalho__ferramentas > :not(.cabecalho__sacola):not(.cabecalho__lupa) {
+    transition: color 200ms var(--ease), opacity 300ms var(--ease) calc(120ms + var(--i, 0) * 40ms),
+      transform 420ms var(--ease) calc(120ms + var(--i, 0) * 40ms), display 0s allow-discrete;
+  }
+
+  @starting-style {
+    .cabecalho--abertura.is-pronto .cabecalho__ferramentas > :not(.cabecalho__sacola):not(.cabecalho__lupa) {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+}
+
+@media (max-width: 760px) {
+  /* No topo do celular: menu, logo, lupa e sacola; a busca desce da lupa ao rolar. */
+  .cabecalho.is-topo .cabecalho__linha {
+    grid-template-columns: 80px minmax(0, 1fr) 80px;
+  }
+}
+
+/* A tarja preta (desligada; `faixa` em src/menu-do-site.ts). */
+.faixa-de-anuncio--empurra {
+  position: fixed;
+  z-index: 62;
+  top: 0;
+  right: 0;
+  left: 0;
+  transform: translateY(-100%);
+  transition: transform 560ms var(--ease);
+}
+
+.faixa-de-anuncio--empurra.is-visivel {
+  transform: none;
+}
+
+.cabecalho.com-faixa {
+  top: var(--faixa-h);
+}
+
+.faixa-de-anuncio--flutuante {
+  position: fixed;
+  z-index: 58;
+  bottom: 24px;
+  left: 50%;
+  height: 40px;
+  padding: 0 6px 0 16px;
+  border-radius: 20px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 160%);
+  transition: transform 560ms var(--ease), opacity 400ms var(--ease);
+}
+
+.faixa-de-anuncio--flutuante.is-visivel {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+
+.faixa-de-anuncio__fechar {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.faixa-de-anuncio__fechar:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.faixa-de-anuncio__fechar svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 760px) {
+  .faixa-de-anuncio--flutuante {
+    bottom: 88px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cabecalho.is-pronto,
+  .cabecalho.is-pronto *,
+  .cabecalho.is-pronto::before,
+  .faixa-de-anuncio--empurra,
+  .faixa-de-anuncio--flutuante {
+    transition: none !important;
+  }
+}

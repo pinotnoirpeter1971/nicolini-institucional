@@ -10,9 +10,10 @@ import { AssinaturaCapilano } from './AssinaturaCapilano';
  * O rodapé do e-commerce, em cinco colunas, com os dados reais do site no ar
  * (src/data/casa.js). Newsletter e selos de pagamento ficam guardados.
  */
-export function Rodape() {
+export function Rodape({ comBlog }: { comBlog: boolean }) {
   const { endereco } = casa;
-  const links = [...itensAcesos([{ ...todosOsProdutos, rotulo: 'Produtos' }]), ...itensAcesos(menuPrincipal), lojaFisica];
+  const paginas = itensAcesos(menuPrincipal).filter((item) => comBlog || item.href !== '/blog');
+  const links = [...itensAcesos([{ ...todosOsProdutos, rotulo: 'Produtos' }]), ...paginas, lojaFisica];
 
   return (
     <footer className="rodape">

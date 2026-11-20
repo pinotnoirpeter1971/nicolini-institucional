@@ -322,7 +322,7 @@ export default function Rustichella() {
           apresentacao que havia aqui saiu a pedido do cliente: repetia o que a
           abertura e a legenda da sangria, logo acima, ja dizem. Quem apresenta
           cada um agora e o paragrafo da propria ficha. */}
-      <section className="band band--paper section convidados">
+      <section id="os-convidados" className="band band--paper section convidados">
         <div className="wrap">
           <Reveal className="convidados__head">
             <h2>Os convidados</h2>

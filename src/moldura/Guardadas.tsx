@@ -7,19 +7,25 @@
  * quem passar o mouse. As de fora do header (newsletter, selos) continuam
  * apagadas. A função de cada uma pede spec próprio.
  */
-import { textoDaFaixa } from '../menu-do-site';
-import { Busca, Coracao, Pessoa, Pin } from '../components/Icons';
+import { faixa } from '../menu-do-site';
+import { Busca, Coracao, Fechar, Pessoa } from '../components/Icons';
 
 const EM_BREVE = 'Em breve';
 
-export function FaixaDeAnuncio() {
+/*
+ * A tarja preta (`faixa` em src/menu-do-site.ts; desligada desde 19/11/2026),
+ * sem o CEP. Quem a mostra e quando é o header (Cabecalho.tsx).
+ */
+export function FaixaDeAnuncio({ modo, visivel, onFechar }: { modo: 'rola' | 'empurra' | 'flutuante'; visivel: boolean; onFechar?: () => void }) {
   return (
-    <div className="faixa-de-anuncio" role="note">
+    <div className={`faixa-de-anuncio faixa-de-anuncio--${modo}${visivel ? ' is-visivel' : ''}`} role="note" aria-hidden={!visivel}>
       <span className="faixa-de-anuncio__ponto" aria-hidden="true" />
-      <span>{textoDaFaixa}</span>
-      <button type="button" className="faixa-de-anuncio__cep" aria-disabled="true" title={EM_BREVE}>
-        Informe seu CEP <span aria-hidden="true">→</span>
-      </button>
+      <span>{faixa.texto}</span>
+      {modo === 'flutuante' && (
+        <button type="button" className="faixa-de-anuncio__fechar" aria-label="Fechar o aviso" onClick={onFechar} tabIndex={visivel ? 0 : -1}>
+          <Fechar />
+        </button>
+      )}
     </div>
   );
 }
@@ -33,18 +39,6 @@ export function CampoDeBusca() {
       <Busca />
       <input type="search" name="q" placeholder="Busque produtos, marcas e origens" aria-label="Buscar produtos" autoComplete="off" required />
     </form>
-  );
-}
-
-export function BotaoCep() {
-  return (
-    <button type="button" className="cabecalho__cep" aria-disabled="true" title={EM_BREVE}>
-      <Pin />
-      <span>
-        <small>Receba em</small>
-        <b>Informe seu CEP</b>
-      </span>
-    </button>
   );
 }
 
