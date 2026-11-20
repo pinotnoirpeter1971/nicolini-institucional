@@ -22,7 +22,7 @@ export const casa = {
   telefone: { exibicao: '(54) 3029-0217', link: '+555430290217' },
   whatsapp: { exibicao: '(54) 99959-2314', link: '5554999592314' },
   email: 'comercialnicolini@outlook.com',
-  instagram: '@queijarianicolini',
+  instagram: '@emporionicolini',
   cnpj: '30.134.710/0001-75',
   razaoSocial: 'Queijaria Nicolini Ltda.',
   horarios: [
@@ -41,7 +41,7 @@ export const redes = [
     icone: 'instagram',
     rotulo: 'Instagram',
     exibicao: casa.instagram,
-    href: 'https://instagram.com/queijarianicolini',
+    href: 'https://www.instagram.com/emporionicolini',
   },
   {
     id: 'whatsapp',

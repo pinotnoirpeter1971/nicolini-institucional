@@ -85,7 +85,6 @@ export function Rodape({ comBlog }: { comBlog: boolean }) {
         <p>
           {casa.razaoSocial} · CNPJ {casa.cnpj}
         </p>
-        <p>Endereço, contato e CNPJ obtidos de registros públicos.</p>
         <AssinaturaCapilano />
       </div>
     </footer>

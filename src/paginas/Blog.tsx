@@ -230,7 +230,7 @@ export function PaginaDeEventos({
             {!proximos.length && (
               <p className="eventos__aviso">
                 Nenhum evento marcado agora. Acompanhe pelo{' '}
-                <a className="link" href={`https://instagram.com/${casa.instagram.replace('@', '')}`} target="_blank" rel="noreferrer">
+                <a className="link" href={`https://www.instagram.com/${casa.instagram.replace('@', '')}`} target="_blank" rel="noreferrer">
                   {casa.instagram} <Arrow direction="upRight" />
                 </a>
               </p>

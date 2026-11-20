@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { categoriasDeProdutos, indiceDoBlog } from '../engine/fonte';
 import { bandeiraDoPais, modulos, type DepartamentoDoMenu } from '../menu-do-site';
+import { casa } from '../data/casa';
 import { laboratorio } from '../site';
 import { WhatsappGlyph } from '../components/Icons';
 import { Cabecalho } from './Cabecalho';
@@ -72,11 +73,10 @@ export async function Moldura({ tema, children }: { tema?: 'bistro' | 'rustichel
       <main id="topo">{children}</main>
       <Rodape comBlog={comBlog} />
       {/*
-       * O número entra quando houver um canal de WhatsApp confirmado para o
-       * atendimento (como no site no ar). Some na sacola e no recibo, onde o
-       * WhatsApp é o do pedido.
+       * Abre o WhatsApp da casa (casa.whatsapp). Some na sacola e no recibo,
+       * onde o WhatsApp é o do pedido.
        */}
-      <a className="whatsapp-fab" href="https://wa.me/" target="_blank" rel="noreferrer" aria-label="Falar no WhatsApp">
+      <a className="whatsapp-fab" href={`https://wa.me/${casa.whatsapp.link}`} target="_blank" rel="noreferrer" aria-label="Falar no WhatsApp">
         <WhatsappGlyph />
       </a>
       {modulos.pedidos && <HospedeDaSacola />}
