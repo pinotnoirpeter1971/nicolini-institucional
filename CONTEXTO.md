@@ -72,6 +72,10 @@
     dentro; `/produtos/[departamento]/[pais]` filtra pela origem. Endereço que não está na lista guardada é 404 sem
     chamada ao Engine. A foto do departamento vem do Engine; sem ela, a do balcão.
   - A busca provisória lê até 15 páginas de 48 (720 produtos): o catálogo tem 513 desde 19/11/2026.
+  - Produtos: os 513 do protótipo estão na casa desde 20/11/2026 (registro e scripts em `Site Nicolini/mockups/importacao-produtos`).
+  - Corrigido junto (`92ae539`): na revalidação da home a Vercel renderiza o caminho como `/index`; o header tratava como
+    outra página e mandava o header comum, e o navegador montava o da abertura (erro de hidratação #418 no console). Vinha
+    do header 1+ e só aparecia depois da primeira revalidação, por isso o teste local (`next start`) não pega.
 - **Header 1+ (19/11/2026, decisão de Pedro, vale sobre as escolhas 1 e 2 da seção Design do site).** Protótipo e
   histórico das hipóteses em `Site Nicolini/mockups/header` (LEIAME.md). Código: `src/moldura/Cabecalho.tsx`,
   `src/moldura/abertura.ts`, o fim de `src/styles/moldura-cabecalho.css` e `src/menu-do-site.ts`.
