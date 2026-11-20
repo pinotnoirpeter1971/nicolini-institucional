@@ -56,6 +56,22 @@
   56 px abaixo do resto, alinhada à esquerda (`ASSINATURA` em
   `public/menu/js/app.js`, símbolo em `public/menu/assets/capilano.svg`). As
   telas da reserva ficam sem ela.
+- **Home e menu suspenso do protótipo do e-commerce (19/11/2026, pedido do cliente; vale sobre DESIGN-BRIEF §7).** O
+  protótipo é `nicolini-ecommerce-prototipo.vercel.app` (o mesmo pacote de `nicolini-website.vercel.app`, código em
+  `~/Documents/nicolini-website`). Bistrô, header 1+, Blog, Eventos e pedido pelo WhatsApp não mudam.
+  - Home (`src/paginas/Home.jsx`, fim de `src/styles/home.css`): a abertura em vídeo do site no ar (validada com o
+    header 1+), "A casa tem muitos caminhos" com um cartão de foto por departamento do Engine (sem Produtos, os balcões
+    sem link), a seleção da semana (destaques), a tábua de frios, o Blog e "A loja" em fundo escuro com o texto e as
+    fotos de "A casa". Saíram a faixa escura dos balcões e o fechamento da fachada; a newsletter do protótipo não
+    entrou (não há para onde mandar).
+  - Menu suspenso (`MenuSuspenso` em `src/moldura/Cabecalho.tsx`): mouse parado 160 ms sobre um departamento abre a
+    faixa escura com a descrição, as categorias de dentro e as origens com bandeira (até oito cada); sobre
+    "Departamentos", todos numerados em duas colunas. Fecha 240 ms depois de sair, com Esc ou clique fora. Some no
+    celular, onde a gaveta abre as categorias de cada departamento pela seta.
+  - Categorias em dois níveis (Engine D-141, SDK 0.8.0): `/produtos/[categoria]` serve departamento e categoria de
+    dentro; `/produtos/[departamento]/[pais]` filtra pela origem. Endereço que não está na lista guardada é 404 sem
+    chamada ao Engine. A foto do departamento vem do Engine; sem ela, a do balcão.
+  - A busca provisória lê até 15 páginas de 48 (720 produtos): o catálogo tem 513 desde 19/11/2026.
 - **Header 1+ (19/11/2026, decisão de Pedro, vale sobre as escolhas 1 e 2 da seção Design do site).** Protótipo e
   histórico das hipóteses em `Site Nicolini/mockups/header` (LEIAME.md). Código: `src/moldura/Cabecalho.tsx`,
   `src/moldura/abertura.ts`, o fim de `src/styles/moldura-cabecalho.css` e `src/menu-do-site.ts`.
