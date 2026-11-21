@@ -16,6 +16,7 @@ export type PublicOrderConfigData = {
         maxGrams: number;
         customerNameMin: number;
         customerName: number;
+        customerPhone: number;
         note: number;
     };
 };
@@ -53,6 +54,8 @@ export type CreatePublicOrderInput = {
     /** O token do recibo (`createOrderToken`). Vai no fragmento do link: `/pedido#<token>`. */
     token: string;
     customerName: string;
+    /** O WhatsApp do cliente, com DDD, como ele digitou (aceita máscara). Obrigatório: a loja retoma o pedido por ele. */
+    customerPhone: string;
     note?: string | null;
     items: Array<{
         productId: string;

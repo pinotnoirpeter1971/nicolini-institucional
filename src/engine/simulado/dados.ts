@@ -370,5 +370,5 @@ export const configDePedidos: PublicOrderConfigData = {
   accepting: true,
   notice: 'Retirada na loja, de segunda a sábado. Combinamos o horário pelo WhatsApp.',
   currency: 'BRL',
-  limits: { items: 40, maxUnits: 99, maxGrams: 20000, customerNameMin: 2, customerName: 120, note: 500 },
+  limits: { items: 40, maxUnits: 99, maxGrams: 20000, customerNameMin: 2, customerName: 120, customerPhone: 32, note: 500 },
 };

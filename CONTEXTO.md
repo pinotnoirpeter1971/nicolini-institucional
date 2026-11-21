@@ -43,6 +43,12 @@
   `http://127.0.0.1:5183` (a origem autorizada); com isso o painel do
   laboratório some. Teste: `npm run test:pedidos` (casa recebendo: ponta a
   ponta, clique duplo e reenvio, preço alterado, recibo; casa pausada: recusa).
+- **WhatsApp do cliente obrigatório na sacola (21/11/2026, Pedro; Engine D-151):**
+  o campo "Seu WhatsApp" vai no envio (`customerPhone`), com máscara brasileira
+  enquanto se digita e a mesma regra do Engine para avisar antes de enviar
+  (`src/sacola/telefone.ts`). A loja vê o número na encomenda e retoma o pedido
+  mesmo que o cliente não mande a mensagem. Publicar só depois do Engine: o
+  Engine anterior recusa o campo, e o novo recusa o envio sem ele.
 - **Assinatura da Capilano (16/11/2026, pedido de Pedro, enxugada no mesmo
   dia):** uma linha só, "Desenvolvido sob medida pela Capilano" ("Capilano" é
   link quieto para capilanocreative.com, sublinha ao passar o mouse), com o

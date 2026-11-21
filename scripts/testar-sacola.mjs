@@ -29,6 +29,7 @@ globalThis.localStorage = { getItem: (k) => guardado.get(k) ?? null, setItem: (k
 const { assinaturaDoEnvio } = await carregar('src/sacola/envio.ts');
 const { tentativaPara } = await carregar('src/sacola/aparelho.ts');
 const { aplicarRecusa } = await carregar('src/sacola/recusa.ts');
+const { telefoneValido, mascararTelefone } = await carregar('src/sacola/telefone.ts');
 const { RestaurantsOrderError } = await carregar('src/engine/sdk-0.8.0/index.js');
 
 let falhas = 0;
@@ -42,16 +43,25 @@ const conferir = (nome, ok, detalhe = '') => {
 
 console.log('\nAssinatura e chave da tentativa');
 const itens = [{ productId: 'a', quantity: 2 }];
-const a1 = await assinaturaDoEnvio(itens, 'Maria da Silva', 'sem cebola', 1000);
-conferir('mesma entrada, mesma assinatura', a1 === (await assinaturaDoEnvio(itens, 'Maria da Silva', 'sem cebola', 1000)));
-conferir('total diferente, assinatura diferente', a1 !== (await assinaturaDoEnvio(itens, 'Maria da Silva', 'sem cebola', 1100)));
-conferir('nome, observação e quantidade diferentes, assinaturas diferentes', new Set([a1, await assinaturaDoEnvio(itens, 'Maria', 'sem cebola', 1000), await assinaturaDoEnvio(itens, 'Maria da Silva', null, 1000), await assinaturaDoEnvio([{ productId: 'a', quantity: 3 }], 'Maria da Silva', 'sem cebola', 1000)]).size === 4);
-conferir('a assinatura não leva o nome nem a observação em texto', !/Maria|cebola/.test(a1));
+const a1 = await assinaturaDoEnvio(itens, 'Maria da Silva', '(54) 99999-1234', 'sem cebola', 1000);
+conferir('mesma entrada, mesma assinatura', a1 === (await assinaturaDoEnvio(itens, 'Maria da Silva', '(54) 99999-1234', 'sem cebola', 1000)));
+conferir('total diferente, assinatura diferente', a1 !== (await assinaturaDoEnvio(itens, 'Maria da Silva', '(54) 99999-1234', 'sem cebola', 1100)));
+conferir('nome, observação e quantidade diferentes, assinaturas diferentes', new Set([a1, await assinaturaDoEnvio(itens, 'Maria da Silva', '(54) 98888-0000', 'sem cebola', 1000), await assinaturaDoEnvio(itens, 'Maria', '(54) 99999-1234', 'sem cebola', 1000), await assinaturaDoEnvio(itens, 'Maria da Silva', '(54) 99999-1234', null, 1000), await assinaturaDoEnvio([{ productId: 'a', quantity: 3 }], 'Maria da Silva', '(54) 99999-1234', 'sem cebola', 1000)]).size === 5);
+conferir('a assinatura não leva o nome, o WhatsApp nem a observação em texto', !/Maria|cebola|99999/.test(a1));
 const t1 = tentativaPara(a1);
 conferir('mesma assinatura reaproveita chave e token', JSON.stringify(tentativaPara(a1)) === JSON.stringify(t1));
-const t2 = tentativaPara(await assinaturaDoEnvio(itens, 'Maria da Silva', 'sem cebola', 1100));
+const t2 = tentativaPara(await assinaturaDoEnvio(itens, 'Maria da Silva', '(54) 99999-1234', 'sem cebola', 1100));
 conferir('total diferente nasce com outra chave e outro token', t2.idempotencyKey !== t1.idempotencyKey && t2.token !== t1.token);
-conferir('o localStorage não guarda nome nem observação', ![...guardado.values()].some((v) => /Maria|cebola/.test(v)));
+conferir('o localStorage não guarda nome, WhatsApp nem observação', ![...guardado.values()].some((v) => /Maria|cebola|99999/.test(v)));
+
+console.log('\nWhatsApp do cliente (a mesma regra do Engine)');
+for (const x of ['(54) 99999-1234', '54999991234', '55 54 99999-1234', '+55 54 99999-1234', '(54) 3333-1234', '+351 912 345 678'])
+  conferir(`aceita ${x}`, telefoneValido(x));
+for (const x of ['', '12345', '(54) 1999-1234', '99999-1234', 'abc', '(54) 99999-1234 ramal 2'])
+  conferir(`recusa ${JSON.stringify(x)}`, !telefoneValido(x));
+conferir('arruma ao sair do campo', mascararTelefone('54999991234') === '(54) 99999-1234' && mascararTelefone('5433331234') === '(54) 3333-1234');
+conferir('tira o 55 da frente', mascararTelefone('55 54 99999-1234') === '(54) 99999-1234' && mascararTelefone('+5554999991234') === '(54) 99999-1234');
+conferir('número de fora e número inválido ficam como vieram', mascararTelefone('+351 912 345 678') === '+351 912 345 678' && mascararTelefone('5499') === '5499');
 
 console.log('\naplicarRecusa');
 const erro = (reason, details) => new RestaurantsOrderError('recusa', 409, 'CONFLICT', reason, details, null);

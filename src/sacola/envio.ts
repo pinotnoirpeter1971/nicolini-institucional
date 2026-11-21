@@ -1,7 +1,7 @@
 /*
  * A assinatura de uma tentativa de envio (SPEC-SITE §7): um resumo do corpo,
- * para o navegador não guardar nome nem observação em texto puro. Muda se mudar
- * a sacola, o nome, a observação ou o total mostrado.
+ * para o navegador não guardar nome, WhatsApp nem observação em texto puro. Muda
+ * se mudar a sacola, o nome, o WhatsApp, a observação ou o total mostrado.
  */
 
 /* Sem `crypto.subtle` (página fora de contexto seguro, como o laboratório pelo IP da rede), um resumo simples. */
@@ -18,8 +18,8 @@ function resumoSimples(texto: string) {
   return `s:${(h2 >>> 0).toString(16)}${(h1 >>> 0).toString(16)}`;
 }
 
-export async function assinaturaDoEnvio(itens: Array<{ productId: string; quantity: number }>, nome: string, nota: string | null, totalCents: number) {
-  const texto = JSON.stringify([itens, nome, nota, totalCents]);
+export async function assinaturaDoEnvio(itens: Array<{ productId: string; quantity: number }>, nome: string, telefone: string, nota: string | null, totalCents: number) {
+  const texto = JSON.stringify([itens, nome, telefone, nota, totalCents]);
   const subtle = globalThis.crypto?.subtle;
   if (!subtle) return resumoSimples(texto);
   const resumo = await subtle.digest('SHA-256', new TextEncoder().encode(texto));

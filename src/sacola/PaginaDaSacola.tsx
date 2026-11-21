@@ -13,6 +13,7 @@ import { Migalhas } from '../ui/Migalhas';
 import { esvaziar, gravarObservacao, lerObservacao, substituir } from './armazem';
 import { esquecerTentativa, lembrarPedido, tentativaPara } from './aparelho';
 import { assinaturaDoEnvio } from './envio';
+import { mascararTelefone, telefoneValido } from './telefone';
 import { aplicarRecusa as aplicarRecusaPura } from './recusa';
 import { LinhaDaSacola } from './LinhaDaSacola';
 import { useLinhasDaSacola, type Linha } from './linhas';
@@ -20,7 +21,7 @@ import { FRASE_DO_ESTIMADO } from './PainelDaSacola';
 
 /*
  * A sacola e o envio do pedido (SPEC-SITE §7), sobretudo no celular. Linhas,
- * total estimado, aviso da casa, nome e observação, e "Enviar pedido". Recusa
+ * total estimado, aviso da casa, nome, WhatsApp e observação, e "Enviar pedido". Recusa
  * com motivo atualiza a sacola com as linhas da resposta e pede confirmação;
  * falha deixa a sacola como está e oferece falar com a loja.
  */
@@ -37,12 +38,14 @@ export function PaginaDaSacola() {
   const s = useLinhasDaSacola();
   const [config, setConfig] = useState<PublicOrderConfigData | null | 'carregando' | 'erro'>('carregando');
   const [nome, setNome] = useState('');
+  const [telefone, setTelefone] = useState('');
   const [nota, setNota] = useState('');
-  const [erros, setErros] = useState<{ nome?: string; nota?: string }>({});
+  const [erros, setErros] = useState<{ nome?: string; telefone?: string; nota?: string }>({});
   const [estado, setEstado] = useState<'parado' | 'enviando'>('parado');
   const [mudancas, setMudancas] = useState<Mudancas | null>(null);
   const [falha, setFalha] = useState<Falha | null>(null);
   const campoNome = useRef<HTMLInputElement>(null);
+  const campoTelefone = useRef<HTMLInputElement>(null);
   const campoNota = useRef<HTMLTextAreaElement>(null);
   const caixaDeAviso = useRef<HTMLDivElement>(null);
 
@@ -64,7 +67,7 @@ export function PaginaDaSacola() {
     if (mudancas && chaveDaMudanca.current !== null && chave !== chaveDaMudanca.current) setMudancas(null);
   }, [chave, mudancas]);
 
-  const limitesDoNome = typeof config === 'object' && config ? config.limits : { customerNameMin: 2, customerName: 120, note: 500 };
+  const limitesDoNome = typeof config === 'object' && config ? config.limits : { customerNameMin: 2, customerName: 120, customerPhone: 32, note: 500 };
   const pausada = typeof config === 'object' && config !== null && !config.accepting;
   const semPedidos = config === null;
   const vazia = s.linhas.length === 0;
@@ -81,11 +84,14 @@ export function PaginaDaSacola() {
     const n = nome.trim();
     if (n.length < limitesDoNome.customerNameMin) novo.nome = 'Escreva o seu nome, para a loja saber de quem é o pedido.';
     else if (n.length > limitesDoNome.customerName) novo.nome = `Use até ${limitesDoNome.customerName} caracteres.`;
+    if (!telefone.trim()) novo.telefone = 'Informe o seu WhatsApp: a loja fala com você por ele sobre o pedido.';
+    else if (!telefoneValido(telefone)) novo.telefone = 'Confira o número: use o DDD e o número do WhatsApp, como (54) 99999-9999.';
     if (nota.length > limitesDoNome.note) novo.nota = `A observação passou de ${limitesDoNome.note} caracteres.`;
     setErros(novo);
     if (novo.nome) campoNome.current?.focus();
+    else if (novo.telefone) campoTelefone.current?.focus();
     else if (novo.nota) campoNota.current?.focus();
-    return !novo.nome && !novo.nota;
+    return !novo.nome && !novo.telefone && !novo.nota;
   }
 
   function aplicarRecusa(err: RestaurantsOrderError, antes: Linha[], totalAntes: number) {
@@ -109,17 +115,18 @@ export function PaginaDaSacola() {
     setFalha(null);
     const itens = s.linhas.map((l) => ({ productId: l.id, quantity: l.q }));
     const customerName = nome.trim();
+    const customerPhone = telefone.trim();
     const note = nota.trim() || null;
     const antes = s.linhas;
     const totalAntes = s.totalCents;
     /* Chave e token nascem juntos e ficam guardados ANTES de chamar o Engine.
-     * Valem para este corpo exato: mudou a sacola, o nome, a observação ou o
+     * Valem para este corpo exato: mudou a sacola, o nome, o WhatsApp, a observação ou o
      * total mostrado (uma recusa que trocou o preço), nascem outros. */
     setEstado('enviando');
     try {
-      const assinatura = await assinaturaDoEnvio(itens, customerName, note, totalAntes);
+      const assinatura = await assinaturaDoEnvio(itens, customerName, customerPhone, note, totalAntes);
       const { idempotencyKey, token } = tentativaPara(assinatura);
-      const recibo = await enviarPedido({ idempotencyKey, token, customerName, note, items: itens, expectedTotalCents: totalAntes });
+      const recibo = await enviarPedido({ idempotencyKey, token, customerName, customerPhone, note, items: itens, expectedTotalCents: totalAntes });
       lembrarPedido({ numero: recibo.number, token, data: recibo.createdAt });
       esquecerTentativa();
       esvaziar();
@@ -233,7 +240,7 @@ export function PaginaDaSacola() {
                         )}
                         {falha.tipo === 'validacao' && (
                           <>
-                            <b>O pedido não passou na conferência.</b> Confira o nome e a observação. Se continuar assim, fale com a loja.
+                            <b>O pedido não passou na conferência.</b> Confira o nome, o WhatsApp e a observação. Se continuar assim, fale com a loja.
                           </>
                         )}
                         {falha.tipo === 'falha' && (
@@ -342,6 +349,32 @@ export function PaginaDaSacola() {
                       </p>
                     )}
                   </div>
+                  <div className={`campo ${erros.telefone ? 'is-erro' : ''}`}>
+                    <label htmlFor="pedido-telefone">Seu WhatsApp</label>
+                    <input
+                      id="pedido-telefone"
+                      ref={campoTelefone}
+                      type="tel"
+                      inputMode="tel"
+                      value={telefone}
+                      onChange={(e) => setTelefone(e.target.value)}
+                      onBlur={(e) => setTelefone(mascararTelefone(e.target.value))}
+                      autoComplete="tel"
+                      placeholder="(54) 99999-9999"
+                      maxLength={limitesDoNome.customerPhone}
+                      aria-invalid={Boolean(erros.telefone)}
+                      aria-describedby={`pedido-telefone-ajuda${erros.telefone ? ' pedido-telefone-erro' : ''}`}
+                      required
+                    />
+                    <p className="campo__ajuda" id="pedido-telefone-ajuda">
+                      A loja confirma o pedido e combina a retirada por este número.
+                    </p>
+                    {erros.telefone && (
+                      <p className="campo__erro" id="pedido-telefone-erro">
+                        {erros.telefone}
+                      </p>
+                    )}
+                  </div>
                   <div className={`campo ${erros.nota ? 'is-erro' : ''}`}>
                     <label htmlFor="pedido-nota">
                       Observação <span>(opcional)</span>
@@ -369,7 +402,7 @@ export function PaginaDaSacola() {
                     )}
                   </div>
                   <p className="resumo__privacidade">
-                    O nome e a observação vão só para a loja atender este pedido.
+                    O nome, o WhatsApp e a observação vão só para a loja atender este pedido.
                     {modulos.privacidade && (
                       <>
                         {' '}

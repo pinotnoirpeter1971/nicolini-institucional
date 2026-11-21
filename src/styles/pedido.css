@@ -433,6 +433,12 @@ body:has(.recibo) .whatsapp-fab {
   font-size: 0.84rem;
 }
 
+.campo__ajuda {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 .campo__conta {
   justify-self: end;
   color: var(--muted);

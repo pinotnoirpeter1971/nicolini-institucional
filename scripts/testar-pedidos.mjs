@@ -80,7 +80,7 @@ if (!config.accepting) {
   const { items } = await fetchPublicProducts({ ...base, limit: 48 });
   const p = items.find((x) => x.available && x.priceCents !== null && x.saleMode === 'unit');
   const tentativa = createOrderAttempt();
-  const erro = await recusa(createPublicOrder({ ...base, order: { ...tentativa, customerName: 'Teste do site', items: [{ productId: p.id, quantity: 1 }], expectedTotalCents: p.priceCents } }));
+  const erro = await recusa(createPublicOrder({ ...base, order: { ...tentativa, customerName: 'Teste do site', customerPhone: '(54) 99999-0000', items: [{ productId: p.id, quantity: 1 }], expectedTotalCents: p.priceCents } }));
   conferir('envio recusado com not_accepting (409), sem número nem linhas', erro?.status === 409 && erro.reason === 'not_accepting' && !orderRefusalLines(erro), erro ? `${erro.status} ${erro.reason}` : 'foi aceito');
   conferir('o recibo desse envio não existe', (await lookupPublicOrder({ ...base, token: tentativa.token })) === null);
   conferir('token desconhecido: não encontrado', (await lookupPublicOrder({ ...base, token: createOrderToken() })) === null);
@@ -103,7 +103,7 @@ if (!config.accepting) {
     const p = atuais.find((x) => x.id === l.productId);
     return s + lineTotalCents({ saleMode: p.saleMode, priceCents: p.priceCents }, l.quantity);
   }, 0);
-  const dados = { customerName: 'Teste do site', note: 'Conferência automática do site (pode cancelar).' };
+  const dados = { customerName: 'Teste do site', customerPhone: '(54) 99999-0000', note: 'Conferência automática do site (pode cancelar).' };
 
   /* Preço alterado entre a sacola e o envio: o Engine confere o total que o cliente viu. */
   const antiga = createOrderAttempt();
