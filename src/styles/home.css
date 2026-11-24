@@ -769,3 +769,176 @@ a.departamento-cartao:hover::before {
     gap: 42px;
   }
 }
+
+/* Abertura em carrossel (Engine D-152, 24/11/2026) ----------------------- */
+/*
+ * As aberturas empilhadas na mesma célula da grade: a seção fica com a altura
+ * de sempre e cada uma desenha a abertura de antes (mídia, sombra e texto
+ * embaixo). A que entra aparece por cima da que sai; a que sai só some depois,
+ * para a troca não escurecer no meio. Com uma só, nada muda na tela.
+ */
+.hero--carrossel {
+  display: grid;
+  align-items: stretch;
+}
+
+.hero__slide {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  min-width: 0;
+  align-items: flex-end;
+  grid-area: 1 / 1;
+  isolation: isolate;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0s linear 1100ms, visibility 0s linear 1100ms;
+}
+
+.hero__slide.is-ativa {
+  z-index: 1;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 1100ms var(--ease);
+}
+
+/* O texto entra de novo a cada troca (a animação de antes, recomeçada). */
+.hero__slide:not(.is-ativa) .hero__reveal {
+  animation: none;
+}
+
+.hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.9) contrast(1.03) brightness(0.86);
+  transform: scale(1.04);
+  transition: transform 9s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hero__slide.is-ativa .hero__media img {
+  transform: none;
+}
+
+/* `h1` na primeira, `h2` nas outras: o mesmo tamanho e a mesma cor. */
+.hero .hero__titulo {
+  max-width: 20ch;
+  color: var(--white);
+  font-size: clamp(3.45rem, 6.65vw, 6.65rem);
+}
+
+.hero .hero__titulo em {
+  color: var(--white);
+}
+
+.hero .hero__eyebrow {
+  margin-bottom: 18px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* Chevrons soltos, sem botão em volta; somem onde não há mouse (passa-se com o dedo). */
+.hero__seta {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  display: grid;
+  width: 64px;
+  height: 112px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--white);
+  cursor: pointer;
+  opacity: 0.55;
+  transform: translateY(-50%);
+  transition: opacity 260ms var(--ease);
+}
+
+.hero__seta svg {
+  width: 34px;
+  height: 34px;
+  filter: drop-shadow(0 1px 10px rgba(12, 11, 10, 0.4));
+}
+
+.hero__seta:hover,
+.hero__seta:focus-visible {
+  opacity: 1;
+}
+
+.hero__seta:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.7);
+  outline-offset: -14px;
+}
+
+.hero__seta--anterior {
+  left: clamp(4px, 1.6vw, 28px);
+}
+
+.hero__seta--proxima {
+  right: clamp(4px, 1.6vw, 28px);
+}
+
+@media (hover: none) {
+  .hero__seta {
+    display: none;
+  }
+}
+
+/* As bolinhas, como no Instagram: pequenas, a atual acesa. */
+.hero__pontos {
+  position: absolute;
+  z-index: 3;
+  bottom: clamp(18px, 3.2vh, 32px);
+  left: 50%;
+  display: flex;
+  gap: 2px;
+  transform: translateX(-50%);
+}
+
+.hero__ponto {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.hero__ponto::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.42);
+  box-shadow: 0 0 8px rgba(12, 11, 10, 0.25);
+  content: '';
+  transition: background-color 300ms var(--ease), transform 300ms var(--ease);
+}
+
+.hero__ponto:hover::before {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.hero__ponto.is-ativo::before {
+  background: var(--white);
+  transform: scale(1.2);
+}
+
+.hero__ponto:focus-visible {
+  border-radius: 50%;
+  outline: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+@media (max-width: 760px) {
+  .hero .hero__titulo {
+    max-width: 15ch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__media img {
+    transform: none;
+  }
+}

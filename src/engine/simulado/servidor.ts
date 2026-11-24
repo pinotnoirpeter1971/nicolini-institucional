@@ -57,3 +57,25 @@ export async function fetchPublicProductCategories(_input: Base) {
 export async function fetchPublicProductIndex(_input: Base) {
   return produtos.map((p) => ({ slug: p.slug, category: p.categorySlug, updatedAt: '2026-11-10T12:00:00.000Z' }));
 }
+
+/* ── Abertura da home (Engine D-152) ──────────────────────────────────────── */
+
+/* Duas fotos depois da abertura de sempre, para ver o carrossel no laboratório
+ * (`?simular=vazio` não se aplica: a home sempre tem abertura). */
+export async function aberturaDaHome() {
+  const foto = (url: string, alt: string, width: number, height: number, x = 0.5, y = 0.5) => ({
+    kind: 'image' as const, url, width, height, alt, focus: { x, y }, sources: [],
+  });
+  return [
+    { kind: 'default' as const },
+    {
+      kind: 'photo' as const, id: 'lab-queijaria', photo: foto('/media/loja/queijaria.jpg', 'O balcão de queijos da Nicolini', 1200, 1500, 0.5, 0.55),
+      eyebrow: 'Queijaria', title: 'Queijos curados', titleEmphasis: 'com tempo e calma.',
+      subtitle: 'Da serra gaúcha à Itália, escolhidos peça por peça.', cta: { label: 'Ver os queijos', href: '/produtos/queijos' },
+    },
+    {
+      kind: 'photo' as const, id: 'lab-prateleira', photo: foto('/media/loja/prateleira.jpg', 'Prateleira da loja com conservas e azeites', 1200, 1500),
+      eyebrow: null, title: 'A despensa', titleEmphasis: 'de quem cozinha bem.', subtitle: null, cta: null,
+    },
+  ];
+}

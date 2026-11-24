@@ -24,6 +24,7 @@ import type {
   PublicProductData,
   PublicProductIndexEntry,
   PublicProductPageData,
+  PublicMediaData,
 } from './sdk-0.8.0/index.js';
 import {
   RestaurantsPublicError,
@@ -239,3 +240,83 @@ export async function materias(filtro: { kind: BlogPostKind; category?: string; 
 
 /** A matéria inteira (uma chamada por renderização, mesmo lida pelos metadados e pela página). */
 export const materia = cache(async (slug: string): Promise<BlogPostData | null> => ouVazioNoBuild(() => noEngine(() => fetchBlogPost({ ...doBlog(), slug })), null));
+
+/* ── Abertura da home (Engine D-152) ──────────────────────────────────────── */
+
+/*
+ * As aberturas da página inicial, editadas no painel (Sites → Abertura do
+ * site): `default` é a abertura do desenho do site (o vídeo), as outras são
+ * fotos com textos e botão, na ordem em que aparecem. Nunca vazia. Lida ao
+ * vivo do Engine, guardada por 60 s e dividida por todos os visitantes. Sem
+ * SDK por enquanto: uma leitura só, conferida aqui. Engine fora, rota ainda
+ * não publicada ou resposta estranha: a abertura de sempre, e a home não cai.
+ */
+export type AberturaDaHome =
+  | { kind: 'default' }
+  | {
+      kind: 'photo';
+      id: string;
+      photo: PublicMediaData;
+      eyebrow: string | null;
+      title: string;
+      titleEmphasis: string | null;
+      subtitle: string | null;
+      cta: { label: string; href: string } | null;
+    };
+
+const ABERTURA_PADRAO: AberturaDaHome[] = [{ kind: 'default' }];
+
+const texto = (valor: unknown) => (typeof valor === 'string' && valor.trim() ? valor.trim() : null);
+const linkSeguro = (href: string) => (href.startsWith('/') && !href.startsWith('//') && !href.startsWith('/\\')) || /^https:\/\/[^\s/]+\.[^\s]+$/.test(href);
+
+/* Confere cada abertura; a que não passa sai (as outras ficam). */
+export function lerAberturas(corpo: unknown): AberturaDaHome[] {
+  const slides = (corpo as { data?: { slides?: unknown } } | null)?.data?.slides;
+  if (!Array.isArray(slides)) return ABERTURA_PADRAO;
+  const lidas = slides.flatMap((bruto): AberturaDaHome[] => {
+    const s = bruto as Record<string, unknown>;
+    if (s?.kind === 'default') return [{ kind: 'default' }];
+    const foto = s?.photo as PublicMediaData | undefined;
+    const titulo = texto(s?.title);
+    if (s?.kind !== 'photo' || !titulo || foto?.kind !== 'image' || typeof foto.url !== 'string' || !/^https:\/\//.test(foto.url)) return [];
+    const cta = s.cta as { label?: unknown; href?: unknown } | null;
+    const rotulo = texto(cta?.label);
+    const href = texto(cta?.href);
+    return [{
+      kind: 'photo',
+      id: String(s.id),
+      photo: { ...foto, alt: typeof foto.alt === 'string' ? foto.alt : '', sources: Array.isArray(foto.sources) ? foto.sources : [] },
+      eyebrow: texto(s.eyebrow),
+      title: titulo,
+      titleEmphasis: texto(s.titleEmphasis),
+      subtitle: texto(s.subtitle),
+      cta: rotulo && href && linkSeguro(href) ? { label: rotulo, href } : null,
+    }];
+  });
+  return lidas.length ? lidas : ABERTURA_PADRAO;
+}
+
+const aberturaEmCache = unstable_cache(
+  async (): Promise<AberturaDaHome[]> => {
+    const resposta = await fetch(`${engineUrl}/api/v1/public/restaurants/${encodeURIComponent(casaNoEngine)}/site/hero`, {
+      headers: { accept: 'application/json' },
+      signal: sinal(),
+    });
+    /* 404: casa sem a abertura (ou o Engine anterior, sem a rota). É resposta: a padrão, guardada. */
+    if (resposta.status === 404) return ABERTURA_PADRAO;
+    if (!resposta.ok) throw new Error(`Engine respondeu ${resposta.status} na abertura.`);
+    return lerAberturas(await resposta.json());
+  },
+  ['abertura-da-home', ...chaveDoCache],
+  { revalidate: 60 },
+);
+
+export async function aberturaDaHome(): Promise<AberturaDaHome[]> {
+  const s = await simulado();
+  if (s) return s.aberturaDaHome();
+  try {
+    return await aberturaEmCache();
+  } catch {
+    return ABERTURA_PADRAO;
+  }
+}

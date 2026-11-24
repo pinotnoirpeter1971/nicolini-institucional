@@ -7,6 +7,7 @@ import { conteudoAConfirmar, modulos } from '../menu-do-site';
 import { CartaoDeProduto } from '../ui/CartaoDeProduto';
 import { FotoDoDepartamento } from './Produtos';
 import { CapaNoCartao, enderecoDaMateria } from '../ui/CartaoDeMateria';
+import { Abertura } from '../ui/Abertura';
 
 /*
  * A home (DESIGN-BRIEF §7, refeita em 19/11/2026 no desenho do protótipo do
@@ -15,37 +16,11 @@ import { CapaNoCartao, enderecoDaMateria } from '../ui/CartaoDeMateria';
  * não pede nada ao Engine quando eles estão apagados.
  */
 
-function Hero() {
-  return (
-    <section className="hero hero--casa">
-      <div className="hero__media">
-        <video autoPlay muted loop playsInline poster="/media/hero-fatiando-presunto-poster.jpg">
-          <source src="/media/hero-fatiando-presunto.webm" type="video/webm" />
-          <source src="/media/hero-fatiando-presunto.mp4" type="video/mp4" />
-        </video>
-      </div>
-      <div className="hero__scrim" />
-
-      <div className="hero__inner">
-        <h1 className="hero__reveal" style={{ '--d': '150ms' }}>
-          O melhor da
-          <br />
-          <em>alta gastronomia.</em>
-        </h1>
-        <p className="hero__sub hero__reveal" style={{ '--d': '270ms' }}>
-          A seleção de ingredientes da Nicolini é curada a dedo, com produtos de todo o mundo.
-        </p>
-        {modulos.produtos && (
-          <div className="hero__cta hero__reveal" style={{ '--d': '360ms' }}>
-            <Link className="botao botao--claro" href="/produtos">
-              Explorar a seleção <Arrow />
-            </Link>
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
+/*
+ * A abertura: a de sempre (o vídeo) e, desde 24/11/2026, as fotos que a casa
+ * escolhe no painel do Engine (Sites → Abertura do site), em carrossel
+ * (src/ui/Abertura.tsx). Com só a de sempre, é a mesma de antes.
+ */
 
 /* O bloco vermelho do e-commerce: a exceção de cor, uma por página (§10). */
 function TabuaDeFrios() {
@@ -147,12 +122,13 @@ function Departamentos({ departamentos }) {
  *   departamentos?: import('../engine/sdk-0.8.0/index.js').PublicProductCategoryData[],
  *   destaques?: import('../engine/sdk-0.8.0/index.js').PublicProductCardData[],
  *   recentes?: import('../engine/sdk-0.8.0/index.js').BlogCardData[],
+ *   aberturas?: import('../engine/fonte').AberturaDaHome[],
  * }} props
  */
-export default function Home({ departamentos = [], destaques = [], recentes = [] }) {
+export default function Home({ departamentos = [], destaques = [], recentes = [], aberturas = [{ kind: 'default' }] }) {
   return (
     <>
-      <Hero />
+      <Abertura aberturas={aberturas} ctaPadrao={modulos.produtos} />
       <Departamentos departamentos={departamentos} />
       {destaques.length > 0 && (
         <section className="home-selecao" aria-labelledby="selecao-da-semana">

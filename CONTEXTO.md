@@ -49,6 +49,14 @@
   (`src/sacola/telefone.ts`). A loja vê o número na encomenda e retoma o pedido
   mesmo que o cliente não mande a mensagem. Publicar só depois do Engine: o
   Engine anterior recusa o campo, e o novo recusa o envio sem ele.
+- **Abertura em carrossel (24/11/2026, pedido de Pedro; Engine D-152):** a abertura da home lê do Engine
+  (`/api/v1/public/restaurants/<casa>/site/hero`, guardada por 60 s em `src/engine/fonte.ts`, `aberturaDaHome`) as
+  aberturas que a casa escolhe em Sites → Abertura do site: a de sempre (`default`, o vídeo e o texto de hoje) e fotos
+  com sobretítulo, título com final em itálico, subtítulo e botão, na ordem do painel. Com uma só, a abertura de
+  antes, sem nada a mais; com mais, `src/ui/Abertura.tsx`: troca suave a cada 7 s (para no mouse, no foco, com a aba
+  escondida, depois da mão e com movimento reduzido), chevrons soltos nas laterais (somem no toque, onde se passa com
+  o dedo) e bolinhas embaixo; `h1` só na primeira. Engine fora, sem a rota ou resposta estranha: a de sempre. No
+  laboratório, duas fotos simuladas (`src/engine/simulado/servidor.ts`). CSS no fim de `src/styles/home.css`.
 - **Assinatura da Capilano (16/11/2026, pedido de Pedro, enxugada no mesmo
   dia):** uma linha só, "Desenvolvido sob medida pela Capilano" ("Capilano" é
   link quieto para capilanocreative.com, sublinha ao passar o mouse), com o
