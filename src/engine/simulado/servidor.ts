@@ -79,3 +79,18 @@ export async function aberturaDaHome() {
     },
   ];
 }
+
+/* ── Departamentos na home (Engine D-154) ─────────────────────────────────── */
+
+/* Uma escolha de exemplo, para ver a seção como a casa a monta no painel:
+ * quatro dos cinco departamentos, em outra ordem, e Vinhos com foto própria
+ * no cartão. Os outros usam a foto do balcão (sem foto no Engine). */
+export async function departamentosDaHome() {
+  const foto = (url: string, alt: string, x = 0.5, y = 0.5) => ({ kind: 'image' as const, url, width: 1200, height: 1500, alt, focus: { x, y }, sources: [] });
+  return [
+    { slug: 'vinhos', name: 'Vinhos', photo: foto('/media/loja/loja-3.jpg', 'Rótulos de vinho na estante da loja') },
+    { slug: 'queijos', name: 'Queijos', photo: null },
+    { slug: 'charcutaria', name: 'Charcutaria', photo: null },
+    { slug: 'massas', name: 'Massas', photo: null },
+  ];
+}

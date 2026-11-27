@@ -320,3 +320,63 @@ export async function aberturaDaHome(): Promise<AberturaDaHome[]> {
     return ABERTURA_PADRAO;
   }
 }
+
+/* ── Departamentos na home (Engine D-154) ─────────────────────────────────── */
+
+/*
+ * Os cartões da seção de departamentos da home ("A casa tem muitos
+ * caminhos"), escolhidos no painel (Sites → Departamentos na home): quais, em
+ * que ordem e com que foto (a própria do cartão ou a do departamento). O
+ * Engine já manda só os visíveis com produto no ar. `null` é o padrão: a home
+ * mostra todos os departamentos, como sempre. Lista vazia: a casa escolheu,
+ * mas menos de 2 têm produto no ar, e a seção sai da home. Lida ao vivo, guardada por 60 s
+ * e dividida por todos os visitantes. Sem SDK por enquanto, como a abertura:
+ * uma leitura só, conferida aqui. Engine fora, rota ainda não publicada ou
+ * resposta estranha: o padrão, e a home não cai.
+ */
+export type DepartamentoDaHome = { slug: string; name: string; photo: PublicMediaData | null };
+
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/* Confere cada cartão; o que não passa sai. Vazia é resposta (a seção sai); com cartões e nenhum que passe, o padrão. */
+export function lerDepartamentosDaHome(corpo: unknown): DepartamentoDaHome[] | null {
+  const lista = (corpo as { data?: { departments?: unknown } } | null)?.data?.departments;
+  if (!Array.isArray(lista)) return null;
+  if (lista.length === 0) return [];
+  const lidos = lista.flatMap((bruto): DepartamentoDaHome[] => {
+    const d = bruto as Record<string, unknown>;
+    const nome = texto(d?.name);
+    if (typeof d?.slug !== 'string' || !SLUG.test(d.slug) || !nome) return [];
+    const foto = d.photo as PublicMediaData | null | undefined;
+    const fotoBoa = foto?.kind === 'image' && typeof foto.url === 'string' && /^https:\/\//.test(foto.url)
+      ? { ...foto, alt: typeof foto.alt === 'string' ? foto.alt : '', sources: Array.isArray(foto.sources) ? foto.sources : [] }
+      : null;
+    return [{ slug: d.slug, name: nome, photo: fotoBoa }];
+  });
+  return lidos.length ? lidos : null;
+}
+
+const departamentosDaHomeEmCache = unstable_cache(
+  async (): Promise<DepartamentoDaHome[] | null> => {
+    const resposta = await fetch(`${engineUrl}/api/v1/public/restaurants/${encodeURIComponent(casaNoEngine)}/site/home-departments`, {
+      headers: { accept: 'application/json' },
+      signal: sinal(),
+    });
+    /* 404: Produtos desligado, ou o Engine anterior, sem a rota. É resposta: o padrão, guardado. */
+    if (resposta.status === 404) return null;
+    if (!resposta.ok) throw new Error(`Engine respondeu ${resposta.status} nos departamentos da home.`);
+    return lerDepartamentosDaHome(await resposta.json());
+  },
+  ['departamentos-da-home', ...chaveDoCache],
+  { revalidate: 60 },
+);
+
+export async function departamentosDaHome(): Promise<DepartamentoDaHome[] | null> {
+  const s = await simulado();
+  if (s) return s.departamentosDaHome();
+  try {
+    return await departamentosDaHomeEmCache();
+  } catch {
+    return null;
+  }
+}

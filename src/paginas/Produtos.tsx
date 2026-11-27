@@ -28,7 +28,7 @@ export function fotoDaCategoria(slug: string) {
   return setor ? { src: setor.foto, alt: setor.nome } : null;
 }
 
-export function FotoDoDepartamento({ departamento, sizes, prioridade = false }: { departamento: PublicProductCategoryData; sizes: string; prioridade?: boolean }) {
+export function FotoDoDepartamento({ departamento, sizes, prioridade = false }: { departamento: Pick<PublicProductCategoryData, 'slug' | 'photo'>; sizes: string; prioridade?: boolean }) {
   if (departamento.photo) return <Foto foto={departamento.photo} sizes={sizes} prioridade={prioridade} />;
   const foto = fotoDaCategoria(departamento.slug);
   return foto ? <img src={foto.src} alt={foto.alt} width="1200" height="1500" loading={prioridade ? 'eager' : 'lazy'} decoding="async" /> : null;

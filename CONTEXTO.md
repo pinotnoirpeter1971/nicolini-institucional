@@ -57,6 +57,15 @@
   escondida, depois da mão e com movimento reduzido), chevrons soltos nas laterais (somem no toque, onde se passa com
   o dedo) e bolinhas embaixo; `h1` só na primeira. Engine fora, sem a rota ou resposta estranha: a de sempre. No
   laboratório, duas fotos simuladas (`src/engine/simulado/servidor.ts`). CSS no fim de `src/styles/home.css`.
+- **Departamentos na home (27/11/2026, pedido de Pedro; Engine D-154):** a seção "A casa tem muitos caminhos" lê do
+  Engine (`/api/v1/public/restaurants/<casa>/site/home-departments`, guardada por 60 s em `src/engine/fonte.ts`,
+  `departamentosDaHome`) os cartões que a casa escolhe em Sites → Departamentos na home: quais, em que ordem e com que
+  foto (a própria do cartão ou a do departamento). `departments: null` é o padrão: todos os departamentos, como antes.
+  A home só mostra escolhido que esteja entre as categorias no ar (nada de link para página vazia); com escolha e menos
+  de 2 cartões (lista vazia do Engine, ou o filtro), a seção sai da home, sem cartão gigante nem os ocultos.
+  Sem foto do Engine, o cartão usa a do balcão (`fotoDaCategoria`). A grade aceita de 2 a 7: no tablet, 4 numa linha
+  e 7 em 4 + 3; no celular, o primeiro cartão ocupa duas linhas só com conta ímpar (`is-par`). Engine fora, sem a
+  rota ou resposta estranha: todos. No laboratório, uma escolha simulada (4 departamentos, Vinhos com foto própria).
 - **Assinatura da Capilano (16/11/2026, pedido de Pedro, enxugada no mesmo
   dia):** uma linha só, "Desenvolvido sob medida pela Capilano" ("Capilano" é
   link quieto para capilanocreative.com, sublinha ao passar o mouse), com o

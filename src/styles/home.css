@@ -735,7 +735,7 @@ a.departamento-cartao:hover::before {
   }
 
   .home-departamentos__grade {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--n-meio, 3), minmax(0, 1fr));
   }
 }
 
@@ -762,6 +762,11 @@ a.departamento-cartao:hover::before {
   .departamento-cartao:first-child {
     grid-row: span 2;
     min-height: 407px;
+  }
+
+  .home-departamentos__grade.is-par .departamento-cartao:first-child {
+    grid-row: auto;
+    min-height: 200px;
   }
 
   .home-loja__grade {

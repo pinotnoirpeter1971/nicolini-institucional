@@ -59,10 +59,19 @@ function TabuaDeFrios() {
 
 /*
  * Os departamentos na home (protótipo: "A casa tem muitos caminhos"): um
- * cartão com foto por departamento, na ordem do painel. Vêm do Engine com o
- * módulo Produtos aceso; sem ele (ou com o Engine fora), os cinco balcões da
- * loja, sem link.
+ * cartão com foto por departamento. Vêm do Engine com o módulo Produtos
+ * aceso: os escolhidos no painel (Sites → Departamentos na home, D-154), na
+ * ordem de lá e com a foto do cartão, ou, sem escolha, todos, na ordem de
+ * Produtos. Sem o módulo (ou com o Engine fora), os cinco balcões da loja,
+ * sem link.
+ *
+ * A grade se ajusta à quantidade (o painel deixa escolher de 2 a 7): no
+ * tablet, 4 cabem numa linha e 7 viram 4 + 3, sem cartão sozinho embaixo; no
+ * celular, o primeiro cartão ocupa duas linhas só quando a conta é ímpar (com
+ * par, sobraria um buraco no fim).
  */
+const colunasNoTablet = (n) => (n <= 4 ? n : n === 7 ? 4 : 3);
+
 function Departamentos({ departamentos }) {
   const cartoes = departamentos.length
     ? departamentos.map((d) => ({ chave: d.slug, nome: d.name, href: `/produtos/${d.slug}`, foto: <FotoDoDepartamento departamento={d} sizes="(max-width: 760px) 50vw, 16vw" /> }))
@@ -80,7 +89,10 @@ function Departamentos({ departamentos }) {
           <p className="home-cabeca__nota">Para preparar um jantar especial ou encontrar um ingrediente que não se vê por aí.</p>
         </Reveal>
         <Reveal delay={80}>
-          <div className="home-departamentos__grade" style={{ '--n': cartoes.length }}>
+          <div
+            className={['home-departamentos__grade', cartoes.length % 2 === 0 && 'is-par'].filter(Boolean).join(' ')}
+            style={{ '--n': cartoes.length, '--n-meio': colunasNoTablet(cartoes.length) }}
+          >
           {cartoes.map((c, i) => {
             const miolo = (
               <>
@@ -119,7 +131,7 @@ function Departamentos({ departamentos }) {
  * aceso e com conteúdo.
  *
  * @param {{
- *   departamentos?: import('../engine/sdk-0.8.0/index.js').PublicProductCategoryData[],
+ *   departamentos?: Pick<import('../engine/sdk-0.8.0/index.js').PublicProductCategoryData, 'slug' | 'name' | 'photo'>[] | null,
  *   destaques?: import('../engine/sdk-0.8.0/index.js').PublicProductCardData[],
  *   recentes?: import('../engine/sdk-0.8.0/index.js').BlogCardData[],
  *   aberturas?: import('../engine/fonte').AberturaDaHome[],
@@ -129,7 +141,7 @@ export default function Home({ departamentos = [], destaques = [], recentes = []
   return (
     <>
       <Abertura aberturas={aberturas} ctaPadrao={modulos.produtos} />
-      <Departamentos departamentos={departamentos} />
+      {departamentos && <Departamentos departamentos={departamentos} />}
       {destaques.length > 0 && (
         <section className="home-selecao" aria-labelledby="selecao-da-semana">
           <div className="wrap">
