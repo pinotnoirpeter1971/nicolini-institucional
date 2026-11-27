@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent as CliqueDoReact } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { casa } from '../data/casa';
@@ -279,6 +279,16 @@ export function Cabecalho({ categorias, comBlog }: { categorias: DepartamentoDoM
     return () => window.clearTimeout(relogio);
   }, [modoDaFaixa, topo]);
 
+  /* Logo clicado já na home: o endereço não muda e o Link não rola; sobe a página e fecha o que estiver aberto. */
+  const voltarAoInicio = (e: CliqueDoReact<HTMLAnchorElement>) => {
+    if (pathname !== '/' || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    setAberto(false);
+    setMega(null);
+    soltar();
+    window.scrollTo({ top: 0 }); /* a rolagem suave (ou não, com menos movimento) vem do CSS */
+  };
+
   const link = (item: { href: string; rotulo: string }, classe?: string, estilo?: CSSProperties) => (
     <Link
       key={item.href}
@@ -326,7 +336,7 @@ export function Cabecalho({ categorias, comBlog }: { categorias: DepartamentoDoM
             {aberto ? <Fechar /> : <Menu />}
           </button>
 
-          <Link href="/" className="cabecalho__logo" aria-label="Nicolini, página inicial">
+          <Link href="/" className="cabecalho__logo" aria-label="Nicolini, página inicial" onClick={voltarAoInicio}>
             {casa.marca}
           </Link>
 
