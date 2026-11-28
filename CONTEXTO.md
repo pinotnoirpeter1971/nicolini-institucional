@@ -1,5 +1,12 @@
 # Contexto — Site da Nicolini (institucional)
 
+## `/menu`: preço próprio no menu de preço fixo — 28/11/2026
+
+No cardápio de preço fixo, item com preço próprio (entrada, sobremesa, prato
+infantil) mostra o valor na lista, na busca e no detalhe; sem preço próprio
+continua "Incluso no almoço executivo" (com o suplemento, se houver). Valores
+com centavos saem com duas casas (`R$ 119,90`). Tudo em `public/menu/js/app.js`.
+
 ## Estado em 11/11/2026 — vale sobre o histórico abaixo
 
 - **No ar:** `https://www.emporionicolini.com.br` (com `www`). O domínio

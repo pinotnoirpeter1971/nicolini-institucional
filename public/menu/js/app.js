@@ -53,7 +53,9 @@
   }
 
   function dinheiro(valor) {
-    return 'R$ ' + valor.toLocaleString('pt-BR');
+    /* Valor redondo sai sem centavos; com centavos, sempre com duas casas. */
+    var casas = Number.isInteger(valor) ? 0 : 2;
+    return 'R$ ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
   }
 
   function anuncia(texto) {
@@ -488,6 +490,14 @@
       .join('<span aria-hidden="true"> · </span>');
   }
 
+  /* No menu de preço fixo, entrada, sobremesa ou prato infantil podem ter
+   * preço à parte: esses mostram o valor e não aparecem como inclusos. */
+  function temPrecoProprio(item) {
+    return !!(item.precos && item.precos.length) && item.precos.every(function (p) {
+      return !p.modo || p.modo === 'amount';
+    });
+  }
+
   /*
    * Preço único sobe para a linha do nome, à direita, como num cardápio
    * impresso. Preço com rótulo (taça, garrafa) desce para uma linha própria:
@@ -502,7 +512,7 @@
    * itens e precisa da mesma regra.
    */
   function formasDePreco(servico, item) {
-    var precos = servico.tipo === 'carta' && item.precos ? item.precos : [];
+    var precos = servico.tipo === 'carta' || temPrecoProprio(item) ? item.precos || [] : [];
     var rotulado = precos.some(function (p) { return !!p.rotulo; });
     var emBloco = precos.length > 1 || rotulado;
     return {
@@ -1843,7 +1853,7 @@
     var fotos = fotosDoItem(item);
 
     var preco;
-    if (s.tipo === 'fixo') {
+    if (s.tipo === 'fixo' && !temPrecoProprio(item)) {
       preco =
         '<span class="detalhe__incluso">Incluso no almoço executivo</span>' +
         (item.suplemento
